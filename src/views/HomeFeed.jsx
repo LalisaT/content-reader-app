@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import CategoryChips from '../components/CategoryChips';
 import ArticleCard from '../components/ArticleCard';
-import NativeAdCard from '../components/NativeAdCard';
-import { SAMPLE_NATIVE_ADS } from '../services/admobService';
 import { Sparkles, TrendingUp, Compass, ArrowRight } from 'lucide-react';
 
 export default function HomeFeed({
@@ -21,36 +19,6 @@ export default function HomeFeed({
     : articles.filter((a) => a.category === selectedCategory);
 
   const featuredArticle = articles[0];
-
-  // Interleave native ads into the stream every 3 items
-  const renderFeedWithAds = () => {
-    const elements = [];
-    let adIndex = 0;
-
-    filteredArticles.forEach((article, index) => {
-      // Don't duplicate the featured article if category is 'All'
-      if (selectedCategory === 'All' && index === 0) return;
-
-      elements.push(
-        <ArticleCard
-          key={article.id}
-          article={article}
-          isBookmarked={bookmarks.includes(article.id)}
-          onToggleBookmark={onToggleBookmark}
-          onOpenArticle={onOpenArticle}
-        />
-      );
-
-      // Insert Native Sponsored Card after every 3 items
-      if ((index + 1) % 3 === 0) {
-        const ad = SAMPLE_NATIVE_ADS[adIndex % SAMPLE_NATIVE_ADS.length];
-        adIndex++;
-        elements.push(<NativeAdCard key={`ad-${index}`} ad={ad} />);
-      }
-    });
-
-    return elements;
-  };
 
   return (
     <div className="max-w-2xl mx-auto pb-24 animate-in fade-in duration-200">
@@ -122,9 +90,20 @@ export default function HomeFeed({
         </span>
       </div>
 
-      {/* Article & Native Ad Stream */}
+      {/* Clean Article Stream (No intrusive ads on home feed) */}
       <div className="px-4 space-y-3.5">
-        {renderFeedWithAds()}
+        {filteredArticles.map((article, index) => {
+          if (selectedCategory === 'All' && index === 0) return null;
+          return (
+            <ArticleCard
+              key={article.id}
+              article={article}
+              isBookmarked={bookmarks.includes(article.id)}
+              onToggleBookmark={onToggleBookmark}
+              onOpenArticle={onOpenArticle}
+            />
+          );
+        })}
 
         {filteredArticles.length === 0 && (
           <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">

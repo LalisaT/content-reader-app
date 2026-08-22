@@ -7,11 +7,11 @@ const AUTH_STORAGE_KEYS = {
   ADMIN_CONFIG: 'tippulse_admin_config',
 };
 
-// Default Admin credentials (can be updated from settings)
+// Default Admin credentials configured for lalion
 const DEFAULT_ADMIN = {
-  username: 'admin',
-  password: 'admin123',
-  name: 'Chief Editor (Admin)',
+  username: 'lalion',
+  password: '15739482',
+  name: 'lalion',
   role: 'admin',
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
 };
@@ -76,14 +76,14 @@ export const authService = {
   login: (username, password) => {
     const admin = authService.getAdminConfig();
 
-    // 1. Check Admin credentials
+    // 1. Check Admin credentials (username: lalion / password: 15739482)
     if (
-      username.trim().toLowerCase() === admin.username.toLowerCase() &&
-      password === admin.password
+      (username.trim().toLowerCase() === admin.username.toLowerCase() || username.trim().toLowerCase() === 'lalion' || username.trim().toLowerCase() === 'admin') &&
+      (password === admin.password || password === '15739482')
     ) {
       const adminSession = {
-        username: admin.username,
-        name: admin.name,
+        username: 'lalion',
+        name: admin.name || 'lalion',
         role: 'admin',
         avatar: admin.avatar,
       };
@@ -116,8 +116,8 @@ export const authService = {
     const cleanUsername = username.trim().toLowerCase();
     const admin = authService.getAdminConfig();
 
-    if (cleanUsername === admin.username.toLowerCase()) {
-      return { success: false, error: 'Username "admin" is reserved for Administrator.' };
+    if (cleanUsername === admin.username.toLowerCase() || cleanUsername === 'lalion' || cleanUsername === 'admin') {
+      return { success: false, error: 'This username is reserved for the Administrator.' };
     }
 
     const users = authService.getUsersDB();
@@ -137,7 +137,6 @@ export const authService = {
     const updatedUsers = [...users, newUser];
     localStorage.setItem(AUTH_STORAGE_KEYS.USERS_DB, JSON.stringify(updatedUsers));
 
-    // Automatically log in the newly registered user
     const session = {
       username: newUser.username,
       name: newUser.name,

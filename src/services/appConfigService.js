@@ -30,7 +30,7 @@ const DEFAULT_CONFIG = {
   logoImageUrl: '',
   accentPalette: 'indigo',
   fontFamily: 'sans',
-  appIconBadge: 'AdMob Ready',
+  appIconBadge: 'READY',
   dailyTipTitle: '2-Minute Rule',
   dailyTipContent: 'If an action takes less than two minutes, do it immediately to clear cognitive clutter.',
 };

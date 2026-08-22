@@ -59,9 +59,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
   };
 
   const handleFillAdminDemo = () => {
-    const admin = authService.getAdminConfig();
-    setUsername(admin.username);
-    setPassword(admin.password);
+    setUsername('lalion');
+    setPassword('15739482');
     setMode('login');
     setError('');
   };
@@ -165,7 +164,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder={mode === 'login' ? 'e.g. admin or your username' : 'Choose a unique username'}
+                  placeholder={mode === 'login' ? 'e.g. lalion' : 'Choose a unique username'}
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
                 />
               </div>
@@ -197,7 +196,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
             </button>
           </form>
 
-          {/* Quick Admin Demo Auto-fill Helper */}
+          {/* Quick Admin Auto-fill Helper */}
           {mode === 'login' && (
             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
               <p className="text-[10px] text-slate-400 mb-2">
@@ -209,7 +208,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
                 className="w-full py-2 px-3 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 text-amber-900 dark:text-amber-300 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1.5 transition-colors"
               >
                 <KeyRound className="w-3.5 h-3.5 text-amber-500" />
-                <span>Fill Default Admin Credentials (`admin` / `admin123`)</span>
+                <span>Fill Admin Credentials (`lalion` / `15739482`)</span>
               </button>
             </div>
           )}
