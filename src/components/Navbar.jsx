@@ -18,7 +18,8 @@ import {
   Award,
   Sun,
   Moon,
-  Coffee
+  Coffee,
+  User
 } from 'lucide-react';
 
 const LOGO_ICON_MAP = {
@@ -169,9 +170,10 @@ export default function Navbar({
           ) : (
             <button
               onClick={() => onOpenAuth(false)}
-              className="px-2.5 py-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 hover:bg-indigo-100 rounded-full border border-indigo-200/70 dark:border-indigo-800 transition-colors"
+              title="Sign In / User Account"
+              className="p-2 rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
             >
-              Sign In
+              <User className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
             </button>
           )}
         </div>
