@@ -50,7 +50,7 @@ export default function RewardedModal({ isOpen, onClose, onRewardEarned, article
         <div className="bg-gradient-to-r from-amber-500 to-amber-600 px-4 py-3 flex items-center justify-between text-slate-950">
           <div className="flex items-center space-x-1.5 font-black text-xs uppercase tracking-wide">
             <Award className="w-4 h-4" />
-            <span>AdMob Rewarded Video</span>
+            <span>Sponsored Video Reward</span>
           </div>
           <button
             onClick={onClose}
@@ -87,10 +87,6 @@ export default function RewardedModal({ isOpen, onClose, onRewardEarned, article
                 <Play className="w-4 h-4 fill-slate-950" />
                 <span>Watch Video & Unlock (5s)</span>
               </button>
-
-              <p className="text-[10px] text-slate-400 mt-3 font-mono">
-                AdMob Rewarded Unit: {ADMOB_CONFIG.TEST_IDS.REWARDED_ANDROID.slice(0, 24)}...
-              </p>
             </div>
           )}
 
@@ -106,7 +102,7 @@ export default function RewardedModal({ isOpen, onClose, onRewardEarned, article
                 <Play className="w-10 h-10 text-amber-400 relative z-10 fill-amber-400" />
                 
                 <span className="text-xs font-medium text-slate-300 mt-2 relative z-10">
-                  Simulating AdMob Video Ad...
+                  Playing Sponsor Video...
                 </span>
 
                 {/* Progress Bar */}

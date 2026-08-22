@@ -46,8 +46,7 @@ export default function AppCustomizerModal({
   onResetCategories,
 }) {
   const [appName, setAppName] = useState(config.appName || 'TipPulse');
-  const [appTagline, setAppTagline] = useState(config.appTagline || 'Daily Tips & News');
-  const [appIconBadge, setAppIconBadge] = useState(config.appIconBadge || 'AdMob');
+  const [appIconBadge, setAppIconBadge] = useState(config.appIconBadge || 'READY');
   const [logoType, setLogoType] = useState(config.logoType || 'icon');
   const [logoIcon, setLogoIcon] = useState(config.logoIcon || 'BookOpen');
   const [logoImageUrl, setLogoImageUrl] = useState(config.logoImageUrl || '');
@@ -354,7 +353,7 @@ export default function AppCustomizerModal({
                   type="text"
                   value={appIconBadge}
                   onChange={(e) => setAppIconBadge(e.target.value)}
-                  placeholder="e.g. PRO, AdMob, v1.0"
+                  placeholder="e.g. PRO, READY, v1.0"
                   className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:outline-none"
                 />
               </div>

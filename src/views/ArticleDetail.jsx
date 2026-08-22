@@ -293,7 +293,7 @@ export default function ArticleDetail({
             </h3>
 
             <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto mt-2 leading-relaxed">
-              This in-depth 30-day blueprint is free to unlock by watching a short 5-second sponsor video (AdMob Rewarded Unit).
+              This in-depth 30-day blueprint is free to unlock by watching a short 5-second sponsor video.
             </p>
 
             <button

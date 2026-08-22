@@ -32,14 +32,14 @@ export default function InterstitialModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
       <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col">
-        {/* AdMob Top Bar Header */}
+        {/* Top Bar Header */}
         <div className="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <span className="bg-amber-400 text-slate-950 font-black text-[10px] uppercase px-1.5 py-0.5 rounded">
-              AdMob Interstitial
+              Sponsored
             </span>
-            <span className="text-[11px] text-slate-400 font-mono">
-              Test Unit
+            <span className="text-[11px] text-slate-400 font-medium">
+              Featured Recommendation
             </span>
           </div>
 
@@ -87,15 +87,9 @@ export default function InterstitialModal({ isOpen, onClose }) {
               }}
               className="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2 transition-all"
             >
-              <span>Install Free App</span>
+              <span>Explore Solution</span>
               <ExternalLink className="w-4 h-4" />
             </button>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
-            <span className="text-[10px] text-slate-400 font-mono">
-              Unit ID: {ADMOB_CONFIG.TEST_IDS.INTERSTITIAL_ANDROID}
-            </span>
           </div>
         </div>
       </div>

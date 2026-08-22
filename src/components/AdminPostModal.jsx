@@ -382,10 +382,10 @@ export default function AdminPostModal({
                   </div>
                   <div>
                     <div className="font-bold text-slate-900 dark:text-slate-100">
-                      AdMob Rewarded Lock
+                      Sponsored Video Reward Lock
                     </div>
                     <p className="text-[10px] text-slate-600 dark:text-slate-400">
-                      Requires readers to watch a 5s rewarded sponsor video to unlock
+                      Requires readers to watch a 5s sponsor video to unlock this masterclass
                     </p>
                   </div>
                 </div>

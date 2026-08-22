@@ -17,15 +17,12 @@ export default function BannerAd({ position = 'bottom' }) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center space-x-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-1 rounded">
-                AdMob Banner
-              </span>
-              <span className="text-[10px] text-slate-500 font-mono truncate">
-                {ADMOB_CONFIG.TEST_IDS.BANNER_ANDROID.slice(0, 18)}...
+              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-1.5 py-0.5 rounded">
+                Sponsored
               </span>
             </div>
             <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
-              Google Mobile Ads: Adaptive 320x50 Standard Test Ad
+              Support TipPulse • Recommended Partner
             </p>
           </div>
         </div>

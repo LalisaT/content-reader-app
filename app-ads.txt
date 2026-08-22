@@ -1,0 +1,4 @@
+# Google AdMob Authorized Digital Sellers (app-ads.txt)
+# Developer: lalion (TipPulse App)
+# Google AdMob Publisher Account Verification
+google.com, pub-7243280049708086, DIRECT, f08c47fec0942fa0

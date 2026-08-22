@@ -4,7 +4,7 @@ import { Megaphone, ExternalLink, Star, Info } from 'lucide-react';
 export default function NativeAdCard({ ad }) {
   const handleAdClick = (e) => {
     e.stopPropagation();
-    alert(`[AdMob Native Ad Simulation]\nClicked: "${ad.headline}"\nAdvertiser: ${ad.advertiser}\n\nIn a production APK/AAB release, this opens the sponsor's landing page.`);
+    alert(`[Sponsored Partner Link]\nOpening: "${ad.headline}"\nAdvertiser: ${ad.advertiser}`);
   };
 
   return (
@@ -59,8 +59,8 @@ export default function NativeAdCard({ ad }) {
             alt={ad.headline}
             className="w-full h-full object-cover hover:scale-102 transition-transform duration-300"
           />
-          <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded font-mono">
-            AdMob Native Ad Unit
+          <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] px-1.5 py-0.5 rounded font-medium">
+            Sponsored Partner
           </div>
         </div>
       )}

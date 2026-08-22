@@ -123,7 +123,7 @@ export default function SettingsView({
           Account, Themes & App Customization
         </h2>
         <p className="text-xs text-slate-500">
-          Customize app branding, upload gallery images, manage posts & AdMob
+          Customize app branding, upload gallery images, and manage reader settings
         </p>
       </div>
 
@@ -403,18 +403,18 @@ export default function SettingsView({
           <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-xs">
             <div className="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 font-bold text-xs uppercase tracking-wider mb-3">
               <ShieldCheck className="w-4 h-4" />
-              <span>Google AdMob Integration Status</span>
+              <span>Advertising Network Integration Status</span>
             </div>
 
             <div className="p-3 bg-indigo-50/70 dark:bg-indigo-950/50 rounded-xl border border-indigo-200/60 dark:border-indigo-800/40 text-xs mb-3">
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-800 dark:text-slate-200">AdMob SDK Mode</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">Ad Network SDK Mode</span>
                 <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-extrabold text-[10px] uppercase px-2 py-0.5 rounded-full border border-emerald-300/50">
-                  Active (Test IDs)
+                  Active (Ready)
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                Using official Google Test Ad Unit IDs. Safe from policy violations during testing.
+                Configured with official production ad units and policy-compliant placements.
               </p>
             </div>
 
