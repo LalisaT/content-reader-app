@@ -8,8 +8,8 @@ export const ADMOB_CONFIG = {
   TEST_IDS: {
     BANNER_ANDROID: 'ca-app-pub-7243280049708086/2987639846',
     INTERSTITIAL_ANDROID: 'ca-app-pub-7243280049708086/3764650410',
-    REWARDED_ANDROID: 'ca-app-pub-3940256099942544/5224354917',
-    NATIVE_ADVANCED_ANDROID: 'ca-app-pub-3940256099942544/2247696110',
+    REWARDED_ANDROID: 'ca-app-pub-7243280049708086/7609411133',
+    NATIVE_ADVANCED_ANDROID: 'ca-app-pub-7243280049708086/2987639846',
   },
   isTestMode: false,
   // Frequency cap: Show interstitial at most once every 3 article views or 90 seconds
