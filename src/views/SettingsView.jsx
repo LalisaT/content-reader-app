@@ -37,6 +37,8 @@ export default function SettingsView({
   fontSize,
   onChangeFontSize,
   onOpenPolicy,
+  onOpenTerms,
+  onOpenDisclaimer,
   onOpenAdminPost,
   onOpenCustomizer,
   onEditArticle,
@@ -522,7 +524,7 @@ export default function SettingsView({
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-xs">
           <div className="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 font-bold text-xs uppercase tracking-wider mb-3">
             <FileText className="w-4 h-4" />
-            <span>Store & AdMob Legal Documents</span>
+            <span>Store & Legal Compliance Documents</span>
           </div>
 
           <div className="space-y-2 text-xs">
@@ -532,6 +534,26 @@ export default function SettingsView({
             >
               <span className="font-semibold text-slate-700 dark:text-slate-200">
                 Privacy Policy (GDPR & COPPA Compliant)
+              </span>
+              <ExternalLink className="w-4 h-4 text-slate-400" />
+            </button>
+
+            <button
+              onClick={onOpenTerms}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-left"
+            >
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
+                Terms & Conditions
+              </span>
+              <ExternalLink className="w-4 h-4 text-slate-400" />
+            </button>
+
+            <button
+              onClick={onOpenDisclaimer}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-left"
+            >
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
+                Educational, Health & Financial Disclaimer
               </span>
               <ExternalLink className="w-4 h-4 text-slate-400" />
             </button>

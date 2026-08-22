@@ -21,6 +21,8 @@ import ExploreView from './views/ExploreView';
 import BookmarksView from './views/BookmarksView';
 import SettingsView from './views/SettingsView';
 import PolicyView from './views/PolicyView';
+import TermsView from './views/TermsView';
+import DisclaimerView from './views/DisclaimerView';
 
 import { Sparkles, X } from 'lucide-react';
 
@@ -318,6 +320,8 @@ export default function App() {
                 fontSize={fontSize}
                 onChangeFontSize={handleChangeFontSize}
                 onOpenPolicy={() => setActiveTab('policy')}
+                onOpenTerms={() => setActiveTab('terms')}
+                onOpenDisclaimer={() => setActiveTab('disclaimer')}
                 onOpenAdminPost={handleTriggerAdminPost}
                 onOpenCustomizer={() => setIsCustomizerOpen(true)}
                 onEditArticle={handleEditArticle}
@@ -332,6 +336,14 @@ export default function App() {
 
             {activeTab === 'policy' && (
               <PolicyView onBack={() => setActiveTab('settings')} />
+            )}
+
+            {activeTab === 'terms' && (
+              <TermsView onBack={() => setActiveTab('settings')} />
+            )}
+
+            {activeTab === 'disclaimer' && (
+              <DisclaimerView onBack={() => setActiveTab('settings')} />
             )}
           </main>
 
