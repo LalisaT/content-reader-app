@@ -362,7 +362,7 @@ export default function AdminPostModal({
               {/* Full Article Body Content (Markdown) */}
               <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Full Article Body (Markdown supported with `###` headings and `>` quotes) *
+                  Full Article Body (Markdown supported with `###` headings and `&gt;` quotes) *
                 </label>
                 <textarea
                   rows={6}

@@ -46,6 +46,7 @@ export default function AppCustomizerModal({
   onResetCategories,
 }) {
   const [appName, setAppName] = useState(config.appName || 'TipPulse');
+  const [appTagline, setAppTagline] = useState(config.appTagline || 'Daily Educational & Practical Tips');
   const [appIconBadge, setAppIconBadge] = useState(config.appIconBadge || 'READY');
   const [logoType, setLogoType] = useState(config.logoType || 'icon');
   const [logoIcon, setLogoIcon] = useState(config.logoIcon || 'BookOpen');
