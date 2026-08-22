@@ -120,10 +120,12 @@ export default function SettingsView({
       {/* Header */}
       <div className="mb-5">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-          Account, Themes & App Customization
+          {isAdmin ? 'Admin Studio & App Settings' : 'Reader Settings & Appearance'}
         </h2>
         <p className="text-xs text-slate-500">
-          Customize app branding, upload gallery images, and manage reader settings
+          {isAdmin
+            ? 'Manage app branding, published articles, and administrative preferences.'
+            : 'Customize reading appearance, font sizing, and view compliance policies.'}
         </p>
       </div>
 
@@ -233,25 +235,19 @@ export default function SettingsView({
           </div>
         )}
 
-        {/* Section 2: Article & Post Management Studio */}
-        <div className={`rounded-2xl p-4 border transition-all ${
-          isAdmin
-            ? 'bg-gradient-to-br from-amber-500/10 via-white to-amber-500/5 dark:from-slate-800 dark:to-amber-950/30 border-amber-300/80 dark:border-amber-700/80'
-            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-        } shadow-xs`}>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-2 text-amber-700 dark:text-amber-400 font-bold text-xs uppercase tracking-wider">
-              <FolderEdit className="w-4 h-4" />
-              <span>Article & Post Management</span>
-            </div>
-            {isAdmin && (
+        {/* Section 2: Article & Post Management Studio (ADMIN ONLY) */}
+        {isAdmin && (
+          <div className="rounded-2xl p-4 border bg-gradient-to-br from-amber-500/10 via-white to-amber-500/5 dark:from-slate-800 dark:to-amber-950/30 border-amber-300/80 dark:border-amber-700/80 shadow-xs">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2 text-amber-700 dark:text-amber-400 font-bold text-xs uppercase tracking-wider">
+                <FolderEdit className="w-4 h-4" />
+                <span>Article & Post Management</span>
+              </div>
               <span className="text-[10px] font-semibold bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded-full">
                 {customArticles.length} Custom Articles
               </span>
-            )}
-          </div>
+            </div>
 
-          {isAdmin ? (
             <div>
               <p className="text-xs text-slate-600 dark:text-slate-300 mb-3 leading-relaxed">
                 Create new articles with photos from your gallery, or edit and delete published posts.
@@ -377,26 +373,8 @@ export default function SettingsView({
                 )}
               </div>
             </div>
-          ) : (
-            <div className="text-center py-4">
-              <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-700/60 flex items-center justify-center mx-auto mb-2 text-slate-500">
-                <Lock className="w-6 h-6" />
-              </div>
-              <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">
-                Admin Privileges Required
-              </h4>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                Sign in with Administrator credentials to post, edit, or customize branding.
-              </p>
-              <button
-                onClick={() => onOpenAuth(true)}
-                className="mt-3.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-sm transition-all"
-              >
-                Sign In as Administrator
-              </button>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Section 3: AdMob Compliance & SDK Status (ADMIN ONLY) */}
         {isAdmin && (
