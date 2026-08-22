@@ -2,15 +2,16 @@
 // Policy Compliant Ad Configuration & Simulation Manager
 
 export const ADMOB_CONFIG = {
-  // Official Google AdMob Test Ad Unit IDs (for development & validation)
+  APP_ID: 'ca-app-pub-7243280049708086~2587194917',
+  PUBLISHER_ID: 'pub-7243280049708086',
+  // Official Google AdMob Ad Unit IDs
   TEST_IDS: {
-    BANNER_ANDROID: 'ca-app-pub-3940256099942544/6300978111',
+    BANNER_ANDROID: 'ca-app-pub-7243280049708086/2987639846',
     INTERSTITIAL_ANDROID: 'ca-app-pub-3940256099942544/1033173712',
     REWARDED_ANDROID: 'ca-app-pub-3940256099942544/5224354917',
     NATIVE_ADVANCED_ANDROID: 'ca-app-pub-3940256099942544/2247696110',
   },
-  // Set to true in development, false when publishing to Google Play / App Store with live IDs
-  isTestMode: true,
+  isTestMode: false,
   // Frequency cap: Show interstitial at most once every 3 article views or 90 seconds
   INTERSTITIAL_FREQUENCY_PAGES: 3,
   INTERSTITIAL_COOLDOWN_MS: 60 * 1000,
