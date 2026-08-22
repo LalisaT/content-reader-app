@@ -24,9 +24,10 @@ import PolicyView from './views/PolicyView';
 import TermsView from './views/TermsView';
 import DisclaimerView from './views/DisclaimerView';
 
-import { Sparkles, X } from 'lucide-react';
+import { Sparkles, X, BookOpen, Loader2 } from 'lucide-react';
 
 export default function App() {
+  const [isAppLoading, setIsAppLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('feed');
   const [activeArticle, setActiveArticle] = useState(null);
   const [bookmarks, setBookmarks] = useState(storageService.getBookmarks());
@@ -61,6 +62,14 @@ export default function App() {
   }, [customArticles]);
 
   const isAdmin = currentUser && currentUser.role === 'admin';
+
+  // Initial Smooth Startup Loader
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Sync dark theme class on document element
   useEffect(() => {
@@ -231,6 +240,31 @@ export default function App() {
   };
 
   const fontClass = appConfig.fontFamily === 'serif' ? 'font-serif' : 'font-sans';
+
+  if (isAppLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 text-white select-none animate-in fade-in duration-200">
+        <div className="relative mb-6">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-600/40">
+            <BookOpen className="w-8 h-8 text-white" />
+          </div>
+          <div className="absolute -inset-2 rounded-3xl border-2 border-transparent border-t-indigo-400 border-r-violet-400 animate-spin" />
+        </div>
+
+        <h1 className="text-xl font-black tracking-tight text-white mb-1">
+          {appConfig?.appName || 'TipPulse'}
+        </h1>
+        <p className="text-xs text-slate-400 font-medium mb-6">
+          {appConfig?.appTagline || 'Daily Educational & Practical Tips'}
+        </p>
+
+        <div className="flex items-center space-x-2 text-indigo-400 text-xs font-semibold">
+          <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+          <span className="text-slate-400">Loading daily insights...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen ${
