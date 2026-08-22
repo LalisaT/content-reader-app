@@ -381,7 +381,7 @@ export default function SettingsView({
                 Admin Privileges Required
               </h4>
               <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-                Sign in with the Administrator credentials (`admin` / `admin123`) to post, edit, or customize branding.
+                Sign in with Administrator credentials to post, edit, or customize branding.
               </p>
               <button
                 onClick={() => onOpenAuth(true)}
@@ -393,71 +393,73 @@ export default function SettingsView({
           )}
         </div>
 
-        {/* Section 3: AdMob Compliance & SDK Status */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-xs">
-          <div className="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 font-bold text-xs uppercase tracking-wider mb-3">
-            <ShieldCheck className="w-4 h-4" />
-            <span>Google AdMob Integration Status</span>
-          </div>
-
-          <div className="p-3 bg-indigo-50/70 dark:bg-indigo-950/50 rounded-xl border border-indigo-200/60 dark:border-indigo-800/40 text-xs mb-3">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-800 dark:text-slate-200">AdMob SDK Mode</span>
-              <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-extrabold text-[10px] uppercase px-2 py-0.5 rounded-full border border-emerald-300/50">
-                Active (Test IDs)
-              </span>
+        {/* Section 3: AdMob Compliance & SDK Status (ADMIN ONLY) */}
+        {isAdmin && (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-xs">
+            <div className="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 font-bold text-xs uppercase tracking-wider mb-3">
+              <ShieldCheck className="w-4 h-4" />
+              <span>Google AdMob Integration Status</span>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-              Using official Google Test Ad Unit IDs. Safe from policy violations during testing.
-            </p>
-          </div>
 
-          {/* Ad Unit IDs List */}
-          <div className="space-y-2 text-xs">
-            <span className="font-bold text-[11px] text-slate-500 uppercase tracking-wide">
-              Configured Ad Units
-            </span>
-            {Object.entries(ADMOB_CONFIG.TEST_IDS).map(([name, id]) => (
-              <div
-                key={name}
-                onClick={() => handleCopyId(name, id)}
-                className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-750 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-indigo-300 transition-colors"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="font-semibold text-[11px] text-slate-700 dark:text-slate-300 truncate">
-                    {name.replace('_ANDROID', '')}
-                  </div>
-                  <div className="text-[10px] text-slate-400 font-mono truncate">{id}</div>
-                </div>
-                <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold ml-2 flex-shrink-0">
-                  {copiedId === name ? 'Copied!' : 'Copy'}
+            <div className="p-3 bg-indigo-50/70 dark:bg-indigo-950/50 rounded-xl border border-indigo-200/60 dark:border-indigo-800/40 text-xs mb-3">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-slate-800 dark:text-slate-200">AdMob SDK Mode</span>
+                <span className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-extrabold text-[10px] uppercase px-2 py-0.5 rounded-full border border-emerald-300/50">
+                  Active (Test IDs)
                 </span>
               </div>
-            ))}
-          </div>
-
-          {/* GDPR / Personalized Ads Consent Toggle */}
-          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
-            <div>
-              <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
-                Personalized Ads (GDPR / UMP)
-              </div>
-              <p className="text-[11px] text-slate-500">
-                {adConsent.personalized ? 'Serving tailored ads based on consent' : 'Serving non-personalized ads'}
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                Using official Google Test Ad Unit IDs. Safe from policy violations during testing.
               </p>
             </div>
-            <button
-              onClick={togglePersonalizedAds}
-              className="text-indigo-600 dark:text-indigo-400 p-1"
-            >
-              {adConsent.personalized ? (
-                <ToggleRight className="w-8 h-8 fill-indigo-600" />
-              ) : (
-                <ToggleLeft className="w-8 h-8 text-slate-400" />
-              )}
-            </button>
+
+            {/* Ad Unit IDs List */}
+            <div className="space-y-2 text-xs">
+              <span className="font-bold text-[11px] text-slate-500 uppercase tracking-wide">
+                Configured Ad Units
+              </span>
+              {Object.entries(ADMOB_CONFIG.TEST_IDS).map(([name, id]) => (
+                <div
+                  key={name}
+                  onClick={() => handleCopyId(name, id)}
+                  className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-750 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-indigo-300 transition-colors"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-[11px] text-slate-700 dark:text-slate-300 truncate">
+                      {name.replace('_ANDROID', '')}
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono truncate">{id}</div>
+                  </div>
+                  <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold ml-2 flex-shrink-0">
+                    {copiedId === name ? 'Copied!' : 'Copy'}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* GDPR / Personalized Ads Consent Toggle */}
+            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
+                  Personalized Ads (GDPR / UMP)
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  {adConsent.personalized ? 'Serving tailored ads based on consent' : 'Serving non-personalized ads'}
+                </p>
+              </div>
+              <button
+                onClick={togglePersonalizedAds}
+                className="text-indigo-600 dark:text-indigo-400 p-1"
+              >
+                {adConsent.personalized ? (
+                  <ToggleRight className="w-8 h-8 fill-indigo-600" />
+                ) : (
+                  <ToggleLeft className="w-8 h-8 text-slate-400" />
+                )}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Section 4: Reader Themes & Font Scale */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-xs">

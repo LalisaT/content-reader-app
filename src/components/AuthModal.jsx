@@ -4,10 +4,7 @@ import {
   Lock,
   User,
   ShieldCheck,
-  UserCheck,
   ArrowRight,
-  Sparkles,
-  KeyRound,
   AlertCircle
 } from 'lucide-react';
 import { authService } from '../services/authService';
@@ -34,7 +31,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
       const res = authService.login(username, password);
       if (res.success) {
         if (requiredAdmin && res.user.role !== 'admin') {
-          setError('This account does not have Administrator privileges. Please sign in with the Admin credentials.');
+          setError('This account does not have Administrator privileges.');
           return;
         }
         onAuthSuccess(res.user);
@@ -58,13 +55,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
     }
   };
 
-  const handleFillAdminDemo = () => {
-    setUsername('lalion');
-    setPassword('15739482');
-    setMode('login');
-    setError('');
-  };
-
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
       <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col">
@@ -76,10 +66,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
             </div>
             <div>
               <h3 className="font-bold text-base leading-tight">
-                {mode === 'login' ? 'Sign In to TipPulse' : 'Create Reader Account'}
+                {mode === 'login' ? 'Sign In' : 'Create Account'}
               </h3>
               <p className="text-[11px] text-slate-400">
-                {mode === 'login' ? 'Admin & User Authentication' : 'Sync reading history & bookmarks'}
+                {mode === 'login' ? 'Access your account & features' : 'Sync reading history & bookmarks'}
               </p>
             </div>
           </div>
@@ -146,7 +136,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Alex Morgan"
+                    placeholder="Enter your name"
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
                   />
                 </div>
@@ -164,7 +154,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder={mode === 'login' ? 'e.g. lalion' : 'Choose a unique username'}
+                  placeholder="Enter your username"
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
                 />
               </div>
@@ -191,27 +181,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
               type="submit"
               className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-xs py-3 px-4 rounded-xl shadow-md shadow-indigo-600/30 flex items-center justify-center space-x-1.5 transition-all"
             >
-              <span>{mode === 'login' ? 'Sign In Now' : 'Complete Registration'}</span>
+              <span>{mode === 'login' ? 'Sign In' : 'Complete Registration'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </form>
-
-          {/* Quick Admin Auto-fill Helper */}
-          {mode === 'login' && (
-            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
-              <p className="text-[10px] text-slate-400 mb-2">
-                Need Administrator access to publish articles?
-              </p>
-              <button
-                type="button"
-                onClick={handleFillAdminDemo}
-                className="w-full py-2 px-3 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 text-amber-900 dark:text-amber-300 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1.5 transition-colors"
-              >
-                <KeyRound className="w-3.5 h-3.5 text-amber-500" />
-                <span>Fill Admin Credentials (`lalion` / `15739482`)</span>
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>
