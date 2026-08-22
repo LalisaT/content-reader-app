@@ -62,7 +62,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center space-x-2.5">
             <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm">
-              <ShieldCheck className="w-5 h-5" />
+              <User className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
               <h3 className="font-bold text-base leading-tight">
