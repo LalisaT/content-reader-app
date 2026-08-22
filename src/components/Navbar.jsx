@@ -101,19 +101,17 @@ export default function Navbar({
             </button>
           )}
 
-          {/* Admin / Post Creation Button */}
-          <button
-            onClick={onOpenAdminPost}
-            title={isAdmin ? "Create New Article" : "Admin Login Required to Post"}
-            className={`flex items-center space-x-1 px-2.5 py-1.5 text-xs font-bold rounded-full shadow-sm transition-all hover:scale-102 ${
-              isAdmin
-                ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-amber-500/30'
-                : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
-            }`}
-          >
-            <PlusCircle className={`w-3.5 h-3.5 ${isAdmin ? 'text-slate-950' : 'text-slate-500'}`} />
-            <span className="hidden sm:inline">{isAdmin ? 'Post' : 'Write'}</span>
-          </button>
+          {/* Admin / Post Creation Button (Admin Only) */}
+          {isAdmin && (
+            <button
+              onClick={onOpenAdminPost}
+              title="Create New Article"
+              className="flex items-center space-x-1 px-2.5 py-1.5 text-xs font-bold rounded-full shadow-sm transition-all hover:scale-102 bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-amber-500/30"
+            >
+              <PlusCircle className="w-3.5 h-3.5 text-slate-950" />
+              <span className="hidden sm:inline">Write</span>
+            </button>
+          )}
 
           {/* Daily Quick Tip Sparkle */}
           <button
