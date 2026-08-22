@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.theme-sepia {
+  background-color: #fbf0d9 !important;
+  color: #433422 !important;
+}
+
+.theme-sepia .reader-card {
+  background-color: #f4e5c8 !important;
+  color: #433422 !important;
+  border-color: #e2cca8 !important;
+}
+
+.theme-sepia .reader-text {
+  color: #382c1d !important;
+}
+
+.theme-dark {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+.theme-dark .reader-card {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+.theme-dark .reader-text {
+  color: #cbd5e1 !important;
+}
+
+/* Custom smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

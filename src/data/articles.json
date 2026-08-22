@@ -1,0 +1,111 @@
+[
+  {
+    "id": "prod-1",
+    "title": "The 2-Minute Rule to Defeat Procrastination for Good",
+    "category": "Productivity",
+    "categoryIcon": "Zap",
+    "readTime": "3 min read",
+    "date": "Aug 21, 2026",
+    "author": "Marcus Vance",
+    "isPremium": false,
+    "image": "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=800&q=80",
+    "summary": "Discover David Allen's famous principle: if an action takes less than two minutes to accomplish, do it immediately instead of putting it off.",
+    "keyTakeaways": [
+      "Any micro-task taking under 120 seconds should be done right now.",
+      "Clear mental clutter by stopping open-loop task accumulation.",
+      "Use the 2-minute starter trick to overcome initial inertia for large projects."
+    ],
+    "content": "Procrastination is rarely about laziness; it is almost always about emotional resistance to the friction of starting.\n\n### Why the 2-Minute Rule Works\nCoined by David Allen in *Getting Things Done*, the rule states:\n> *'If an action takes less than two minutes, do it immediately when it shows up.'*\n\nReplying to a quick confirmation email, putting your gym shoes away, wiping the kitchen counter, or filing a single receipt all take under 120 seconds. Postponing them creates cognitive debt that drains mental energy.\n\n### Scaling Up to Big Goals\nJames Clear adapted this principle for habits: make your initial daily habit take under two minutes.\n- Instead of 'Read 30 pages', start with 'Read 1 page'.\n- Instead of 'Work out for an hour', start with 'Put on workout clothes and do 5 pushups'.\n\nOnce you cross the starting threshold, the momentum carries you forward effortlessly."
+  },
+  {
+    "id": "tech-1",
+    "title": "10 Prompt Engineering Techniques for Daily Problem Solving",
+    "category": "Tech & AI",
+    "categoryIcon": "Cpu",
+    "readTime": "5 min read",
+    "date": "Aug 20, 2026",
+    "author": "Elena Rostova",
+    "isPremium": false,
+    "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+    "summary": "Learn how role prompting, few-shot examples, and chain-of-thought instructions dramatically improve AI assistant outputs.",
+    "keyTakeaways": [
+      "Assigning an expert persona reduces generic responses by over 60%.",
+      "Chain-of-Thought prompting asks the model to 'think step-by-step'.",
+      "Always provide clear formatting constraints (tables, markdown, bullet points)."
+    ],
+    "content": "Modern AI models are only as good as the specificity of your queries. Mastering basic prompt engineering gives you an immediate competitive advantage.\n\n### 1. The Expert Persona Technique\nAlways open with a defined role:\n`You are a Senior Cloud Architect with 15 years of experience in distributed systems. Review this architecture.`\n\n### 2. Few-Shot Exemplars\nInstead of describing what you want in abstract terms, provide 1 or 2 examples of input and desired output.\n\n### 3. Step-by-Step Reasoning\nWhen dealing with logic, math, or complex analysis, append:\n`Think step-by-step and write out your reasoning before providing your final answer.`\n\nThis forces the model to allocate reasoning compute tokens to decompose the problem before outputting a conclusion."
+  },
+  {
+    "id": "health-1",
+    "title": "The Science of Non-Sleep Deep Rest (NSDR) for Instant Recovery",
+    "category": "Health",
+    "categoryIcon": "Heart",
+    "readTime": "4 min read",
+    "date": "Aug 19, 2026",
+    "author": "Dr. Aris Thorne",
+    "isPremium": false,
+    "image": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
+    "summary": "How 10-20 minutes of guided physiological decompression can restore dopamine levels and sharpen cognitive focus.",
+    "keyTakeaways": [
+      "NSDR down-regulates the sympathetic nervous system rapidly.",
+      "A 20-minute protocol restores cognitive stamina comparable to a 90-minute nap.",
+      "Best practiced in the mid-afternoon energy dip between 1:00 PM and 3:30 PM."
+    ],
+    "content": "Neurobiology research demonstrates that states of deliberate shallow relaxation allow the brain to reset neurochemical reserves.\n\n### What Happens During NSDR?\nDuring Non-Sleep Deep Rest (a modern scientific formulation of Yoga Nidra), brain waves shift from high-frequency beta waves down into alpha and theta rhythms.\n\nThis state accelerates neuroplasticity and allows the body to clear accumulated adenosine without entering groggy slow-wave sleep stages.\n\n### Simple 3-Step Protocol\n1. Lie comfortably on your back with eyes closed.\n2. Inhale deeply through the nose, then take a second sharp 'sip' of air, and exhale slowly through the mouth.\n3. Mentally scan through body regions from head to toe for 10-15 minutes."
+  },
+  {
+    "id": "fin-1",
+    "title": "The 50/30/20 Budgeting Rule: The Simplest Path to Wealth",
+    "category": "Finance",
+    "categoryIcon": "DollarSign",
+    "readTime": "4 min read",
+    "date": "Aug 18, 2026",
+    "author": "Sarah Lin, CFP",
+    "isPremium": false,
+    "image": "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&w=800&q=80",
+    "summary": "A clean, sustainable framework for dividing your after-tax income into Needs, Wants, and Automated Savings.",
+    "keyTakeaways": [
+      "50% for Needs: Rent, groceries, healthcare, minimum debt payments.",
+      "30% for Wants: Dining out, hobbies, travel, streaming subscriptions.",
+      "20% for Savings & Investments: High-yield savings, index funds, retirement."
+    ],
+    "content": "Most budgeting systems fail because they require tedious micro-tracking of every dollar spent. The 50/30/20 rule is an intuitive macro-budget that works on autopilot.\n\n### Automating the Split\nSet up automatic direct deposit allocations on payday:\n1. Pay essential bills first (50%)\n2. Transfer savings immediately into investment vehicles (20%)\n3. Keep remaining 30% in checking for guilt-free lifestyle spending.\n\nBy treating savings as a non-negotiable fixed cost first, you achieve financial peace of mind."
+  },
+  {
+    "id": "mind-1",
+    "title": "The Feynman Technique: How to Learn and Retain Anything",
+    "category": "Mindset",
+    "categoryIcon": "Brain",
+    "readTime": "4 min read",
+    "date": "Aug 17, 2026",
+    "author": "Julian Sterling",
+    "isPremium": false,
+    "image": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80",
+    "summary": "Nobel Prize physicist Richard Feynman's simple 4-step framework to test true understanding and eliminate false knowledge.",
+    "keyTakeaways": [
+      "Step 1: Choose a concept and write its name on top of a blank page.",
+      "Step 2: Explain it in plain language as if teaching a 10-year-old child.",
+      "Step 3: Identify knowledge gaps where you used jargon, and review source material.",
+      "Step 4: Simplify and use intuitive analogies."
+    ],
+    "content": "There is a vast difference between knowing the name of something and truly understanding it.\n\n### Why Jargon Hides Ignorance\nWhen we rely on buzzwords, we mask gaps in our conceptual comprehension. When forced to explain quantum superposition or compound interest using only basic vocabulary, our actual grasp is revealed.\n\n### The Feedback Loop\nWhenever you get stuck or find yourself reaching for a complex technical term, stop. Open your textbook, research the exact mechanism, and rewrite your explanation using an everyday analogy."
+  },
+  {
+    "id": "premium-1",
+    "title": "⚡ Masterclass: The 30-Day Blueprint for Deep Work & Peak Flow",
+    "category": "Productivity",
+    "categoryIcon": "Zap",
+    "readTime": "8 min read",
+    "date": "Aug 21, 2026",
+    "author": "Masterclass Insights",
+    "isPremium": true,
+    "image": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80",
+    "summary": "A comprehensive deep dive with daily actionable protocols, distraction elimination checklists, and cognitive environment design.",
+    "keyTakeaways": [
+      "Construct a dedicated 90-minute morning deep work block before opening inbox.",
+      "Implement the 'Bimodal Focus Strategy' to toggle between deep production and shallow collaboration.",
+      "Physical and digital environmental cues that trigger instantaneous flow states."
+    ],
+    "content": "Deep work is the ability to focus without distraction on a cognitively demanding task. It is a superpower in our increasingly fractured attention economy.\n\n### Week 1: Eliminating Attention Residue\nEvery time you switch between tasks (e.g. checking Slack during report drafting), your attention leaves a residue. Eliminate notifications during designated focus sprints.\n\n### Week 2: Structuring the 90-Minute Ultradian Rhythm\nHuman focus naturally cycles in 90-minute blocks. Work with maximum intensity for 75-90 minutes, followed by 15-20 minutes of complete cognitive disengagement.\n\n### Week 3: Environmental Triggers & Soundscapes\nUse binaural beats (40 Hz gamma or 10 Hz alpha) and consistent ambient lighting to condition your brain for rapid flow-state onset.\n\n### Week 4: The Shutdown Ritual\nNever leave work tasks ambiguously open at the end of the day. Complete a 10-minute shutdown routine to signal to your subconscious that work is done."
+  }
+]

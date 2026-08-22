@@ -1,0 +1,7 @@
+{
+  "name": "TipPulse",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom"
+}

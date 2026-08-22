@@ -1,0 +1,442 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import initialArticlesData from './data/articles.json';
+import { storageService } from './services/storageService';
+import { admobService } from './services/admobService';
+import { authService } from './services/authService';
+import { appConfigService, THEME_PALETTES } from './services/appConfigService';
+import { categoryService } from './services/categoryService';
+
+import Navbar from './components/Navbar';
+import BottomNav from './components/BottomNav';
+import BannerAd from './components/BannerAd';
+import InterstitialModal from './components/InterstitialModal';
+import RewardedModal from './components/RewardedModal';
+import AdminPostModal from './components/AdminPostModal';
+import AuthModal from './components/AuthModal';
+import AppCustomizerModal from './components/AppCustomizerModal';
+
+import HomeFeed from './views/HomeFeed';
+import ArticleDetail from './views/ArticleDetail';
+import ExploreView from './views/ExploreView';
+import BookmarksView from './views/BookmarksView';
+import SettingsView from './views/SettingsView';
+import PolicyView from './views/PolicyView';
+
+import { Sparkles, X } from 'lucide-react';
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('feed');
+  const [activeArticle, setActiveArticle] = useState(null);
+  const [bookmarks, setBookmarks] = useState(storageService.getBookmarks());
+  const [unlockedGuides, setUnlockedGuides] = useState(storageService.getUnlockedPremium());
+  const [readerTheme, setReaderTheme] = useState(storageService.getThemeMode());
+  const [fontSize, setFontSize] = useState(storageService.getFontSize());
+
+  // App Branding & Theme Customization
+  const [appConfig, setAppConfig] = useState(appConfigService.getConfig());
+  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+
+  // Dynamic Categories
+  const [categories, setCategories] = useState(categoryService.getCategories());
+
+  // User & Admin Authentication
+  const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
+  const [authModalState, setAuthModalState] = useState({ isOpen: false, requiredAdmin: false });
+
+  // Custom Admin Articles
+  const [customArticles, setCustomArticles] = useState(storageService.getCustomArticles());
+  const [editingArticle, setEditingArticle] = useState(null);
+
+  // Modals State
+  const [isAdminPostOpen, setIsAdminPostOpen] = useState(false);
+  const [isInterstitialOpen, setIsInterstitialOpen] = useState(false);
+  const [rewardedModalData, setRewardedModalData] = useState({ isOpen: false, article: null });
+  const [isDailyTipOpen, setIsDailyTipOpen] = useState(false);
+
+  // Combined articles (custom admin articles + preloaded curated articles)
+  const allArticles = useMemo(() => {
+    return [...customArticles, ...initialArticlesData];
+  }, [customArticles]);
+
+  const isAdmin = currentUser && currentUser.role === 'admin';
+
+  // Sync dark theme class on document element
+  useEffect(() => {
+    if (readerTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('theme-sepia');
+    } else if (readerTheme === 'sepia') {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('theme-sepia');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('theme-sepia');
+    }
+  }, [readerTheme]);
+
+  // Cycle Theme: Light -> Dark -> Sepia -> Light
+  const handleCycleTheme = () => {
+    const modes = ['light', 'dark', 'sepia'];
+    const nextIndex = (modes.indexOf(readerTheme) + 1) % modes.length;
+    const nextTheme = modes[nextIndex];
+    setReaderTheme(nextTheme);
+    storageService.setThemeMode(nextTheme);
+  };
+
+  // Handle Category Management
+  const handleAddCategory = (label, icon) => {
+    const updated = categoryService.addCategory(label, icon);
+    if (updated) setCategories(updated);
+  };
+
+  const handleDeleteCategory = (id) => {
+    if (window.confirm(`Delete the category "${id}"?`)) {
+      const updated = categoryService.deleteCategory(id);
+      setCategories(updated);
+    }
+  };
+
+  const handleResetCategories = () => {
+    const resetList = categoryService.resetCategories();
+    setCategories(resetList);
+  };
+
+  // Handle App Branding / Theme Save
+  const handleSaveAppConfig = (newConfig) => {
+    const updated = appConfigService.saveConfig(newConfig);
+    setAppConfig(updated);
+  };
+
+  const handleResetAppConfig = () => {
+    const defaultConf = appConfigService.resetConfig();
+    setAppConfig(defaultConf);
+  };
+
+  // Handle Admin Post action trigger (Strict Admin Check)
+  const handleTriggerAdminPost = () => {
+    if (isAdmin) {
+      setEditingArticle(null);
+      setIsAdminPostOpen(true);
+    } else {
+      setAuthModalState({ isOpen: true, requiredAdmin: true });
+    }
+  };
+
+  // Open Edit Modal for a specific article
+  const handleEditArticle = (article) => {
+    if (isAdmin) {
+      setEditingArticle(article);
+      setIsAdminPostOpen(true);
+    } else {
+      setAuthModalState({ isOpen: true, requiredAdmin: true });
+    }
+  };
+
+  // Auth Callbacks
+  const handleAuthSuccess = (user) => {
+    setCurrentUser(user);
+    if (authModalState.requiredAdmin && user.role === 'admin') {
+      setEditingArticle(null);
+      setIsAdminPostOpen(true);
+    }
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    setCurrentUser(null);
+    setIsAdminPostOpen(false);
+  };
+
+  // Save/Update article from Admin Studio
+  const handleSaveCustomArticle = (articleData) => {
+    if (!isAdmin) {
+      alert('Unauthorized: Only Administrators can save articles.');
+      return;
+    }
+    const updated = storageService.saveCustomArticle(articleData);
+    setCustomArticles(updated);
+    
+    // If currently viewing this article, update it live in the reader
+    if (activeArticle && activeArticle.id === articleData.id) {
+      setActiveArticle(articleData);
+    }
+  };
+
+  // Delete custom article
+  const handleDeleteCustomArticle = (id) => {
+    if (!isAdmin) {
+      alert('Unauthorized: Only Administrators can delete articles.');
+      return;
+    }
+    if (window.confirm('Are you sure you want to delete this article?')) {
+      const updated = storageService.deleteCustomArticle(id);
+      setCustomArticles(updated);
+      if (activeArticle && activeArticle.id === id) {
+        setActiveArticle(null);
+      }
+    }
+  };
+
+  // Handle Bookmarking
+  const handleToggleBookmark = (id) => {
+    const updated = storageService.toggleBookmark(id);
+    setBookmarks(updated);
+  };
+
+  // Open Article Detail View
+  const handleOpenArticle = (article) => {
+    storageService.addToHistory(article.id);
+    setActiveArticle(article);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Exit Article Detail View & Check for Natural Break Interstitial Ad
+  const handleBackFromArticle = () => {
+    setActiveArticle(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Check frequency cap for Interstitial
+    if (admobService.recordArticleView()) {
+      admobService.markInterstitialShown();
+      setIsInterstitialOpen(true);
+    }
+  };
+
+  // Trigger Rewarded Ad for locked premium articles
+  const handleUnlockPremium = (article) => {
+    setRewardedModalData({ isOpen: true, article });
+  };
+
+  const handleRewardEarned = () => {
+    if (rewardedModalData.article) {
+      const updated = storageService.unlockPremiumArticle(rewardedModalData.article.id);
+      setUnlockedGuides(updated);
+    }
+  };
+
+  const handleChangeTheme = (theme) => {
+    setReaderTheme(theme);
+    storageService.setThemeMode(theme);
+  };
+
+  const handleChangeFontSize = (size) => {
+    setFontSize(size);
+    storageService.setFontSize(size);
+  };
+
+  const handleSelectCategoryFromExplore = () => {
+    setActiveTab('feed');
+  };
+
+  const fontClass = appConfig.fontFamily === 'serif' ? 'font-serif' : 'font-sans';
+
+  return (
+    <div className={`min-h-screen ${
+      readerTheme === 'dark'
+        ? 'dark bg-slate-900 text-slate-100'
+        : readerTheme === 'sepia'
+          ? 'theme-sepia bg-[#fbf0d9] text-[#433422]'
+          : 'bg-slate-50 text-slate-900'
+    } transition-colors ${fontClass}`}>
+      {/* If reading an article, display reader view */}
+      {activeArticle ? (
+        <ArticleDetail
+          article={activeArticle}
+          isBookmarked={bookmarks.includes(activeArticle.id)}
+          onToggleBookmark={handleToggleBookmark}
+          onBack={handleBackFromArticle}
+          onUnlockPremium={handleUnlockPremium}
+          isUnlocked={unlockedGuides.includes(activeArticle.id)}
+          readerTheme={readerTheme}
+          onChangeReaderTheme={handleChangeTheme}
+          fontSize={fontSize}
+          onChangeFontSize={handleChangeFontSize}
+          isAdmin={isAdmin}
+          onEditCurrentArticle={handleEditArticle}
+          onDeleteCurrentArticle={handleDeleteCustomArticle}
+        />
+      ) : (
+        /* Otherwise display Main App Navigation & Views */
+        <div className="flex flex-col min-h-screen">
+          {/* Top Navbar with 1-click Night Mode toggle */}
+          <Navbar
+            activeTab={activeTab}
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            bookmarkCount={bookmarks.length}
+            onOpenDailyTip={() => setIsDailyTipOpen(true)}
+            onOpenAdminPost={handleTriggerAdminPost}
+            onOpenCustomizer={() => setIsCustomizerOpen(true)}
+            currentUser={currentUser}
+            onOpenAuth={(requiredAdmin) => setAuthModalState({ isOpen: true, requiredAdmin })}
+            onLogout={handleLogout}
+            appConfig={appConfig}
+            currentTheme={readerTheme}
+            onToggleTheme={handleCycleTheme}
+          />
+
+          {/* View Container */}
+          <main className="flex-1">
+            {activeTab === 'feed' && (
+              <HomeFeed
+                articles={allArticles}
+                bookmarks={bookmarks}
+                categories={categories}
+                onToggleBookmark={handleToggleBookmark}
+                onOpenArticle={handleOpenArticle}
+                onExploreCategory={handleSelectCategoryFromExplore}
+              />
+            )}
+
+            {activeTab === 'explore' && (
+              <ExploreView
+                articles={allArticles}
+                bookmarks={bookmarks}
+                categories={categories}
+                onToggleBookmark={handleToggleBookmark}
+                onOpenArticle={handleOpenArticle}
+                onSelectCategory={handleSelectCategoryFromExplore}
+              />
+            )}
+
+            {activeTab === 'bookmarks' && (
+              <BookmarksView
+                articles={allArticles}
+                bookmarks={bookmarks}
+                onToggleBookmark={handleToggleBookmark}
+                onOpenArticle={handleOpenArticle}
+                onExploreClick={() => setActiveTab('feed')}
+              />
+            )}
+
+            {activeTab === 'settings' && (
+              <SettingsView
+                readerTheme={readerTheme}
+                onChangeReaderTheme={handleChangeTheme}
+                fontSize={fontSize}
+                onChangeFontSize={handleChangeFontSize}
+                onOpenPolicy={() => setActiveTab('policy')}
+                onOpenAdminPost={handleTriggerAdminPost}
+                onOpenCustomizer={() => setIsCustomizerOpen(true)}
+                onEditArticle={handleEditArticle}
+                customArticles={customArticles}
+                onDeleteCustomArticle={handleDeleteCustomArticle}
+                currentUser={currentUser}
+                onOpenAuth={(requiredAdmin) => setAuthModalState({ isOpen: true, requiredAdmin })}
+                onLogout={handleLogout}
+                appConfig={appConfig}
+              />
+            )}
+
+            {activeTab === 'policy' && (
+              <PolicyView onBack={() => setActiveTab('settings')} />
+            )}
+          </main>
+
+          {/* Anchored Bottom AdMob Banner */}
+          <BannerAd position="bottom" />
+
+          {/* Bottom Navigation */}
+          <BottomNav
+            activeTab={activeTab}
+            onTabChange={(tab) => {
+              setActiveTab(tab);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            bookmarkCount={bookmarks.length}
+          />
+        </div>
+      )}
+
+      {/* App Logo, Category & Theme Customizer Modal */}
+      {isAdmin && (
+        <AppCustomizerModal
+          isOpen={isCustomizerOpen}
+          onClose={() => setIsCustomizerOpen(false)}
+          config={appConfig}
+          onSaveConfig={handleSaveAppConfig}
+          onResetConfig={handleResetAppConfig}
+          categories={categories}
+          onAddCategory={handleAddCategory}
+          onDeleteCategory={handleDeleteCategory}
+          onResetCategories={handleResetCategories}
+        />
+      )}
+
+      {/* User & Admin Auth Modal */}
+      <AuthModal
+        isOpen={authModalState.isOpen}
+        requiredAdmin={authModalState.requiredAdmin}
+        onClose={() => setAuthModalState({ isOpen: false, requiredAdmin: false })}
+        onAuthSuccess={handleAuthSuccess}
+      />
+
+      {/* Admin / Creator Post Modal */}
+      {isAdmin && (
+        <AdminPostModal
+          isOpen={isAdminPostOpen}
+          editingArticle={editingArticle}
+          categories={categories}
+          onClose={() => {
+            setIsAdminPostOpen(false);
+            setEditingArticle(null);
+          }}
+          onSaveArticle={handleSaveCustomArticle}
+        />
+      )}
+
+      {/* AdMob Interstitial Ad Modal */}
+      <InterstitialModal
+        isOpen={isInterstitialOpen}
+        onClose={() => setIsInterstitialOpen(false)}
+      />
+
+      {/* AdMob Rewarded Video Ad Modal */}
+      <RewardedModal
+        isOpen={rewardedModalData.isOpen}
+        articleTitle={rewardedModalData.article?.title || ''}
+        onClose={() => setRewardedModalData({ isOpen: false, article: null })}
+        onRewardEarned={handleRewardEarned}
+      />
+
+      {/* Daily Quick Tip Popup Dialog */}
+      {isDailyTipOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center relative">
+            <button
+              onClick={() => setIsDailyTipOpen(false)}
+              className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center mx-auto mb-3 text-amber-500">
+              <Sparkles className="w-7 h-7" />
+            </div>
+
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded-full border border-amber-200/50">
+              Daily Pulse Nugget
+            </span>
+
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-2">
+              {appConfig.dailyTipTitle || 'Daily Insight'}
+            </h3>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+              {appConfig.dailyTipContent || 'Start small and build momentum one step at a time.'}
+            </p>
+
+            <button
+              onClick={() => setIsDailyTipOpen(false)}
+              className="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs py-2.5 rounded-xl shadow-md shadow-indigo-600/20 transition-all"
+            >
+              Got It
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
