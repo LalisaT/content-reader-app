@@ -21,7 +21,10 @@ import {
   Edit3,
   Palette,
   Upload,
-  Camera
+  Camera,
+  Mail,
+  Info,
+  BookOpen
 } from 'lucide-react';
 import { ADMOB_CONFIG } from '../services/admobService';
 import { storageService } from '../services/storageService';
@@ -547,7 +550,52 @@ export default function SettingsView({
           </div>
         </div>
 
-        {/* Section 6: Diagnostics */}
+        {/* Section 6: About & Contact Support */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-slate-200 dark:border-slate-700 shadow-xs space-y-3">
+          <div className="flex items-center space-x-2 text-indigo-600 dark:text-indigo-400 font-bold text-xs uppercase tracking-wider">
+            <Info className="w-4 h-4" />
+            <span>About & Developer Contact</span>
+          </div>
+
+          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+            <div className="flex items-center space-x-2 mb-1.5">
+              <div className="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold">
+                <BookOpen className="w-3.5 h-3.5" />
+              </div>
+              <h4 className="font-bold text-slate-900 dark:text-white text-sm">
+                {appConfig?.appName || 'TipPulse'}
+              </h4>
+            </div>
+            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+              A curated reader application providing daily educational insights, productivity protocols, health habits, financial literacy, and mindset frameworks for lifelong learners.
+            </p>
+          </div>
+
+          {/* Contact Email Box */}
+          <a
+            href="mailto:contact@tippulse.app"
+            className="flex items-center justify-between p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/50 border border-indigo-200/70 dark:border-indigo-800/60 hover:bg-indigo-100 transition-colors group"
+          >
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+                <Mail className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="font-bold text-xs text-slate-900 dark:text-white">
+                  Contact & Reader Support
+                </div>
+                <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+                  contact@tippulse.app
+                </div>
+              </div>
+            </div>
+            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 group-hover:translate-x-0.5 transition-transform">
+              Send Email &rarr;
+            </span>
+          </a>
+        </div>
+
+        {/* Section 7: Diagnostics & Footer */}
         <div className="text-center pt-2">
           <button
             onClick={handleClearCache}
@@ -557,7 +605,7 @@ export default function SettingsView({
             <span>Reset App Storage & Cache</span>
           </button>
           <p className="text-[11px] text-slate-400 mt-2">
-            {appConfig?.appName || 'TipPulse'} v1.0.0 • Built for Google AdMob & Play Store Policy Compliance
+            {appConfig?.appName || 'TipPulse'} v1.0.0 • Built for Daily Educational & Practical Tips
           </p>
         </div>
       </div>
