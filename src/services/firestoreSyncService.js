@@ -1,0 +1,159 @@
+import {
+  collection,
+  doc,
+  setDoc,
+  deleteDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  getDocs,
+  writeBatch
+} from 'firebase/firestore';
+import { db } from './firebase';
+import initialArticlesData from '../data/articles.json';
+
+const ARTICLES_COLLECTION = 'articles';
+const CONFIG_DOC = 'app_config';
+const CATEGORIES_DOC = 'app_categories';
+
+export const firestoreSyncService = {
+  // Subscribe to real-time articles sync across all devices
+  subscribeArticles: (onArticlesUpdate, onError) => {
+    try {
+      const articlesRef = collection(db, ARTICLES_COLLECTION);
+      
+      const unsubscribe = onSnapshot(
+        articlesRef,
+        async (snapshot) => {
+          if (snapshot.empty) {
+            // First run: Seed initial curated articles into Firestore
+            console.log('Firestore articles collection is empty. Seeding initial curated articles...');
+            try {
+              const batch = writeBatch(db);
+              initialArticlesData.forEach((art) => {
+                const docRef = doc(db, ARTICLES_COLLECTION, String(art.id));
+                batch.set(docRef, {
+                  ...art,
+                  createdAt: Date.now()
+                });
+              });
+              await batch.commit();
+              onArticlesUpdate(initialArticlesData);
+            } catch (seedErr) {
+              console.warn('Could not auto-seed Firestore (check security rules):', seedErr);
+              onArticlesUpdate(initialArticlesData);
+            }
+          } else {
+            const articles = snapshot.docs.map((docSnap) => {
+              const data = docSnap.data();
+              return {
+                id: docSnap.id,
+                ...data,
+              };
+            });
+            // Sort by custom order or newest first
+            articles.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            onArticlesUpdate(articles);
+          }
+        },
+        (err) => {
+          console.warn('Firestore subscription error (using local offline cache):', err);
+          if (onError) onError(err);
+        }
+      );
+
+      return unsubscribe;
+    } catch (err) {
+      console.warn('Failed to initialize Firestore listener:', err);
+      return () => {};
+    }
+  },
+
+  // Save or update an article in Firestore
+  saveArticle: async (article) => {
+    try {
+      const articleId = String(article.id || `custom-${Date.now()}`);
+      const articleToSave = {
+        ...article,
+        id: articleId,
+        updatedAt: Date.now(),
+        createdAt: article.createdAt || Date.now()
+      };
+      
+      const docRef = doc(db, ARTICLES_COLLECTION, articleId);
+      await setDoc(docRef, articleToSave, { merge: true });
+      return articleToSave;
+    } catch (err) {
+      console.error('Error saving article to Firestore:', err);
+      throw err;
+    }
+  },
+
+  // Delete an article from Firestore
+  deleteArticle: async (articleId) => {
+    try {
+      const docRef = doc(db, ARTICLES_COLLECTION, String(articleId));
+      await deleteDoc(docRef);
+      return true;
+    } catch (err) {
+      console.error('Error deleting article from Firestore:', err);
+      throw err;
+    }
+  },
+
+  // Subscribe to real-time App Branding & Theme configuration
+  subscribeAppConfig: (onConfigUpdate) => {
+    try {
+      const configRef = doc(db, 'settings', CONFIG_DOC);
+      const unsubscribe = onSnapshot(configRef, (docSnap) => {
+        if (docSnap.exists()) {
+          onConfigUpdate(docSnap.data());
+        }
+      }, (err) => {
+        console.warn('Firestore config listener warning:', err);
+      });
+      return unsubscribe;
+    } catch (err) {
+      console.warn('Failed to listen to cloud config:', err);
+      return () => {};
+    }
+  },
+
+  // Save App Branding configuration to Firestore
+  saveAppConfig: async (config) => {
+    try {
+      const configRef = doc(db, 'settings', CONFIG_DOC);
+      await setDoc(configRef, config, { merge: true });
+    } catch (err) {
+      console.warn('Failed to save cloud config:', err);
+    }
+  },
+
+  // Subscribe to real-time custom Categories
+  subscribeCategories: (onCategoriesUpdate) => {
+    try {
+      const catRef = doc(db, 'settings', CATEGORIES_DOC);
+      const unsubscribe = onSnapshot(catRef, (docSnap) => {
+        if (docSnap.exists() && docSnap.data().list) {
+          onCategoriesUpdate(docSnap.data().list);
+        }
+      }, (err) => {
+        console.warn('Firestore categories listener warning:', err);
+      });
+      return unsubscribe;
+    } catch (err) {
+      console.warn('Failed to listen to cloud categories:', err);
+      return () => {};
+    }
+  },
+
+  // Save Categories list to Firestore
+  saveCategories: async (categoriesList) => {
+    try {
+      const catRef = doc(db, 'settings', CATEGORIES_DOC);
+      await setDoc(catRef, { list: categoriesList, updatedAt: Date.now() }, { merge: true });
+    } catch (err) {
+      console.warn('Failed to save cloud categories:', err);
+    }
+  }
+};

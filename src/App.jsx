@@ -5,6 +5,7 @@ import { admobService } from './services/admobService';
 import { authService } from './services/authService';
 import { appConfigService, THEME_PALETTES } from './services/appConfigService';
 import { categoryService } from './services/categoryService';
+import { firestoreSyncService } from './services/firestoreSyncService';
 
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
@@ -46,8 +47,9 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
   const [authModalState, setAuthModalState] = useState({ isOpen: false, requiredAdmin: false });
 
-  // Custom Admin Articles
+  // Custom Admin Articles & Cloud Real-Time Articles
   const [customArticles, setCustomArticles] = useState(storageService.getCustomArticles());
+  const [cloudArticles, setCloudArticles] = useState([]);
   const [editingArticle, setEditingArticle] = useState(null);
 
   // Modals State
@@ -56,10 +58,43 @@ export default function App() {
   const [rewardedModalData, setRewardedModalData] = useState({ isOpen: false, article: null });
   const [isDailyTipOpen, setIsDailyTipOpen] = useState(false);
 
-  // Combined articles (custom admin articles + preloaded curated articles)
+  // Real-time Cloud Synchronization (All users receive updates instantly)
+  useEffect(() => {
+    // 1. Listen for real-time articles
+    const unsubArticles = firestoreSyncService.subscribeArticles((articles) => {
+      if (articles && articles.length > 0) {
+        setCloudArticles(articles);
+      }
+    });
+
+    // 2. Listen for real-time branding changes
+    const unsubConfig = firestoreSyncService.subscribeAppConfig((config) => {
+      if (config && config.appName) {
+        setAppConfig((prev) => ({ ...prev, ...config }));
+      }
+    });
+
+    // 3. Listen for real-time categories
+    const unsubCategories = firestoreSyncService.subscribeCategories((cats) => {
+      if (cats && cats.length > 0) {
+        setCategories(cats);
+      }
+    });
+
+    return () => {
+      unsubArticles();
+      unsubConfig();
+      unsubCategories();
+    };
+  }, []);
+
+  // Combined articles (Real-time Cloud Articles + Local Fallback)
   const allArticles = useMemo(() => {
+    if (cloudArticles && cloudArticles.length > 0) {
+      return cloudArticles;
+    }
     return [...customArticles, ...initialArticlesData];
-  }, [customArticles]);
+  }, [cloudArticles, customArticles]);
 
   const isAdmin = currentUser && currentUser.role === 'admin';
 
@@ -95,32 +130,39 @@ export default function App() {
   };
 
   // Handle Category Management
-  const handleAddCategory = (label, icon) => {
+  const handleAddCategory = async (label, icon) => {
     const updated = categoryService.addCategory(label, icon);
-    if (updated) setCategories(updated);
-  };
-
-  const handleDeleteCategory = (id) => {
-    if (window.confirm(`Delete the category "${id}"?`)) {
-      const updated = categoryService.deleteCategory(id);
+    if (updated) {
       setCategories(updated);
+      await firestoreSyncService.saveCategories(updated);
     }
   };
 
-  const handleResetCategories = () => {
+  const handleDeleteCategory = async (id) => {
+    if (window.confirm(`Delete the category "${id}"?`)) {
+      const updated = categoryService.deleteCategory(id);
+      setCategories(updated);
+      await firestoreSyncService.saveCategories(updated);
+    }
+  };
+
+  const handleResetCategories = async () => {
     const resetList = categoryService.resetCategories();
     setCategories(resetList);
+    await firestoreSyncService.saveCategories(resetList);
   };
 
   // Handle App Branding / Theme Save
-  const handleSaveAppConfig = (newConfig) => {
+  const handleSaveAppConfig = async (newConfig) => {
     const updated = appConfigService.saveConfig(newConfig);
     setAppConfig(updated);
+    await firestoreSyncService.saveAppConfig(newConfig);
   };
 
-  const handleResetAppConfig = () => {
+  const handleResetAppConfig = async () => {
     const defaultConf = appConfigService.resetConfig();
     setAppConfig(defaultConf);
+    await firestoreSyncService.saveAppConfig(defaultConf);
   };
 
   // Handle Admin Post action trigger (Strict Admin Check)
@@ -158,23 +200,31 @@ export default function App() {
     setIsAdminPostOpen(false);
   };
 
-  // Save/Update article from Admin Studio
-  const handleSaveCustomArticle = (articleData) => {
+  // Save/Update article from Admin Studio (Instant Local + Cloud Firestore Sync)
+  const handleSaveCustomArticle = async (articleData) => {
     if (!isAdmin) {
       alert('Unauthorized: Only Administrators can save articles.');
       return;
     }
+    // Optimistic local update
     const updated = storageService.saveCustomArticle(articleData);
     setCustomArticles(updated);
     
+    // Cloud Firestore save for all users
+    try {
+      await firestoreSyncService.saveArticle(articleData);
+    } catch (err) {
+      console.warn('Article saved locally, cloud sync pending:', err);
+    }
+
     // If currently viewing this article, update it live in the reader
     if (activeArticle && activeArticle.id === articleData.id) {
       setActiveArticle(articleData);
     }
   };
 
-  // Delete custom article
-  const handleDeleteCustomArticle = (id) => {
+  // Delete custom article (Instant Local + Cloud Firestore Sync)
+  const handleDeleteCustomArticle = async (id) => {
     if (!isAdmin) {
       alert('Unauthorized: Only Administrators can delete articles.');
       return;
@@ -182,6 +232,11 @@ export default function App() {
     if (window.confirm('Are you sure you want to delete this article?')) {
       const updated = storageService.deleteCustomArticle(id);
       setCustomArticles(updated);
+      try {
+        await firestoreSyncService.deleteArticle(id);
+      } catch (err) {
+        console.warn('Article deleted locally, cloud sync pending:', err);
+      }
       if (activeArticle && activeArticle.id === id) {
         setActiveArticle(null);
       }
