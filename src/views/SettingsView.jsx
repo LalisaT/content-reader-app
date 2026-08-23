@@ -535,18 +535,6 @@ export default function SettingsView({
               </span>
               <ExternalLink className="w-4 h-4 text-slate-400" />
             </button>
-
-            <a
-              href="/app-ads.txt"
-              target="_blank"
-              rel="noreferrer"
-              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-left"
-            >
-              <span className="font-semibold text-slate-700 dark:text-slate-200">
-                Authorized Digital Sellers (app-ads.txt)
-              </span>
-              <ExternalLink className="w-4 h-4 text-slate-400" />
-            </a>
           </div>
         </div>
 
