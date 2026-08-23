@@ -35,6 +35,7 @@ export default function App() {
   const [unlockedGuides, setUnlockedGuides] = useState(storageService.getUnlockedPremium());
   const [readerTheme, setReaderTheme] = useState(storageService.getThemeMode());
   const [fontSize, setFontSize] = useState(storageService.getFontSize());
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
   // App Branding & Theme Customization
   const [appConfig, setAppConfig] = useState(appConfigService.getConfig());
@@ -290,8 +291,10 @@ export default function App() {
     storageService.setFontSize(size);
   };
 
-  const handleSelectCategoryFromExplore = () => {
+  const handleSelectCategoryFromExplore = (categoryLabel) => {
+    setSelectedCategory(categoryLabel || 'All');
     setActiveTab('feed');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const fontClass = appConfig.fontFamily === 'serif' ? 'font-serif' : 'font-sans';
@@ -375,6 +378,8 @@ export default function App() {
                 articles={allArticles}
                 bookmarks={bookmarks}
                 categories={categories}
+                selectedCategory={selectedCategory}
+                onSelectCategory={setSelectedCategory}
                 onToggleBookmark={handleToggleBookmark}
                 onOpenArticle={handleOpenArticle}
                 onExploreCategory={handleSelectCategoryFromExplore}

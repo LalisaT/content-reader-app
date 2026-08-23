@@ -7,16 +7,23 @@ export default function HomeFeed({
   articles,
   bookmarks,
   categories = [],
+  selectedCategory = 'All',
+  onSelectCategory,
   onToggleBookmark,
   onOpenArticle,
   onExploreCategory,
 }) {
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [localCategory, setLocalCategory] = useState('All');
+  const currentCategory = onSelectCategory ? selectedCategory : localCategory;
+  const handleCategoryChange = onSelectCategory || setLocalCategory;
 
   // Filter articles based on active category
-  const filteredArticles = selectedCategory === 'All'
+  const filteredArticles = currentCategory === 'All'
     ? articles
-    : articles.filter((a) => a.category === selectedCategory);
+    : articles.filter((a) => {
+        if (!a.category) return false;
+        return a.category.toLowerCase().trim() === currentCategory.toLowerCase().trim();
+      });
 
   const featuredArticle = articles[0];
 
@@ -25,8 +32,8 @@ export default function HomeFeed({
       {/* Category Chips Bar with dynamic categories */}
       <CategoryChips
         categories={categories}
-        activeCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
+        activeCategory={currentCategory}
+        onSelectCategory={handleCategoryChange}
       />
 
       {/* Featured Hero Story (shown on 'All' tab) */}
