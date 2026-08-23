@@ -68,7 +68,7 @@ export default function DisclaimerView({ onBack }) {
 
         {/* Contact */}
         <div className="pt-3 border-t border-slate-100 dark:border-slate-700 text-xs text-slate-500">
-          For any questions regarding this disclaimer, please contact: <strong>legal@tippulse.app</strong> or <strong>contact@tippulse.app</strong>.
+          For any questions regarding this disclaimer, please contact: <strong>qaroo24@gmail.com</strong>.
         </div>
       </div>
     </div>

@@ -67,7 +67,7 @@ export default function TermsView({ onBack }) {
             5. Contact Information
           </h2>
           <p>
-            If you have questions about these Terms, please contact us at: <strong>terms@tippulse.app</strong> or <strong>contact@tippulse.app</strong>.
+            If you have questions about these Terms, please contact us at: <strong>qaroo24@gmail.com</strong>.
           </p>
         </section>
       </div>

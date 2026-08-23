@@ -561,7 +561,7 @@ export default function SettingsView({
 
           {/* Contact Email Box */}
           <a
-            href="mailto:contact@tippulse.app"
+            href="mailto:qaroo24@gmail.com"
             className="flex items-center justify-between p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/50 border border-indigo-200/70 dark:border-indigo-800/60 hover:bg-indigo-100 transition-colors group"
           >
             <div className="flex items-center space-x-2.5">
@@ -573,7 +573,7 @@ export default function SettingsView({
                   Contact & Reader Support
                 </div>
                 <div className="text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
-                  contact@tippulse.app
+                  qaroo24@gmail.com
                 </div>
               </div>
             </div>
