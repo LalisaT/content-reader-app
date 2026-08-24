@@ -25,7 +25,7 @@ import PolicyView from './views/PolicyView';
 import TermsView from './views/TermsView';
 import DisclaimerView from './views/DisclaimerView';
 
-import { Sparkles, X, BookOpen, Loader2 } from 'lucide-react';
+import { Sparkles, X, BookOpen, Loader2, WifiOff } from 'lucide-react';
 
 export default function App() {
   const [isAppLoading, setIsAppLoading] = useState(true);
@@ -48,9 +48,10 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
   const [authModalState, setAuthModalState] = useState({ isOpen: false, requiredAdmin: false });
 
-  // Custom Admin Articles & Cloud Real-Time Articles
+  // Custom Admin Articles & Cloud Real-Time Articles (Offline-First Persistent)
   const [customArticles, setCustomArticles] = useState(storageService.getCustomArticles());
-  const [cloudArticles, setCloudArticles] = useState([]);
+  const [cloudArticles, setCloudArticles] = useState(() => storageService.getCachedArticles());
+  const [isOnline, setIsOnline] = useState(navigator.onLine ?? true);
   const [editingArticle, setEditingArticle] = useState(null);
 
   // Modals State
@@ -59,12 +60,19 @@ export default function App() {
   const [rewardedModalData, setRewardedModalData] = useState({ isOpen: false, article: null });
   const [isDailyTipOpen, setIsDailyTipOpen] = useState(false);
 
-  // Real-time Cloud Synchronization (All users receive updates instantly)
+  // Real-time Cloud Synchronization & Network Connectivity Listeners
   useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
     // 1. Listen for real-time articles
     const unsubArticles = firestoreSyncService.subscribeArticles((articles) => {
       if (articles && articles.length > 0) {
         setCloudArticles(articles);
+        storageService.setCachedArticles(articles);
       }
     });
 
@@ -83,18 +91,27 @@ export default function App() {
     });
 
     return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
       unsubArticles();
       unsubConfig();
       unsubCategories();
     };
   }, []);
 
-  // Combined articles (Real-time Cloud Articles + Local Fallback)
+  // Combined articles (Real-time Cloud Articles + Offline Local Cache + Curated Fallback)
   const allArticles = useMemo(() => {
     if (cloudArticles && cloudArticles.length > 0) {
       return cloudArticles;
     }
-    return [...customArticles, ...initialArticlesData];
+    const cached = storageService.getCachedArticles();
+    if (cached && cached.length > 0) {
+      return cached;
+    }
+    if (customArticles && customArticles.length > 0) {
+      return [...customArticles, ...initialArticlesData];
+    }
+    return initialArticlesData;
   }, [cloudArticles, customArticles]);
 
   const isAdmin = currentUser && currentUser.role === 'admin';
@@ -370,6 +387,14 @@ export default function App() {
             currentTheme={readerTheme}
             onToggleTheme={handleCycleTheme}
           />
+
+          {/* Offline Mode Banner (Shows when mobile data / wifi is off) */}
+          {!isOnline && (
+            <div className="bg-amber-500/15 dark:bg-amber-950/40 border-b border-amber-300/40 dark:border-amber-800/40 px-4 py-2 text-center text-xs font-semibold text-amber-800 dark:text-amber-300 flex items-center justify-center space-x-1.5 animate-in fade-in">
+              <WifiOff className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <span>Offline Reading Mode: All your written & saved articles are ready offline.</span>
+            </div>
+          )}
 
           {/* View Container */}
           <main className="flex-1">

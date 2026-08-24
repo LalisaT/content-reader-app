@@ -9,9 +9,30 @@ const STORAGE_KEYS = {
   UNLOCKED_PREMIUM: 'tippulse_unlocked_premium',
   AD_CONSENT: 'tippulse_ad_consent',
   CUSTOM_ARTICLES: 'tippulse_custom_articles',
+  CACHED_ARTICLES: 'tippulse_cached_all_articles',
 };
 
 export const storageService = {
+  // Offline Full Articles Cache (Never lost when internet data is off)
+  getCachedArticles: () => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.CACHED_ARTICLES);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  setCachedArticles: (articles) => {
+    try {
+      if (articles && articles.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.CACHED_ARTICLES, JSON.stringify(articles));
+      }
+    } catch (e) {
+      console.warn('Could not update offline articles cache:', e);
+    }
+  },
+
   // Custom User/Admin Articles
   getCustomArticles: () => {
     try {
@@ -33,6 +54,19 @@ export const storageService = {
       updated = [article, ...list];
     }
     localStorage.setItem(STORAGE_KEYS.CUSTOM_ARTICLES, JSON.stringify(updated));
+
+    // Also update full offline cached articles
+    const cached = storageService.getCachedArticles();
+    const cIndex = cached.findIndex((a) => a.id === article.id);
+    let updatedCached;
+    if (cIndex >= 0) {
+      updatedCached = [...cached];
+      updatedCached[cIndex] = article;
+    } else {
+      updatedCached = [article, ...cached];
+    }
+    storageService.setCachedArticles(updatedCached);
+
     return updated;
   },
 
@@ -40,6 +74,12 @@ export const storageService = {
     const list = storageService.getCustomArticles();
     const updated = list.filter((a) => a.id !== id);
     localStorage.setItem(STORAGE_KEYS.CUSTOM_ARTICLES, JSON.stringify(updated));
+
+    // Also remove from full offline cache
+    const cached = storageService.getCachedArticles();
+    const updatedCached = cached.filter((a) => a.id !== id);
+    storageService.setCachedArticles(updatedCached);
+
     return updated;
   },
 

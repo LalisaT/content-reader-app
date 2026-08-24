@@ -10,6 +10,7 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { storageService } from './storageService';
 import initialArticlesData from '../data/articles.json';
 
 const ARTICLES_COLLECTION = 'articles';
@@ -38,10 +39,14 @@ export const firestoreSyncService = {
                 });
               });
               await batch.commit();
+              storageService.setCachedArticles(initialArticlesData);
               onArticlesUpdate(initialArticlesData);
             } catch (seedErr) {
               console.warn('Could not auto-seed Firestore (check security rules):', seedErr);
-              onArticlesUpdate(initialArticlesData);
+              const fallback = storageService.getCachedArticles().length > 0
+                ? storageService.getCachedArticles()
+                : initialArticlesData;
+              onArticlesUpdate(fallback);
             }
           } else {
             const articles = snapshot.docs.map((docSnap) => {
@@ -53,11 +58,17 @@ export const firestoreSyncService = {
             });
             // Sort by custom order or newest first
             articles.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            // Permanently cache into device storage so it NEVER disappears when data is OFF
+            storageService.setCachedArticles(articles);
             onArticlesUpdate(articles);
           }
         },
         (err) => {
           console.warn('Firestore subscription error (using local offline cache):', err);
+          const cached = storageService.getCachedArticles();
+          if (cached && cached.length > 0) {
+            onArticlesUpdate(cached);
+          }
           if (onError) onError(err);
         }
       );
@@ -65,6 +76,10 @@ export const firestoreSyncService = {
       return unsubscribe;
     } catch (err) {
       console.warn('Failed to initialize Firestore listener:', err);
+      const cached = storageService.getCachedArticles();
+      if (cached && cached.length > 0) {
+        onArticlesUpdate(cached);
+      }
       return () => {};
     }
   },
