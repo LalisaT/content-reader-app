@@ -57,6 +57,7 @@ export default function AdminPostModal({
   const [content, setContent] = useState('');
   const [isPremium, setIsPremium] = useState(false);
   const [needsData, setNeedsData] = useState(false);
+  const [activeTab, setActiveTab] = useState('editor'); // 'editor' | 'preview'
   const [editorTab, setEditorTab] = useState('write'); // 'write' | 'preview'
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
@@ -742,10 +743,8 @@ export default function AdminPostModal({
                 </div>
               )}
 
-              <div className="prose dark:prose-invert text-xs space-y-2 text-slate-700 dark:text-slate-300 font-serif leading-relaxed">
-                {(content || 'Write your article body in the editor tab...').split('\n\n').map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
+              <div className="text-xs text-slate-700 dark:text-slate-300 font-serif leading-relaxed">
+                <RichMarkdownRenderer content={content || 'Write your article body in the editor tab...'} />
               </div>
             </div>
           )}
