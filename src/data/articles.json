@@ -1,5 +1,24 @@
 [
   {
+    "id": "iptv-sports-1",
+    "title": "⚡ 1-Click IPTV M3U & Live Sports Playlist Links (2026 Updated)",
+    "category": "Tech & AI",
+    "categoryIcon": "Tv",
+    "readTime": "4 min read",
+    "date": "Aug 24, 2026",
+    "author": "IPTV Streamer Hub",
+    "isPremium": false,
+    "image": "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80",
+    "summary": "Direct 1-Click M3U and M3U8 streaming links for IPTV sports, live match feeds, global free-to-air channels, and legal IPTV providers.",
+    "keyTakeaways": [
+      "IPTV Sports M3U Link: https://iptv-org.github.io/iptv/categories/sports.m3u",
+      "Global Master M3U Index: https://iptv-org.github.io/iptv/index.m3u",
+      "Samsung TV Plus Free Sports M3U8: https://raw.githubusercontent.com/matthuisman/i.mjh.nz/master/SamsungTVPlus/all.m3u8",
+      "Pluto TV Free Live Channels M3U8: https://raw.githubusercontent.com/matthuisman/i.mjh.nz/master/PlutoTV/all.m3u8"
+    ],
+    "content": "### ⚡ 1-Click IPTV M3U & Live Sports Playlist Links\n\nHere is a complete collection of tested, open-source, and legal IPTV M3U / M3U8 playlist URLs ready for VLC, Tivimate, IPTV Smarters, Kodi, and smart TV players.\n\n### ⚽ 1. Sports Channels M3U Playlists\n- **IPTV-Org Sports Category (500+ Sports Channels):**\nhttps://iptv-org.github.io/iptv/categories/sports.m3u\n\n- **Samsung TV Plus Sports & Live Events (US Streams):**\nhttps://raw.githubusercontent.com/matthuisman/i.mjh.nz/master/SamsungTVPlus/all.m3u8\n\n- **Pluto TV Sports & Action Channels:**\nhttps://raw.githubusercontent.com/matthuisman/i.mjh.nz/master/PlutoTV/all.m3u8\n\n### 🌍 2. Global & Regional IPTV Playlists\n- **IPTV-Org Master Index (8,000+ Global Channels):**\nhttps://iptv-org.github.io/iptv/index.m3u\n\n- **English Language Channels M3U:**\nhttps://iptv-org.github.io/iptv/languages/eng.m3u\n\n- **Free-TV Public Global Stream List:**\nhttps://raw.githubusercontent.com/free-tv/IPTV/master/playlist.m3u8\n\n### 📰 3. News, Movies & Entertainment Playlists\n- **Global News 24/7 M3U:**\nhttps://iptv-org.github.io/iptv/categories/news.m3u\n\n- **Movies & Series M3U:**\nhttps://iptv-org.github.io/iptv/categories/movies.m3u\n\n- **Music & Live Concerts M3U:**\nhttps://iptv-org.github.io/iptv/categories/music.m3u\n\n### 🛠️ How to Load M3U Links in 1 Click\n1. Open **VLC Media Player** -> Press Ctrl + N -> Paste any M3U URL above -> Click **Play**.\n2. In **Tivimate / IPTV Smarters / OTT Navigator**: Select **Add Playlist** -> Choose **M3U URL** -> Paste the link."
+  },
+  {
     "id": "prod-1",
     "title": "The 2-Minute Rule to Defeat Procrastination for Good",
     "category": "Productivity",

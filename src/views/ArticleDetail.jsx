@@ -289,11 +289,11 @@ export default function ArticleDetail({
             </div>
 
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              Exclusive Masterclass Content
+              Exclusive Full Content
             </h3>
 
             <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto mt-2 leading-relaxed">
-              This in-depth 30-day blueprint is free to unlock by watching a short 5-second sponsor video.
+              The complete writing is free to unlock by watching a short 5-second sponsor video.
             </p>
 
             <button
