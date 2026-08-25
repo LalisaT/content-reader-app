@@ -132,20 +132,6 @@ export default function Navbar({
             <Search className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          {/* Bookmarks Counter */}
-          <button
-            onClick={() => onTabChange('bookmarks')}
-            title="Saved Reads"
-            className="p-2 rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 relative transition-colors"
-          >
-            <Bookmark className="w-4 h-4 sm:w-5 sm:h-5" />
-            {bookmarkCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-indigo-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900">
-                {bookmarkCount}
-              </span>
-            )}
-          </button>
-
           {/* User Account Profile */}
           {currentUser ? (
             <div className="flex items-center pl-1">
