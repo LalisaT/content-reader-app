@@ -62,7 +62,37 @@ export default function AdminPostModal({
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
 
-  const insertMarkdown = (prefix, suffix = '', defaultText = '') => {
+  // Inserts a block element (Headings, Quotes, Tips, Lists, Buttons) on fresh separate lines
+  const insertBlock = (prefix, defaultText = '', suffix = '') => {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      setContent((prev) => prev ? `${prev}\n\n${prefix}${defaultText}${suffix}` : `${prefix}${defaultText}${suffix}`);
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = content.substring(start, end) || defaultText;
+
+    const before = content.substring(0, start);
+    const after = content.substring(end);
+
+    const padBefore = before.length === 0 || before.endsWith('\n\n') ? '' : before.endsWith('\n') ? '\n' : '\n\n';
+    const padAfter = after.length === 0 || after.startsWith('\n\n') ? '' : after.startsWith('\n') ? '\n' : '\n\n';
+
+    const inserted = `${padBefore}${prefix}${selected}${suffix}${padAfter}`;
+    const newContent = before + inserted + after;
+    setContent(newContent);
+
+    setTimeout(() => {
+      textarea.focus();
+      const cursorTarget = before.length + padBefore.length + prefix.length + selected.length;
+      textarea.setSelectionRange(cursorTarget, cursorTarget);
+    }, 50);
+  };
+
+  // Inserts inline tags (**bold**, *italic*, ==highlight==, `code`) at exact selection
+  const insertInline = (prefix, suffix = '', defaultText = '') => {
     const textarea = textareaRef.current;
     if (!textarea) {
       setContent((prev) => prev + `${prefix}${defaultText}${suffix}`);
@@ -74,13 +104,12 @@ export default function AdminPostModal({
     const selected = content.substring(start, end) || defaultText;
     const replacement = `${prefix}${selected}${suffix}`;
     const newContent = content.substring(0, start) + replacement + content.substring(end);
-    
     setContent(newContent);
 
     setTimeout(() => {
       textarea.focus();
-      const newCursorPos = start + prefix.length + selected.length;
-      textarea.setSelectionRange(newCursorPos, newCursorPos);
+      const cursorTarget = start + prefix.length + selected.length;
+      textarea.setSelectionRange(cursorTarget, cursorTarget);
     }, 50);
   };
 
@@ -460,7 +489,7 @@ export default function AdminPostModal({
                       {/* Headings */}
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('\n# ', '\n', 'Main Section Title')}
+                        onClick={() => insertBlock('# ', 'Main Section Title')}
                         title="Main Heading (H1)"
                         className="px-2 py-1 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md font-bold text-[11px] border border-slate-200 dark:border-slate-650"
                       >
@@ -468,7 +497,7 @@ export default function AdminPostModal({
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('\n## ', '\n', 'Sub-Heading')}
+                        onClick={() => insertBlock('## ', 'Sub-Heading')}
                         title="Sub-Heading (H2)"
                         className="px-2 py-1 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md font-bold text-[11px] border border-slate-200 dark:border-slate-650"
                       >
@@ -476,7 +505,7 @@ export default function AdminPostModal({
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('\n### ', '\n', 'Topic Header')}
+                        onClick={() => insertBlock('### ', 'Topic Header')}
                         title="Topic Header (H3)"
                         className="px-2 py-1 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md font-bold text-[11px] border border-slate-200 dark:border-slate-650"
                       >
@@ -488,7 +517,7 @@ export default function AdminPostModal({
                       {/* Text Style */}
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('**', '**', 'bold text')}
+                        onClick={() => insertInline('**', '**', 'bold text')}
                         title="Bold Text"
                         className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
                       >
@@ -496,7 +525,7 @@ export default function AdminPostModal({
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('*', '*', 'italic text')}
+                        onClick={() => insertInline('*', '*', 'italic text')}
                         title="Italic Text"
                         className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
                       >
@@ -504,7 +533,7 @@ export default function AdminPostModal({
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('==', '==', 'highlighted text')}
+                        onClick={() => insertInline('==', '==', 'highlighted text')}
                         title="Color Highlight Badge"
                         className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650 text-amber-600"
                       >
@@ -512,7 +541,7 @@ export default function AdminPostModal({
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('`', '`', 'code')}
+                        onClick={() => insertInline('`', '`', 'code')}
                         title="Inline Code"
                         className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
                       >
@@ -524,7 +553,7 @@ export default function AdminPostModal({
                       {/* Lists */}
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('\n- ', '\n', 'Bullet point item')}
+                        onClick={() => insertBlock('- ', 'Bullet point item')}
                         title="Bullet List"
                         className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
                       >
@@ -532,7 +561,7 @@ export default function AdminPostModal({
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('\n1. First step\n2. Second step\n', '', '')}
+                        onClick={() => insertBlock('1. ', 'First step\n2. Second step')}
                         title="Numbered Step List"
                         className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
                       >
@@ -544,7 +573,7 @@ export default function AdminPostModal({
                       {/* Callouts & Quotes */}
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('\n> ', '\n', 'Wisdom or notable quote')}
+                        onClick={() => insertBlock('> ', 'Wisdom or notable quote')}
                         title="Blockquote"
                         className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
                       >
@@ -552,7 +581,7 @@ export default function AdminPostModal({
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('\n> [!TIP] ', '\n', 'Actionable pro tip goes here')}
+                        onClick={() => insertBlock('> [!TIP] ', 'Actionable pro tip goes here')}
                         title="Green Pro-Tip Box"
                         className="px-2 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 rounded-md font-bold text-[11px] border border-emerald-200 dark:border-emerald-800 flex items-center space-x-1"
                       >
@@ -561,7 +590,7 @@ export default function AdminPostModal({
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('\n> [!WARNING] ', '\n', 'Critical warning or caution')}
+                        onClick={() => insertBlock('> [!WARNING] ', 'Critical warning or caution')}
                         title="Red Warning Box"
                         className="px-2 py-1 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 hover:bg-rose-100 rounded-md font-bold text-[11px] border border-rose-200 dark:border-rose-800 flex items-center space-x-1"
                       >
@@ -570,7 +599,7 @@ export default function AdminPostModal({
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('\n[🔘 Action Button](https://example.com)\n', '', '')}
+                        onClick={() => insertBlock('[🔘 Action Button](https://example.com)')}
                         title="Clickable Button"
                         className="px-2 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 rounded-md font-bold text-[11px] border border-indigo-200 dark:border-indigo-800 flex items-center space-x-1"
                       >
@@ -579,7 +608,7 @@ export default function AdminPostModal({
                       </button>
                       <button
                         type="button"
-                        onClick={() => insertMarkdown('\n---\n', '', '')}
+                        onClick={() => insertBlock('---')}
                         title="Horizontal Divider"
                         className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
                       >
