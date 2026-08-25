@@ -564,7 +564,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Ultra-Fast Smooth Animated Splash (< 0.3s) with ZERO white screen flash */}
+      {/* Ultra-Fast Sub-0.3s Smooth Animated Splash with Glowing Circle Ring */}
       {splashActive && (
         <div
           className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-white transition-opacity duration-150 ease-out pointer-events-none ${
@@ -572,14 +572,24 @@ export default function App() {
           }`}
         >
           <div className="flex flex-col items-center justify-center animate-in zoom-in-95 fade-in duration-200 ease-out">
-            {/* Centered Logo Card (Clean, No Circle) */}
-            <div className="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-sky-500/15 border border-slate-100 p-2.5 mb-3 transform transition-transform">
-              <img
-                src={appConfig?.logoImageUrl || "/app-icon.png"}
-                alt="TipPulse"
-                className="w-full h-full object-contain rounded-xl"
+            {/* Centered Logo with Animated Circle Ring */}
+            <div className="relative mb-3.5">
+              {/* Outer Smooth Fast Spinning Ring */}
+              <div
+                className="absolute -inset-2 rounded-[26px] border-[2.5px] border-transparent border-t-sky-500 border-r-blue-600 animate-spin"
+                style={{ animationDuration: '0.6s' }}
               />
+
+              {/* White Logo Card */}
+              <div className="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-xl shadow-sky-500/20 border border-slate-100 p-2.5 relative z-10">
+                <img
+                  src={appConfig?.logoImageUrl || "/app-icon.png"}
+                  alt="TipPulse"
+                  className="w-full h-full object-contain rounded-xl"
+                />
+              </div>
             </div>
+
             {/* Blue TipPulse Name */}
             <h1 className="text-2xl font-black tracking-tight text-sky-600 select-none">
               {appConfig?.appName || 'TipPulse'}
