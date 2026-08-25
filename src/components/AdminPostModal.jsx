@@ -247,22 +247,22 @@ export default function AdminPostModal({
       return;
     }
 
-    const matchedCat = categories.find((c) => c.label === category);
-    const categoryIcon = matchedCat ? matchedCat.icon : 'Sparkles';
+    const matchedCat = (categories || []).find((c) => (c?.label || c) === category);
+    const categoryIcon = matchedCat?.icon || 'Sparkles';
 
     const savedData = {
-      id: editingArticle ? editingArticle.id : `custom-${Date.now()}`,
-      title: title.trim(),
-      category,
+      id: editingArticle?.id || `custom-${Date.now()}`,
+      title: (title || '').trim(),
+      category: typeof category === 'string' ? category : (category?.label || 'Productivity'),
       categoryIcon,
       readTime: calculateReadTime(content),
-      date: editingArticle ? editingArticle.date : new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      author: author.trim() || 'Editor',
-      isPremium,
-      image: image || PRESET_IMAGES[0].url,
-      summary: summary.trim() || title.trim(),
-      keyTakeaways: takeaways.map((t) => t.trim()).filter(Boolean),
-      content: content.trim(),
+      date: editingArticle?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      author: (author || 'Editor').trim(),
+      isPremium: Boolean(isPremium),
+      image: image || PRESET_IMAGES[0]?.url || '',
+      summary: (summary || title || '').trim(),
+      keyTakeaways: (takeaways || []).map((t) => (t || '').trim()).filter(Boolean),
+      content: (content || '').trim(),
     };
 
     onSaveArticle(savedData);
