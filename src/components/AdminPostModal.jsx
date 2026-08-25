@@ -12,126 +12,16 @@ import {
   Edit3,
   Upload,
   Camera,
-  Tv,
-  Zap,
-  Globe,
-  Copy,
-  Check,
   Play
 } from 'lucide-react';
 
 const PRESET_IMAGES = [
-  { label: '⚡ IPTV & Sports', url: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80' },
   { label: 'Work & Desk', url: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80' },
   { label: 'Tech & Code', url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80' },
   { label: 'Health & Nature', url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=800&q=80' },
   { label: 'Finance & Growth', url: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80' },
   { label: 'Books & Mind', url: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80' },
-];
-
-const IPTV_PRESETS = [
-  {
-    name: '⚡ IPTV M3U / Sports Master Guide',
-    title: '⚡ 1-Click IPTV M3U & Live Sports Playlist Links (Non-GitHub Mirror)',
-    category: 'Tech & AI',
-    author: 'IPTV Streamer Hub',
-    image: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=800&q=80',
-    summary: 'Direct 1-Click M3U and M3U8 streaming links hosted on fast global CDNs (jsDelivr, i.mjh.nz, epg.pw) without GitHub dependencies.',
-    takeaways: [
-      'Sports M3U (jsDelivr CDN): https://cdn.jsdelivr.net/gh/iptv-org/iptv@master/categories/sports.m3u',
-      'Samsung TV Plus Direct M3U8: https://i.mjh.nz/SamsungTVPlus/all.m3u8',
-      'Pluto TV Direct M3U8: https://i.mjh.nz/PlutoTV/all.m3u8',
-      'EPG.PW Sports M3U: https://epg.pw/playlist/sports.m3u'
-    ],
-    content: `### ⚡ 1-Click IPTV M3U & Live Sports Links (Non-GitHub CDNs)
-
-Here is a collection of direct IPTV M3U / M3U8 playlist URLs hosted on independent CDNs (**jsDelivr**, **i.mjh.nz**, **epg.pw**, **statically.io**) with no direct GitHub domain dependency:
-
-### ⚽ 1. Non-GitHub Sports Channels M3U
-- **IPTV Sports Category (jsDelivr Fast CDN):**
-https://cdn.jsdelivr.net/gh/iptv-org/iptv@master/categories/sports.m3u
-
-- **EPG.pw Public Sports Playlist:**
-https://epg.pw/playlist/sports.m3u
-
-- **Samsung TV Plus Free Sports Feeds (i.mjh.nz Direct CDN):**
-https://i.mjh.nz/SamsungTVPlus/all.m3u8
-
-- **Pluto TV Sports & Action Channels (i.mjh.nz Direct CDN):**
-https://i.mjh.nz/PlutoTV/all.m3u8
-
-### 🌍 2. Non-GitHub Global & Regional IPTV
-- **Global Master Index (jsDelivr Fast CDN):**
-https://cdn.jsdelivr.net/gh/iptv-org/iptv@master/index.m3u
-
-- **EPG.pw World Channels M3U:**
-https://epg.pw/playlist/all.m3u
-
-- **English Language Channels (Statically CDN):**
-https://cdn.statically.io/gh/iptv-org/iptv/master/languages/eng.m3u
-
-### 📰 3. Non-GitHub Movies & News Playlists
-- **Global News 24/7 (jsDelivr CDN):**
-https://cdn.jsdelivr.net/gh/iptv-org/iptv@master/categories/news.m3u
-
-- **Movies & Entertainment (jsDelivr CDN):**
-https://cdn.jsdelivr.net/gh/iptv-org/iptv@master/categories/movies.m3u
-
-- **Plex TV Free Legal Streams (i.mjh.nz CDN):**
-https://i.mjh.nz/Plex/all.m3u8
-
-### 🛠️ How to Load M3U Links in 1 Click
-1. Open **VLC Media Player** -> Press Ctrl + N -> Paste any M3U URL above -> Click **Play**.
-2. In **TiviMate / IPTV Smarters / OTT Navigator**: Select **Add Playlist** -> Choose **M3U URL** -> Paste the link.`
-  },
-  {
-    name: '⚽ Sports M3U Only (Non-GitHub)',
-    title: '⚽ Tested Non-GitHub Sports IPTV M3U Playlists',
-    category: 'Tech & AI',
-    author: 'Sports Stream Team',
-    image: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80',
-    summary: 'Direct streaming playlist links for live football, basketball, motorsports, combat sports, and tennis hosted on fast global CDNs.',
-    takeaways: [
-      'Sports M3U (jsDelivr): https://cdn.jsdelivr.net/gh/iptv-org/iptv@master/categories/sports.m3u',
-      'Samsung Sports (i.mjh.nz): https://i.mjh.nz/SamsungTVPlus/all.m3u8',
-      'EPG.PW Sports M3U: https://epg.pw/playlist/sports.m3u'
-    ],
-    content: `### ⚽ Top Sports IPTV M3U Playlist Links (Non-GitHub)
-
-1. **IPTV Sports Category (jsDelivr CDN):**
-https://cdn.jsdelivr.net/gh/iptv-org/iptv@master/categories/sports.m3u
-
-2. **EPG.pw Public Sports Feed:**
-https://epg.pw/playlist/sports.m3u
-
-3. **Samsung TV Plus Free Sports (i.mjh.nz CDN):**
-https://i.mjh.nz/SamsungTVPlus/all.m3u8
-
-4. **Pluto TV Sports & Fight TV (i.mjh.nz CDN):**
-https://i.mjh.nz/PlutoTV/all.m3u8`
-  },
-  {
-    name: '🌍 Global All-In-One M3U (Non-GitHub)',
-    title: '🌍 Global Free IPTV Master List (Non-GitHub CDN)',
-    category: 'Tech & AI',
-    author: 'Global IPTV Curator',
-    image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80',
-    summary: 'Universal master M3U list featuring free public channels across all countries hosted on jsDelivr and i.mjh.nz.',
-    takeaways: [
-      'Master IPTV Index (jsDelivr): https://cdn.jsdelivr.net/gh/iptv-org/iptv@master/index.m3u',
-      'EPG.pw World Index: https://epg.pw/playlist/all.m3u'
-    ],
-    content: `### 🌍 Global Master M3U Playlist Links (Non-GitHub)
-
-- **IPTV Full World Index (jsDelivr CDN):**
-https://cdn.jsdelivr.net/gh/iptv-org/iptv@master/index.m3u
-
-- **EPG.pw World Index:**
-https://epg.pw/playlist/all.m3u
-
-- **Plex TV Free Channels (i.mjh.nz CDN):**
-https://i.mjh.nz/Plex/all.m3u8`
-  }
+  { label: 'Coffee & Daily', url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80' },
 ];
 
 export default function AdminPostModal({
@@ -150,7 +40,6 @@ export default function AdminPostModal({
   const [content, setContent] = useState('');
   const [isPremium, setIsPremium] = useState(false);
   const [activeTab, setActiveTab] = useState('editor'); // 'editor' | 'preview'
-  const [copiedUrl, setCopiedUrl] = useState('');
   const fileInputRef = useRef(null);
 
   // Pre-populate if editing an existing article
@@ -209,22 +98,6 @@ export default function AdminPostModal({
     const updated = [...takeaways];
     updated[index] = val;
     setTakeaways(updated);
-  };
-
-  const handleApplyPreset = (preset) => {
-    setTitle(preset.title);
-    setCategory(preset.category);
-    setAuthor(preset.author);
-    setImage(preset.image);
-    setSummary(preset.summary);
-    setTakeaways(preset.takeaways);
-    setContent(preset.content);
-  };
-
-  const handleCopyUrl = (url) => {
-    navigator.clipboard.writeText(url);
-    setCopiedUrl(url);
-    setTimeout(() => setCopiedUrl(''), 2000);
   };
 
   const handleRemoveTakeaway = (index) => {
@@ -325,30 +198,6 @@ export default function AdminPostModal({
         <div className="p-5 overflow-y-auto flex-1 text-slate-900 dark:text-slate-100 text-xs">
           {activeTab === 'editor' ? (
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* 1-Click IPTV M3U / Sports Preset Bar */}
-              <div className="p-3 bg-gradient-to-r from-amber-500/10 via-indigo-500/10 to-emerald-500/10 dark:from-amber-950/40 dark:to-emerald-950/40 border border-amber-500/30 rounded-2xl">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-extrabold text-[11px] text-amber-600 dark:text-amber-400 flex items-center space-x-1 uppercase tracking-wider">
-                    <Tv className="w-3.5 h-3.5" />
-                    <span>1-Click Preset Generators</span>
-                  </span>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400">Auto-fill rich articles</span>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {IPTV_PRESETS.map((preset) => (
-                    <button
-                      type="button"
-                      key={preset.name}
-                      onClick={() => handleApplyPreset(preset)}
-                      className="px-2.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-amber-500 hover:text-slate-950 dark:hover:bg-amber-500 dark:hover:text-slate-950 border border-slate-200 dark:border-slate-700 font-bold text-[11px] rounded-xl transition-all shadow-xs flex items-center space-x-1"
-                    >
-                      <Zap className="w-3 h-3 text-amber-500 group-hover:text-slate-950" />
-                      <span>{preset.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Title */}
               <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -524,42 +373,9 @@ export default function AdminPostModal({
 
               {/* Full Article Body Content (Markdown) */}
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="font-bold text-slate-700 dark:text-slate-300">
-                    Full Article Body (Markdown supported) *
-                  </label>
-                  {copiedUrl && (
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1 animate-in fade-in">
-                      <Check className="w-3 h-3" />
-                      <span>Copied link!</span>
-                    </span>
-                  )}
-                </div>
-
-                {/* Quick IPTV Link Copy Helper Bar */}
-                <div className="mb-2 p-2 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-1">
-                  <span className="text-[10px] font-bold text-slate-500 mr-1 flex items-center space-x-1">
-                    <Copy className="w-3 h-3" />
-                    <span>Quick Copy Link:</span>
-                  </span>
-                  {[
-                    { label: '⚽ Sports (jsDelivr)', url: 'https://cdn.jsdelivr.net/gh/iptv-org/iptv@master/categories/sports.m3u' },
-                    { label: '🌍 Master (jsDelivr)', url: 'https://cdn.jsdelivr.net/gh/iptv-org/iptv@master/index.m3u' },
-                    { label: '📺 Samsung (i.mjh.nz)', url: 'https://i.mjh.nz/SamsungTVPlus/all.m3u8' },
-                    { label: '🍿 Pluto (i.mjh.nz)', url: 'https://i.mjh.nz/PlutoTV/all.m3u8' },
-                    { label: '⚽ EPG.pw Sports', url: 'https://epg.pw/playlist/sports.m3u' },
-                  ].map((item) => (
-                    <button
-                      type="button"
-                      key={item.label}
-                      onClick={() => handleCopyUrl(item.url)}
-                      className="px-2 py-0.5 bg-white dark:bg-slate-700 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 border border-slate-200 dark:border-slate-600 rounded-md text-[10px] font-semibold transition-all flex items-center space-x-1"
-                      title={item.url}
-                    >
-                      <span>{item.label}</span>
-                    </button>
-                  ))}
-                </div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Full Article Body (Markdown supported) *
+                </label>
 
                 <textarea
                   rows={7}
