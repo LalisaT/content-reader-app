@@ -50,16 +50,12 @@ export default function Navbar({
           onClick={() => onTabChange('feed')}
           className="flex items-center space-x-2.5 cursor-pointer group"
         >
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shadow-indigo-500/30 group-hover:scale-105 transition-transform overflow-hidden">
-            {appConfig?.logoType === 'image' && appConfig?.logoImageUrl ? (
-              <img
-                src={appConfig.logoImageUrl}
-                alt="App Logo"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <LogoIconComp className="w-4 h-4" />
-            )}
+          <div className="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform overflow-hidden p-0.5">
+            <img
+              src={appConfig?.logoImageUrl || "/app-icon.png"}
+              alt="App Logo"
+              className="w-full h-full object-contain rounded-lg"
+            />
           </div>
           <div className="flex items-center space-x-1.5">
             <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">
