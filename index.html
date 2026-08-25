@@ -14,7 +14,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
     
     <style>
-      /* Clean white background matching native splash seamlessly */
       html, body {
         background-color: #ffffff;
         color: #0f172a;
@@ -23,71 +22,10 @@
         height: 100%;
         overflow-x: hidden;
       }
-      .app-splash-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        background-color: #ffffff;
-        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        text-align: center;
-        padding: 20px;
-        box-sizing: border-box;
-      }
-      .app-splash-logo {
-        position: relative;
-        width: 84px;
-        height: 84px;
-        border-radius: 22px;
-        background: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.22);
-        margin-bottom: 20px;
-        padding: 8px;
-        box-sizing: border-box;
-      }
-      .app-splash-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        border-radius: 14px;
-      }
-      .app-splash-spinner-ring {
-        position: absolute;
-        inset: -6px;
-        border-radius: 28px;
-        border: 2.5px solid transparent;
-        border-top-color: #0284c7;
-        border-right-color: #38bdf8;
-        animation: splash-spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-      }
-      .app-splash-title {
-        font-size: 26px;
-        font-weight: 900;
-        letter-spacing: -0.5px;
-        color: #0284c7;
-        margin: 0;
-      }
-      @keyframes splash-spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
     </style>
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased select-none font-sans overflow-x-hidden min-h-screen">
-    <div id="root">
-      <!-- Clean Smooth Fast Startup: Logo + Glowing Circle Ring + Blue TipPulse Name -->
-      <div class="app-splash-container">
-        <div class="app-splash-logo">
-          <div class="app-splash-spinner-ring"></div>
-          <img src="/app-icon.png" alt="TipPulse Logo" />
-        </div>
-        <h1 class="app-splash-title">TipPulse</h1>
-      </div>
-    </div>
+    <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
