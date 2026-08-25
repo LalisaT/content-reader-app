@@ -5,7 +5,7 @@
     <link rel="icon" type="image/png" href="/app-icon.png" />
     <link rel="apple-touch-icon" href="/app-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#090d16" />
+    <meta name="theme-color" content="#ffffff" />
     <meta name="description" content="TipPulse - Curated daily tips, tech guides, productivity hacks, and lifestyle articles." />
     <title>TipPulse - Daily Tips & News Reader</title>
     <!-- Google Fonts -->
@@ -14,43 +14,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
     
     <style>
-      /* Zero white flash: dark background applied immediately */
+      /* Clean white background matching native splash seamlessly */
       html, body {
-        background-color: #090d16;
-        color: #f8fafc;
+        background-color: #ffffff;
+        color: #0f172a;
         margin: 0;
         padding: 0;
         height: 100%;
         overflow-x: hidden;
-      }
-      #root:empty {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        background: radial-gradient(circle at center, #111827 0%, #090d16 100%);
       }
       .app-splash-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        min-height: 100vh;
+        background-color: #ffffff;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         text-align: center;
         padding: 20px;
+        box-sizing: border-box;
       }
       .app-splash-logo {
         position: relative;
-        width: 72px;
-        height: 72px;
-        border-radius: 20px;
+        width: 80px;
+        height: 80px;
+        border-radius: 22px;
         background: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 10px 25px -5px rgba(56, 189, 248, 0.3);
-        margin-bottom: 24px;
+        box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.25);
+        margin-bottom: 20px;
         padding: 8px;
         box-sizing: border-box;
       }
@@ -58,37 +53,37 @@
         width: 100%;
         height: 100%;
         object-fit: contain;
-        border-radius: 12px;
+        border-radius: 14px;
       }
       .app-splash-spinner-ring {
         position: absolute;
         inset: -6px;
-        border-radius: 26px;
-        border: 2px solid transparent;
-        border-top-color: #38bdf8;
-        border-right-color: #818cf8;
+        border-radius: 28px;
+        border: 2.5px solid transparent;
+        border-top-color: #0284c7;
+        border-right-color: #38bdf8;
         animation: splash-spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
       }
       .app-splash-title {
-        font-size: 22px;
-        font-weight: 800;
+        font-size: 24px;
+        font-weight: 900;
         letter-spacing: -0.5px;
-        color: #ffffff;
+        color: #0284c7;
         margin: 0 0 6px 0;
       }
       .app-splash-tagline {
-        font-size: 12px;
-        color: #94a3b8;
-        margin: 0 0 28px 0;
-        font-weight: 500;
+        font-size: 13px;
+        color: #64748b;
+        margin: 0 0 24px 0;
+        font-weight: 600;
       }
       .app-splash-circle-loader {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
-        border: 3px solid rgba(255, 255, 255, 0.1);
-        border-top-color: #38bdf8;
-        border-right-color: #818cf8;
+        border: 3px solid rgba(2, 132, 199, 0.15);
+        border-top-color: #0284c7;
+        border-right-color: #38bdf8;
         animation: splash-spin 0.8s linear infinite;
       }
       @keyframes splash-spin {
@@ -99,7 +94,7 @@
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased select-none font-sans overflow-x-hidden min-h-screen">
     <div id="root">
-      <!-- Instant Startup Loading Screen: Eliminates blank white screen immediately -->
+      <!-- Instant Startup Loading Screen: Matches native splash perfectly with Blue TipPulse Title -->
       <div class="app-splash-container">
         <div class="app-splash-logo">
           <div class="app-splash-spinner-ring"></div>
