@@ -86,7 +86,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. lalion"
+                  placeholder="e.g. Lalisa"
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
                 />
               </div>
