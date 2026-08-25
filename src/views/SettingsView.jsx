@@ -183,7 +183,7 @@ export default function SettingsView({
                 <p className="text-xs text-slate-500 mt-0.5">
                   {currentUser
                     ? `@${currentUser.username} • Tap photo to change avatar from gallery`
-                    : 'Sign in to access creator studio & customize'}
+                    : 'Sign in with Administrator account to publish & customize'}
                 </p>
               </div>
             </div>

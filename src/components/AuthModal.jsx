@@ -10,10 +10,8 @@ import {
 import { authService } from '../services/authService';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmin = false }) {
-  const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [error, setError] = useState(requiredAdmin ? 'Administrator login is required to access publishing tools.' : '');
 
   if (!isOpen) return null;
@@ -27,31 +25,16 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
       return;
     }
 
-    if (mode === 'login') {
-      const res = authService.login(username, password);
-      if (res.success) {
-        if (requiredAdmin && res.user.role !== 'admin') {
-          setError('This account does not have Administrator privileges.');
-          return;
-        }
-        onAuthSuccess(res.user);
-        onClose();
-      } else {
-        setError(res.error || 'Invalid credentials.');
+    const res = authService.login(username.trim(), password);
+    if (res.success) {
+      if (requiredAdmin && res.user.role !== 'admin') {
+        setError('This account does not have Administrator privileges.');
+        return;
       }
+      onAuthSuccess(res.user);
+      onClose();
     } else {
-      // Register regular reader account
-      const res = authService.register(username, fullName, password);
-      if (res.success) {
-        if (requiredAdmin) {
-          setError('Account created! However, only the Administrator can publish new articles.');
-          return;
-        }
-        onAuthSuccess(res.user);
-        onClose();
-      } else {
-        setError(res.error || 'Registration failed.');
-      }
+      setError(res.error || 'Invalid admin credentials.');
     }
   };
 
@@ -62,14 +45,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center space-x-2.5">
             <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm">
-              <User className="w-5 h-5 stroke-[2.2]" />
+              <ShieldCheck className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
               <h3 className="font-bold text-base leading-tight">
-                {mode === 'login' ? 'Sign In' : 'Create Account'}
+                Admin Sign In
               </h3>
               <p className="text-[11px] text-slate-400">
-                {mode === 'login' ? 'Access your account & features' : 'Sync reading history & bookmarks'}
+                Sign in to manage & publish articles
               </p>
             </div>
           </div>
@@ -79,38 +62,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
             className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Tab Switcher */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-850 p-1">
-          <button
-            type="button"
-            onClick={() => {
-              setMode('login');
-              setError('');
-            }}
-            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
-              mode === 'login'
-                ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode('register');
-              setError('');
-            }}
-            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
-              mode === 'register'
-                ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            Create Account
           </button>
         </div>
 
@@ -124,28 +75,9 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
           )}
 
           <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-            {mode === 'register' && (
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Full Name / Display Name
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
-                  />
-                </div>
-              </div>
-            )}
-
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Username
+                Admin Username
               </label>
               <div className="relative">
                 <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -154,7 +86,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  placeholder="e.g. lalion"
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
                 />
               </div>
@@ -162,7 +94,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
 
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Password
+                Admin Password
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -181,7 +113,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
               type="submit"
               className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-xs py-3 px-4 rounded-xl shadow-md shadow-indigo-600/30 flex items-center justify-center space-x-1.5 transition-all"
             >
-              <span>{mode === 'login' ? 'Sign In' : 'Complete Registration'}</span>
+              <span>Sign In as Admin</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </form>
