@@ -150,6 +150,7 @@ export default function AdminPostModal({
   const [content, setContent] = useState('');
   const [isPremium, setIsPremium] = useState(false);
   const [activeTab, setActiveTab] = useState('editor'); // 'editor' | 'preview'
+  const [copiedUrl, setCopiedUrl] = useState('');
   const fileInputRef = useRef(null);
 
   // Pre-populate if editing an existing article
@@ -182,8 +183,6 @@ export default function AdminPostModal({
     setActiveTab('editor');
   }, [editingArticle, isOpen, categories]);
 
-  if (!isOpen) return null;
-
   // Handle local image file upload from Gallery / Device
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
@@ -211,8 +210,6 @@ export default function AdminPostModal({
     updated[index] = val;
     setTakeaways(updated);
   };
-
-  const [copiedUrl, setCopiedUrl] = useState('');
 
   const handleApplyPreset = (preset) => {
     setTitle(preset.title);
@@ -268,6 +265,8 @@ export default function AdminPostModal({
     onSaveArticle(savedData);
     onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in">
