@@ -142,9 +142,9 @@ export default function AdminPostModal({
   categories = [],
 }) {
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState(categories[0]?.label || 'Productivity');
+  const [category, setCategory] = useState(categories?.[0]?.label || 'Productivity');
   const [author, setAuthor] = useState('Editor');
-  const [image, setImage] = useState(PRESET_IMAGES[0].url);
+  const [image, setImage] = useState(PRESET_IMAGES[0]?.url || '');
   const [summary, setSummary] = useState('');
   const [takeaways, setTakeaways] = useState(['', '']);
   const [content, setContent] = useState('');
@@ -154,25 +154,32 @@ export default function AdminPostModal({
 
   // Pre-populate if editing an existing article
   useEffect(() => {
+    if (!isOpen) return;
+
     if (editingArticle) {
       setTitle(editingArticle.title || '');
-      setCategory(editingArticle.category || (categories[0]?.label || 'Productivity'));
+      setCategory(editingArticle.category || categories?.[0]?.label || 'Productivity');
       setAuthor(editingArticle.author || 'Editor');
-      setImage(editingArticle.image || PRESET_IMAGES[0].url);
+      setImage(editingArticle.image || PRESET_IMAGES[0]?.url || '');
       setSummary(editingArticle.summary || '');
-      setTakeaways(editingArticle.keyTakeaways && editingArticle.keyTakeaways.length > 0 ? editingArticle.keyTakeaways : ['', '']);
+      setTakeaways(
+        Array.isArray(editingArticle.keyTakeaways) && editingArticle.keyTakeaways.length > 0
+          ? editingArticle.keyTakeaways
+          : ['', '']
+      );
       setContent(editingArticle.content || '');
-      setIsPremium(!!editingArticle.isPremium);
+      setIsPremium(Boolean(editingArticle.isPremium));
     } else {
       setTitle('');
-      setCategory(categories[0]?.label || 'Productivity');
+      setCategory(categories?.[0]?.label || 'Productivity');
       setAuthor('Editor');
-      setImage(PRESET_IMAGES[0].url);
+      setImage(PRESET_IMAGES[0]?.url || '');
       setSummary('');
       setTakeaways(['', '']);
       setContent('');
       setIsPremium(false);
     }
+    setActiveTab('editor');
   }, [editingArticle, isOpen, categories]);
 
   if (!isOpen) return null;
@@ -369,11 +376,14 @@ export default function AdminPostModal({
                     onChange={(e) => setCategory(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium focus:outline-none"
                   >
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.label}>
-                        {c.label}
-                      </option>
-                    ))}
+                    {(categories || []).map((c) => {
+                      const labelVal = c?.label || c?.id || c || 'General';
+                      return (
+                        <option key={c?.id || labelVal} value={labelVal}>
+                          {labelVal}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
@@ -397,7 +407,7 @@ export default function AdminPostModal({
                   Cover Photo (Gallery Upload or Presets)
                 </label>
 
-                {image && (
+                {Boolean(image) && (
                   <div className="relative w-full h-36 rounded-xl overflow-hidden mb-3 border border-slate-300 dark:border-slate-600 bg-slate-100">
                     <img src={image} alt="Selected cover" className="w-full h-full object-cover" />
                     <span className="absolute top-2 left-2 bg-black/60 backdrop-blur-xs text-white text-[10px] px-2 py-0.5 rounded-md font-semibold">
@@ -426,7 +436,7 @@ export default function AdminPostModal({
 
                   <button
                     type="button"
-                    onClick={() => setImage(PRESET_IMAGES[0].url)}
+                    onClick={() => setImage(PRESET_IMAGES[0]?.url || '')}
                     className="px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-semibold text-xs hover:bg-slate-100 transition-colors"
                   >
                     Reset
@@ -435,10 +445,10 @@ export default function AdminPostModal({
 
                 <input
                   type="text"
-                  value={image.startsWith('data:') ? 'Image uploaded from device (Base64)' : image}
+                  value={image?.startsWith('data:') ? 'Image uploaded from device (Base64)' : (image || '')}
                   onChange={(e) => setImage(e.target.value)}
                   placeholder="Or paste an image URL..."
-                  disabled={image.startsWith('data:')}
+                  disabled={Boolean(image?.startsWith('data:'))}
                   className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg font-mono text-[10px] focus:outline-none mb-2 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-500"
                 />
 

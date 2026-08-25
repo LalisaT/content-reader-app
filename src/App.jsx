@@ -505,18 +505,16 @@ export default function App() {
       />
 
       {/* Admin / Creator Post Modal */}
-      {isAdmin && (
-        <AdminPostModal
-          isOpen={isAdminPostOpen}
-          editingArticle={editingArticle}
-          categories={categories}
-          onClose={() => {
-            setIsAdminPostOpen(false);
-            setEditingArticle(null);
-          }}
-          onSaveArticle={handleSaveCustomArticle}
-        />
-      )}
+      <AdminPostModal
+        isOpen={Boolean(isAdmin && isAdminPostOpen)}
+        editingArticle={editingArticle}
+        categories={categories}
+        onClose={() => {
+          setIsAdminPostOpen(false);
+          setEditingArticle(null);
+        }}
+        onSaveArticle={handleSaveCustomArticle}
+      />
 
       {/* AdMob Interstitial Ad Modal */}
       <InterstitialModal
