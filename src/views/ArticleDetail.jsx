@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import AudioPlayer from '../components/AudioPlayer';
 import BannerAd from '../components/BannerAd';
+import RichMarkdownRenderer from '../components/RichMarkdownRenderer';
 import { storageService } from '../services/storageService';
 
 export default function ArticleDetail({
@@ -354,29 +355,12 @@ export default function ArticleDetail({
             </button>
           </div>
         ) : (
-          /* Unlocked / Free Article Body */
-          <div className={`prose dark:prose-invert max-w-none reader-text font-serif ${fontSizes[fontSize] || fontSizes.base} space-y-4`}>
-            {article.content.split('\n\n').map((paragraph, index) => {
-              if (paragraph.startsWith('### ')) {
-                return (
-                  <h3 key={index} className="font-sans font-bold text-lg sm:text-xl text-slate-900 dark:text-white pt-4 pb-1">
-                    {paragraph.replace('### ', '')}
-                  </h3>
-                );
-              }
-              if (paragraph.startsWith('> ')) {
-                return (
-                  <blockquote key={index} className="border-l-4 border-indigo-500 pl-4 italic text-slate-700 dark:text-slate-300 my-3 font-sans">
-                    {paragraph.replace('> ', '')}
-                  </blockquote>
-                );
-              }
-              return (
-                <p key={index} className="text-slate-800 dark:text-slate-200">
-                  {paragraph}
-                </p>
-              );
-            })}
+          /* Unlocked / Free Article Body with Rich Markdown & Lists Renderer */
+          <div className="reader-text">
+            <RichMarkdownRenderer
+              content={article.content}
+              className={`font-serif ${fontSizes[fontSize] || fontSizes.base}`}
+            />
           </div>
         )}
 

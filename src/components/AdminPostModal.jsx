@@ -13,8 +13,24 @@ import {
   Upload,
   Camera,
   Wifi,
-  Play
+  Play,
+  Bold,
+  Italic,
+  List,
+  ListOrdered,
+  Quote,
+  Heading1,
+  Heading2,
+  Heading3,
+  Highlighter,
+  Link as LinkIcon,
+  Minus,
+  Lightbulb,
+  AlertTriangle,
+  ExternalLink,
+  Code
 } from 'lucide-react';
+import RichMarkdownRenderer from './RichMarkdownRenderer';
 
 const PRESET_IMAGES = [
   { label: 'Work & Desk', url: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80' },
@@ -34,15 +50,38 @@ export default function AdminPostModal({
 }) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(categories?.[0]?.label || 'Productivity');
-  const [author, setAuthor] = useState('Editor');
+  const [author, setAuthor] = useState('Lalisa');
   const [image, setImage] = useState(PRESET_IMAGES[0]?.url || '');
   const [summary, setSummary] = useState('');
   const [takeaways, setTakeaways] = useState(['', '']);
   const [content, setContent] = useState('');
   const [isPremium, setIsPremium] = useState(false);
   const [needsData, setNeedsData] = useState(false);
-  const [activeTab, setActiveTab] = useState('editor'); // 'editor' | 'preview'
+  const [editorTab, setEditorTab] = useState('write'); // 'write' | 'preview'
   const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  const insertMarkdown = (prefix, suffix = '', defaultText = '') => {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      setContent((prev) => prev + `${prefix}${defaultText}${suffix}`);
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = content.substring(start, end) || defaultText;
+    const replacement = `${prefix}${selected}${suffix}`;
+    const newContent = content.substring(0, start) + replacement + content.substring(end);
+    
+    setContent(newContent);
+
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + prefix.length + selected.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 50);
+  };
 
   // Pre-populate if editing an existing article
   useEffect(() => {
@@ -376,20 +415,201 @@ export default function AdminPostModal({
                 </div>
               </div>
 
-              {/* Full Article Body Content (Markdown) */}
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Full Article Body (Markdown supported) *
-                </label>
+              {/* Full Article Body Content (Rich Writer Studio with Toolbar & Live Preview) */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-slate-700 dark:text-slate-300 text-xs flex items-center space-x-1.5">
+                    <Edit3 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                    <span>Article Body & Formatting Studio *</span>
+                  </label>
 
-                <textarea
-                  rows={7}
-                  required
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="### Why this method works&#10;Explain the core technique here in detail...&#10;&#10;### Step-by-step action plan&#10;1. Do this first&#10;2. Follow with this"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-mono text-xs focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
-                />
+                  {/* Write vs Live Preview Tabs */}
+                  <div className="flex items-center p-0.5 bg-slate-200 dark:bg-slate-800 rounded-lg text-[11px] font-bold">
+                    <button
+                      type="button"
+                      onClick={() => setEditorTab('write')}
+                      className={`px-2.5 py-1 rounded-md transition-all flex items-center space-x-1 ${
+                        editorTab === 'write'
+                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                      }`}
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      <span>Write</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditorTab('preview')}
+                      className={`px-2.5 py-1 rounded-md transition-all flex items-center space-x-1 ${
+                        editorTab === 'preview'
+                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                      }`}
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>Live Preview</span>
+                    </button>
+                  </div>
+                </div>
+
+                {editorTab === 'write' ? (
+                  <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-800/90 shadow-xs focus-within:ring-2 focus-within:ring-indigo-500/40">
+                    {/* Rich Formatting Toolbar */}
+                    <div className="flex flex-wrap items-center gap-1 p-2 bg-slate-100 dark:bg-slate-850 border-b border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300">
+                      {/* Headings */}
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('\n# ', '\n', 'Main Section Title')}
+                        title="Main Heading (H1)"
+                        className="px-2 py-1 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md font-bold text-[11px] border border-slate-200 dark:border-slate-650"
+                      >
+                        H1
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('\n## ', '\n', 'Sub-Heading')}
+                        title="Sub-Heading (H2)"
+                        className="px-2 py-1 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md font-bold text-[11px] border border-slate-200 dark:border-slate-650"
+                      >
+                        H2
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('\n### ', '\n', 'Topic Header')}
+                        title="Topic Header (H3)"
+                        className="px-2 py-1 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md font-bold text-[11px] border border-slate-200 dark:border-slate-650"
+                      >
+                        H3
+                      </button>
+
+                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-650 mx-0.5" />
+
+                      {/* Text Style */}
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('**', '**', 'bold text')}
+                        title="Bold Text"
+                        className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
+                      >
+                        <Bold className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('*', '*', 'italic text')}
+                        title="Italic Text"
+                        className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
+                      >
+                        <Italic className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('==', '==', 'highlighted text')}
+                        title="Color Highlight Badge"
+                        className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650 text-amber-600"
+                      >
+                        <Highlighter className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('`', '`', 'code')}
+                        title="Inline Code"
+                        className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
+                      >
+                        <Code className="w-3.5 h-3.5" />
+                      </button>
+
+                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-650 mx-0.5" />
+
+                      {/* Lists */}
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('\n- ', '\n', 'Bullet point item')}
+                        title="Bullet List"
+                        className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
+                      >
+                        <List className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('\n1. First step\n2. Second step\n', '', '')}
+                        title="Numbered Step List"
+                        className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
+                      >
+                        <ListOrdered className="w-3.5 h-3.5" />
+                      </button>
+
+                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-650 mx-0.5" />
+
+                      {/* Callouts & Quotes */}
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('\n> ', '\n', 'Wisdom or notable quote')}
+                        title="Blockquote"
+                        className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
+                      >
+                        <Quote className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('\n> [!TIP] ', '\n', 'Actionable pro tip goes here')}
+                        title="Green Pro-Tip Box"
+                        className="px-2 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 rounded-md font-bold text-[11px] border border-emerald-200 dark:border-emerald-800 flex items-center space-x-1"
+                      >
+                        <Lightbulb className="w-3 h-3" />
+                        <span>Tip Box</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('\n> [!WARNING] ', '\n', 'Critical warning or caution')}
+                        title="Red Warning Box"
+                        className="px-2 py-1 bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 hover:bg-rose-100 rounded-md font-bold text-[11px] border border-rose-200 dark:border-rose-800 flex items-center space-x-1"
+                      >
+                        <AlertTriangle className="w-3 h-3" />
+                        <span>Warning</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('\n[🔘 Action Button](https://example.com)\n', '', '')}
+                        title="Clickable Button"
+                        className="px-2 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 rounded-md font-bold text-[11px] border border-indigo-200 dark:border-indigo-800 flex items-center space-x-1"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        <span>Button</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertMarkdown('\n---\n', '', '')}
+                        title="Horizontal Divider"
+                        className="p-1.5 bg-white dark:bg-slate-750 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md border border-slate-200 dark:border-slate-650"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Textarea */}
+                    <textarea
+                      ref={textareaRef}
+                      rows={10}
+                      required
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      placeholder="### Why this method works&#10;Write your paragraphs here with **bold**, *italic*, quotes, or bullet lists...&#10;&#10;1. First step&#10;2. Second step&#10;&#10;> [!TIP] Actionable tip for readers&#10;&#10;[🔘 Open Website](https://example.com)"
+                      className="w-full px-3.5 py-3 bg-transparent border-0 font-mono text-xs sm:text-sm focus:outline-none leading-relaxed text-slate-800 dark:text-slate-100 resize-y"
+                    />
+                  </div>
+                ) : (
+                  /* Live Preview Tab */
+                  <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 min-h-[220px] max-h-[360px] overflow-y-auto shadow-inner">
+                    {content.trim() ? (
+                      <RichMarkdownRenderer content={content} />
+                    ) : (
+                      <div className="py-12 text-center text-slate-400 text-xs">
+                        <Edit3 className="w-6 h-6 mx-auto mb-2 opacity-50" />
+                        <p>No content written yet. Switch to the <strong>Write</strong> tab and start typing!</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Require Mobile Data / Online Toggle */}
