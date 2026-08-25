@@ -17,7 +17,10 @@ import {
   Volume2,
   ThumbsUp,
   Edit3,
-  Trash2
+  Trash2,
+  Wifi,
+  WifiOff,
+  RotateCcw
 } from 'lucide-react';
 import AudioPlayer from '../components/AudioPlayer';
 import BannerAd from '../components/BannerAd';
@@ -41,6 +44,19 @@ export default function ArticleDetail({
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [showAudio, setShowAudio] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  // Track online / offline connectivity state
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Track reading scroll progress
   useEffect(() => {
@@ -87,7 +103,9 @@ export default function ArticleDetail({
     onChangeFontSize(next);
   };
 
-  const isLocked = article.isPremium && !isUnlocked;
+  const requiresData = Boolean(article?.needsData || article?.requiresOnline);
+  const isDataBlocked = requiresData && !isOnline;
+  const isLocked = article?.isPremium && !isUnlocked;
 
   return (
     <div className={`min-h-screen pb-24 transition-colors ${
@@ -281,8 +299,40 @@ export default function ArticleDetail({
           </div>
         )}
 
-        {/* Rewarded Ad Lock Overlay for Premium Guides */}
-        {isLocked ? (
+        {/* Data Requirement or Rewarded Ad Lock Overlay */}
+        {isDataBlocked ? (
+          <div className="my-8 p-6 rounded-3xl bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-400/80 dark:border-blue-600/80 text-center shadow-lg animate-in fade-in">
+            <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-3 shadow-md">
+              <WifiOff className="w-7 h-7" />
+            </div>
+
+            <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-blue-600 text-white mb-2 inline-block">
+              Internet Data Required
+            </span>
+
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+              Mobile Data / Wi-Fi Needed to Read All Writing
+            </h3>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 max-w-md mx-auto mt-2 leading-relaxed">
+              This article was published with online requirement. Please turn on your Mobile Data or connect to Wi-Fi to load and read the full writing.
+            </p>
+
+            <button
+              onClick={() => {
+                if (navigator.onLine) {
+                  setIsOnline(true);
+                } else {
+                  alert('Device is still offline. Please turn on Mobile Data or Wi-Fi to view all writing.');
+                }
+              }}
+              className="mt-5 inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-transform active:scale-98 cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Check Connection & Open Writing</span>
+            </button>
+          </div>
+        ) : isLocked ? (
           <div className="my-8 p-6 rounded-3xl bg-gradient-to-b from-amber-500/10 via-slate-900/5 to-amber-500/10 dark:from-amber-950/40 dark:to-slate-900 border border-amber-300 dark:border-amber-700/60 text-center shadow-lg">
             <div className="w-14 h-14 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center mx-auto mb-3 shadow-md">
               <Lock className="w-7 h-7" />

@@ -33,6 +33,11 @@ export default function ArticleCard({ article, isBookmarked, onToggleBookmark, o
               <span>PRO</span>
             </div>
           )}
+          {(article.needsData || article.requiresOnline) && (
+            <div className="absolute top-1.5 right-1.5 bg-blue-600 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded shadow-sm">
+              <span>ONLINE</span>
+            </div>
+          )}
         </div>
 
         {/* Content Details */}

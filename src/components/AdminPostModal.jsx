@@ -12,6 +12,7 @@ import {
   Edit3,
   Upload,
   Camera,
+  Wifi,
   Play
 } from 'lucide-react';
 
@@ -39,6 +40,7 @@ export default function AdminPostModal({
   const [takeaways, setTakeaways] = useState(['', '']);
   const [content, setContent] = useState('');
   const [isPremium, setIsPremium] = useState(false);
+  const [needsData, setNeedsData] = useState(false);
   const [activeTab, setActiveTab] = useState('editor'); // 'editor' | 'preview'
   const fileInputRef = useRef(null);
 
@@ -59,6 +61,7 @@ export default function AdminPostModal({
       );
       setContent(editingArticle.content || '');
       setIsPremium(Boolean(editingArticle.isPremium));
+      setNeedsData(Boolean(editingArticle.needsData || editingArticle.requiresOnline));
     } else {
       setTitle('');
       setCategory(categories?.[0]?.label || 'Productivity');
@@ -68,6 +71,7 @@ export default function AdminPostModal({
       setTakeaways(['', '']);
       setContent('');
       setIsPremium(false);
+      setNeedsData(false);
     }
     setActiveTab('editor');
   }, [editingArticle, isOpen, categories]);
@@ -129,6 +133,7 @@ export default function AdminPostModal({
       date: editingArticle?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       author: (author || 'Editor').trim(),
       isPremium: Boolean(isPremium),
+      needsData: Boolean(needsData),
       image: image || PRESET_IMAGES[0]?.url || '',
       summary: (summary || title || '').trim(),
       keyTakeaways: (takeaways || []).map((t) => (t || '').trim()).filter(Boolean),
@@ -384,6 +389,45 @@ export default function AdminPostModal({
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="### Why this method works&#10;Explain the core technique here in detail...&#10;&#10;### Step-by-step action plan&#10;1. Do this first&#10;2. Follow with this"
                   className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-mono text-xs focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
+                />
+              </div>
+
+              {/* Require Mobile Data / Online Toggle */}
+              <div 
+                onClick={() => setNeedsData(!needsData)}
+                className={`p-3.5 rounded-2xl border transition-all cursor-pointer select-none flex items-center justify-between ${
+                  needsData
+                    ? 'bg-blue-500/15 dark:bg-blue-950/60 border-blue-400 dark:border-blue-600 shadow-sm'
+                    : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 hover:border-blue-300'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
+                    needsData ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                  }`}>
+                    <Wifi className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center space-x-1.5">
+                      <span>Require Internet / Mobile Data to Open Full Writing</span>
+                      {needsData && (
+                        <span className="text-[10px] bg-blue-600 text-white font-black px-1.5 py-0.5 rounded">
+                          DATA REQUIRED
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-snug">
+                      When enabled, readers must turn on Mobile Data or Wi-Fi to load and read the full writing.
+                    </p>
+                  </div>
+                </div>
+
+                <input
+                  type="checkbox"
+                  checked={needsData}
+                  onChange={(e) => setNeedsData(e.target.checked)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-5 h-5 accent-blue-600 rounded cursor-pointer ml-3 flex-shrink-0"
                 />
               </div>
 
