@@ -29,7 +29,8 @@ import DisclaimerView from './views/DisclaimerView';
 import { Sparkles, X, BookOpen, Loader2, WifiOff } from 'lucide-react';
 
 export default function App() {
-  const [isAppLoading, setIsAppLoading] = useState(true);
+  const [splashActive, setSplashActive] = useState(true);
+  const [splashFadeOut, setSplashFadeOut] = useState(false);
   const [activeTab, setActiveTab] = useState('feed');
   const [activeArticle, setActiveArticle] = useState(null);
   const [bookmarks, setBookmarks] = useState(storageService.getBookmarks());
@@ -91,10 +92,21 @@ export default function App() {
       }
     });
 
-    // Smooth native fade transition (< 0.3s) directly into feed with zero white flash
-    SplashScreen.hide({ fadeOutDuration: 250 }).catch(() => {});
+    // Immediately hide native splash layer so the animated overlay takes over seamlessly
+    SplashScreen.hide({ fadeOutDuration: 0 }).catch(() => {});
+
+    // Fast 0.28s smooth pop animation, then 0.15s silky fade directly into the ready feed
+    const timerFade = setTimeout(() => {
+      setSplashFadeOut(true);
+    }, 280);
+
+    const timerDone = setTimeout(() => {
+      setSplashActive(false);
+    }, 430);
 
     return () => {
+      clearTimeout(timerFade);
+      clearTimeout(timerDone);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       unsubArticles();
@@ -548,6 +560,30 @@ export default function App() {
             >
               Got It
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Ultra-Fast Smooth Animated Splash (< 0.3s) with ZERO white screen flash */}
+      {splashActive && (
+        <div
+          className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-white transition-opacity duration-150 ease-out pointer-events-none ${
+            splashFadeOut ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <div className="flex flex-col items-center justify-center animate-in zoom-in-95 fade-in duration-200 ease-out">
+            {/* Centered Logo Card (Clean, No Circle) */}
+            <div className="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-sky-500/15 border border-slate-100 p-2.5 mb-3 transform transition-transform">
+              <img
+                src={appConfig?.logoImageUrl || "/app-icon.png"}
+                alt="TipPulse"
+                className="w-full h-full object-contain rounded-xl"
+              />
+            </div>
+            {/* Blue TipPulse Name */}
+            <h1 className="text-2xl font-black tracking-tight text-sky-600 select-none">
+              {appConfig?.appName || 'TipPulse'}
+            </h1>
           </div>
         </div>
       )}
