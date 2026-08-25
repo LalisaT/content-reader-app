@@ -375,7 +375,13 @@ export default function AppCustomizerModal({
                   <button
                     type="button"
                     key={palette.id}
-                    onClick={() => setAccentPalette(palette.id)}
+                    onClick={() => {
+                      setAccentPalette(palette.id);
+                      const root = document.documentElement;
+                      const allPalettes = ['palette-indigo', 'palette-emerald', 'palette-violet', 'palette-rose', 'palette-amber', 'palette-cyan', 'palette-blue', 'palette-slate'];
+                      allPalettes.forEach((p) => root.classList.remove(p));
+                      root.classList.add(`palette-${palette.id}`);
+                    }}
                     className={`flex items-center space-x-2 p-2 rounded-xl border text-left transition-all ${
                       isSelected
                         ? 'border-slate-900 dark:border-white ring-2 ring-indigo-500 bg-white dark:bg-slate-900 shadow-sm'

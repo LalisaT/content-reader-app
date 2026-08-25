@@ -142,6 +142,15 @@ export default function App() {
     }
   }, [readerTheme]);
 
+  // Sync Dynamic Global Accent Color Palette
+  useEffect(() => {
+    const palette = appConfig?.accentPalette || 'indigo';
+    const root = document.documentElement;
+    const allPalettes = ['palette-indigo', 'palette-emerald', 'palette-violet', 'palette-rose', 'palette-amber', 'palette-cyan', 'palette-blue', 'palette-slate'];
+    allPalettes.forEach((p) => root.classList.remove(p));
+    root.classList.add(`palette-${palette}`);
+  }, [appConfig?.accentPalette]);
+
   // Cycle Theme: Light -> Dark -> Sepia -> Light
   const handleCycleTheme = () => {
     const modes = ['light', 'dark', 'sepia'];

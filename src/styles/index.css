@@ -8,6 +8,7 @@
   }
 }
 
+/* Theme: Sepia */
 .theme-sepia {
   background-color: #fbf0d9 !important;
   color: #433422 !important;
@@ -23,6 +24,7 @@
   color: #382c1d !important;
 }
 
+/* Theme: Dark */
 .theme-dark {
   background-color: #0f172a !important;
   color: #f8fafc !important;
@@ -61,4 +63,352 @@
 
 .animate-pulse-slow {
   animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ==========================================================
+   DYNAMIC GLOBAL COLOR PALETTES
+   Transforms buttons, active tabs, highlights, chips & badges
+   ========================================================== */
+
+/* 1. EMERALD PALETTE */
+html.palette-emerald .bg-indigo-600,
+html.palette-emerald .bg-indigo-500,
+html.palette-emerald .bg-brand-600 {
+  background-color: #059669 !important;
+}
+html.palette-emerald .hover\:bg-indigo-700:hover,
+html.palette-emerald .hover\:bg-indigo-600:hover,
+html.palette-emerald .hover\:bg-brand-700:hover {
+  background-color: #047857 !important;
+}
+html.palette-emerald .active\:bg-indigo-800:active {
+  background-color: #065f46 !important;
+}
+html.palette-emerald .text-indigo-600,
+html.palette-emerald .text-indigo-500,
+html.palette-emerald .text-brand-600 {
+  color: #059669 !important;
+}
+html.palette-emerald .text-indigo-700 {
+  color: #047857 !important;
+}
+html.palette-emerald.dark .text-indigo-400,
+html.palette-emerald .dark\:text-indigo-400,
+html.palette-emerald.dark .text-indigo-300,
+html.palette-emerald .dark\:text-indigo-300 {
+  color: #34d399 !important;
+}
+html.palette-emerald .bg-indigo-50,
+html.palette-emerald .bg-indigo-100 {
+  background-color: #ecfdf5 !important;
+}
+html.palette-emerald.dark .bg-indigo-950,
+html.palette-emerald .dark\:bg-indigo-950 {
+  background-color: #064e3b !important;
+}
+html.palette-emerald .border-indigo-200,
+html.palette-emerald .border-indigo-300 {
+  border-color: #a7f3d0 !important;
+}
+html.palette-emerald.dark .border-indigo-800,
+html.palette-emerald .dark\:border-indigo-800 {
+  border-color: #065f46 !important;
+}
+html.palette-emerald .shadow-indigo-600\/30,
+html.palette-emerald .shadow-indigo-500\/30 {
+  box-shadow: 0 8px 16px -2px rgba(5, 150, 105, 0.3) !important;
+}
+
+/* 2. VIOLET PALETTE */
+html.palette-violet .bg-indigo-600,
+html.palette-violet .bg-indigo-500,
+html.palette-violet .bg-brand-600 {
+  background-color: #7c3aed !important;
+}
+html.palette-violet .hover\:bg-indigo-700:hover,
+html.palette-violet .hover\:bg-indigo-600:hover,
+html.palette-violet .hover\:bg-brand-700:hover {
+  background-color: #6d28d9 !important;
+}
+html.palette-violet .active\:bg-indigo-800:active {
+  background-color: #5b21b6 !important;
+}
+html.palette-violet .text-indigo-600,
+html.palette-violet .text-indigo-500,
+html.palette-violet .text-brand-600 {
+  color: #7c3aed !important;
+}
+html.palette-violet .text-indigo-700 {
+  color: #6d28d9 !important;
+}
+html.palette-violet.dark .text-indigo-400,
+html.palette-violet .dark\:text-indigo-400,
+html.palette-violet.dark .text-indigo-300,
+html.palette-violet .dark\:text-indigo-300 {
+  color: #a78bfa !important;
+}
+html.palette-violet .bg-indigo-50,
+html.palette-violet .bg-indigo-100 {
+  background-color: #f5f3ff !important;
+}
+html.palette-violet.dark .bg-indigo-950,
+html.palette-violet .dark\:bg-indigo-950 {
+  background-color: #4c1d95 !important;
+}
+html.palette-violet .border-indigo-200,
+html.palette-violet .border-indigo-300 {
+  border-color: #ddd6fe !important;
+}
+html.palette-violet.dark .border-indigo-800,
+html.palette-violet .dark\:border-indigo-800 {
+  border-color: #5b21b6 !important;
+}
+html.palette-violet .shadow-indigo-600\/30,
+html.palette-violet .shadow-indigo-500\/30 {
+  box-shadow: 0 8px 16px -2px rgba(124, 58, 237, 0.3) !important;
+}
+
+/* 3. ROSE PALETTE */
+html.palette-rose .bg-indigo-600,
+html.palette-rose .bg-indigo-500,
+html.palette-rose .bg-brand-600 {
+  background-color: #e11d48 !important;
+}
+html.palette-rose .hover\:bg-indigo-700:hover,
+html.palette-rose .hover\:bg-indigo-600:hover,
+html.palette-rose .hover\:bg-brand-700:hover {
+  background-color: #be123c !important;
+}
+html.palette-rose .active\:bg-indigo-800:active {
+  background-color: #9f1239 !important;
+}
+html.palette-rose .text-indigo-600,
+html.palette-rose .text-indigo-500,
+html.palette-rose .text-brand-600 {
+  color: #e11d48 !important;
+}
+html.palette-rose .text-indigo-700 {
+  color: #be123c !important;
+}
+html.palette-rose.dark .text-indigo-400,
+html.palette-rose .dark\:text-indigo-400,
+html.palette-rose.dark .text-indigo-300,
+html.palette-rose .dark\:text-indigo-300 {
+  color: #fb7185 !important;
+}
+html.palette-rose .bg-indigo-50,
+html.palette-rose .bg-indigo-100 {
+  background-color: #fff1f2 !important;
+}
+html.palette-rose.dark .bg-indigo-950,
+html.palette-rose .dark\:bg-indigo-950 {
+  background-color: #881337 !important;
+}
+html.palette-rose .border-indigo-200,
+html.palette-rose .border-indigo-300 {
+  border-color: #fecdd3 !important;
+}
+html.palette-rose.dark .border-indigo-800,
+html.palette-rose .dark\:border-indigo-800 {
+  border-color: #9f1239 !important;
+}
+html.palette-rose .shadow-indigo-600\/30,
+html.palette-rose .shadow-indigo-500\/30 {
+  box-shadow: 0 8px 16px -2px rgba(225, 29, 72, 0.3) !important;
+}
+
+/* 4. AMBER PALETTE */
+html.palette-amber .bg-indigo-600,
+html.palette-amber .bg-indigo-500,
+html.palette-amber .bg-brand-600 {
+  background-color: #d97706 !important;
+}
+html.palette-amber .hover\:bg-indigo-700:hover,
+html.palette-amber .hover\:bg-indigo-600:hover,
+html.palette-amber .hover\:bg-brand-700:hover {
+  background-color: #b45309 !important;
+}
+html.palette-amber .active\:bg-indigo-800:active {
+  background-color: #92400e !important;
+}
+html.palette-amber .text-indigo-600,
+html.palette-amber .text-indigo-500,
+html.palette-amber .text-brand-600 {
+  color: #d97706 !important;
+}
+html.palette-amber .text-indigo-700 {
+  color: #b45309 !important;
+}
+html.palette-amber.dark .text-indigo-400,
+html.palette-amber .dark\:text-indigo-400,
+html.palette-amber.dark .text-indigo-300,
+html.palette-amber .dark\:text-indigo-300 {
+  color: #fbbf24 !important;
+}
+html.palette-amber .bg-indigo-50,
+html.palette-amber .bg-indigo-100 {
+  background-color: #fffbeb !important;
+}
+html.palette-amber.dark .bg-indigo-950,
+html.palette-amber .dark\:bg-indigo-950 {
+  background-color: #78350f !important;
+}
+html.palette-amber .border-indigo-200,
+html.palette-amber .border-indigo-300 {
+  border-color: #fde68a !important;
+}
+html.palette-amber.dark .border-indigo-800,
+html.palette-amber .dark\:border-indigo-800 {
+  border-color: #92400e !important;
+}
+html.palette-amber .shadow-indigo-600\/30,
+html.palette-amber .shadow-indigo-500\/30 {
+  box-shadow: 0 8px 16px -2px rgba(217, 119, 6, 0.3) !important;
+}
+
+/* 5. CYAN PALETTE */
+html.palette-cyan .bg-indigo-600,
+html.palette-cyan .bg-indigo-500,
+html.palette-cyan .bg-brand-600 {
+  background-color: #0891b2 !important;
+}
+html.palette-cyan .hover\:bg-indigo-700:hover,
+html.palette-cyan .hover\:bg-indigo-600:hover,
+html.palette-cyan .hover\:bg-brand-700:hover {
+  background-color: #0e7490 !important;
+}
+html.palette-cyan .active\:bg-indigo-800:active {
+  background-color: #155e75 !important;
+}
+html.palette-cyan .text-indigo-600,
+html.palette-cyan .text-indigo-500,
+html.palette-cyan .text-brand-600 {
+  color: #0891b2 !important;
+}
+html.palette-cyan .text-indigo-700 {
+  color: #0e7490 !important;
+}
+html.palette-cyan.dark .text-indigo-400,
+html.palette-cyan .dark\:text-indigo-400,
+html.palette-cyan.dark .text-indigo-300,
+html.palette-cyan .dark\:text-indigo-300 {
+  color: #22d3ee !important;
+}
+html.palette-cyan .bg-indigo-50,
+html.palette-cyan .bg-indigo-100 {
+  background-color: #ecfeff !important;
+}
+html.palette-cyan.dark .bg-indigo-950,
+html.palette-cyan .dark\:bg-indigo-950 {
+  background-color: #164e63 !important;
+}
+html.palette-cyan .border-indigo-200,
+html.palette-cyan .border-indigo-300 {
+  border-color: #a5f3fc !important;
+}
+html.palette-cyan.dark .border-indigo-800,
+html.palette-cyan .dark\:border-indigo-800 {
+  border-color: #155e75 !important;
+}
+html.palette-cyan .shadow-indigo-600\/30,
+html.palette-cyan .shadow-indigo-500\/30 {
+  box-shadow: 0 8px 16px -2px rgba(8, 145, 178, 0.3) !important;
+}
+
+/* 6. ELECTRIC BLUE PALETTE */
+html.palette-blue .bg-indigo-600,
+html.palette-blue .bg-indigo-500,
+html.palette-blue .bg-brand-600 {
+  background-color: #2563eb !important;
+}
+html.palette-blue .hover\:bg-indigo-700:hover,
+html.palette-blue .hover\:bg-indigo-600:hover,
+html.palette-blue .hover\:bg-brand-700:hover {
+  background-color: #1d4ed8 !important;
+}
+html.palette-blue .active\:bg-indigo-800:active {
+  background-color: #1e40af !important;
+}
+html.palette-blue .text-indigo-600,
+html.palette-blue .text-indigo-500,
+html.palette-blue .text-brand-600 {
+  color: #2563eb !important;
+}
+html.palette-blue .text-indigo-700 {
+  color: #1d4ed8 !important;
+}
+html.palette-blue.dark .text-indigo-400,
+html.palette-blue .dark\:text-indigo-400,
+html.palette-blue.dark .text-indigo-300,
+html.palette-blue .dark\:text-indigo-300 {
+  color: #60a5fa !important;
+}
+html.palette-blue .bg-indigo-50,
+html.palette-blue .bg-indigo-100 {
+  background-color: #eff6ff !important;
+}
+html.palette-blue.dark .bg-indigo-950,
+html.palette-blue .dark\:bg-indigo-950 {
+  background-color: #1e3a8a !important;
+}
+html.palette-blue .border-indigo-200,
+html.palette-blue .border-indigo-300 {
+  border-color: #bfdbfe !important;
+}
+html.palette-blue.dark .border-indigo-800,
+html.palette-blue .dark\:border-indigo-800 {
+  border-color: #1e40af !important;
+}
+html.palette-blue .shadow-indigo-600\/30,
+html.palette-blue .shadow-indigo-500\/30 {
+  box-shadow: 0 8px 16px -2px rgba(37, 99, 235, 0.3) !important;
+}
+
+/* 7. MINIMAL SLATE PALETTE */
+html.palette-slate .bg-indigo-600,
+html.palette-slate .bg-indigo-500,
+html.palette-slate .bg-brand-600 {
+  background-color: #334155 !important;
+}
+html.palette-slate .hover\:bg-indigo-700:hover,
+html.palette-slate .hover\:bg-indigo-600:hover,
+html.palette-slate .hover\:bg-brand-700:hover {
+  background-color: #1e293b !important;
+}
+html.palette-slate .active\:bg-indigo-800:active {
+  background-color: #0f172a !important;
+}
+html.palette-slate .text-indigo-600,
+html.palette-slate .text-indigo-500,
+html.palette-slate .text-brand-600 {
+  color: #334155 !important;
+}
+html.palette-slate .text-indigo-700 {
+  color: #1e293b !important;
+}
+html.palette-slate.dark .text-indigo-400,
+html.palette-slate .dark\:text-indigo-400,
+html.palette-slate.dark .text-indigo-300,
+html.palette-slate .dark\:text-indigo-300 {
+  color: #94a3b8 !important;
+}
+html.palette-slate .bg-indigo-50,
+html.palette-slate .bg-indigo-100 {
+  background-color: #f1f5f9 !important;
+}
+html.palette-slate.dark .bg-indigo-950,
+html.palette-slate .dark\:bg-indigo-950 {
+  background-color: #0f172a !important;
+}
+html.palette-slate .border-indigo-200,
+html.palette-slate .border-indigo-300 {
+  border-color: #cbd5e1 !important;
+}
+html.palette-slate.dark .border-indigo-800,
+html.palette-slate .dark\:border-indigo-800 {
+  border-color: #334155 !important;
+}
+html.palette-slate .shadow-indigo-600\/30,
+html.palette-slate .shadow-indigo-500\/30 {
+  box-shadow: 0 8px 16px -2px rgba(51, 65, 85, 0.3) !important;
 }
