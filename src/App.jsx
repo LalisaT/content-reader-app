@@ -6,6 +6,7 @@ import { authService } from './services/authService';
 import { appConfigService, THEME_PALETTES } from './services/appConfigService';
 import { categoryService } from './services/categoryService';
 import { firestoreSyncService } from './services/firestoreSyncService';
+import { SplashScreen } from '@capacitor/splash-screen';
 
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
@@ -89,6 +90,9 @@ export default function App() {
         setCategories(cats);
       }
     });
+
+    // Smooth native fade transition (< 0.3s) directly into feed with zero white flash
+    SplashScreen.hide({ fadeOutDuration: 250 }).catch(() => {});
 
     return () => {
       window.removeEventListener('online', handleOnline);
