@@ -146,15 +146,14 @@ export default function ArticleDetail({
                 <Edit3 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Edit</span>
               </button>
-              {article.id.startsWith('custom-') && (
-                <button
-                  onClick={() => onDeleteCurrentArticle(article.id)}
-                  title="Delete this post"
-                  className="p-1.5 rounded-md text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-colors"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              )}
+              <button
+                onClick={() => onDeleteCurrentArticle(article.id)}
+                title="Delete this article permanently as Admin"
+                className="p-1.5 rounded-md text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-colors flex items-center space-x-1 text-xs font-bold"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Delete</span>
+              </button>
             </div>
           )}
 

@@ -10,9 +10,31 @@ const STORAGE_KEYS = {
   AD_CONSENT: 'tippulse_ad_consent',
   CUSTOM_ARTICLES: 'tippulse_custom_articles',
   CACHED_ARTICLES: 'tippulse_cached_all_articles',
+  DELETED_ARTICLES: 'tippulse_deleted_articles',
 };
 
 export const storageService = {
+  // Deleted articles blacklist (allows admin to delete ANY post including seeded/default)
+  getDeletedArticleIds: () => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.DELETED_ARTICLES);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  addDeletedArticleId: (id) => {
+    const list = storageService.getDeletedArticleIds();
+    const strId = String(id);
+    if (!list.includes(strId)) {
+      const updated = [...list, strId];
+      localStorage.setItem(STORAGE_KEYS.DELETED_ARTICLES, JSON.stringify(updated));
+      return updated;
+    }
+    return list;
+  },
+
   // Offline Full Articles Cache (Never lost when internet data is off)
   getCachedArticles: () => {
     try {
@@ -71,14 +93,17 @@ export const storageService = {
   },
 
   deleteCustomArticle: (id) => {
+    const strId = String(id);
+    storageService.addDeletedArticleId(strId);
+
     const list = storageService.getCustomArticles();
-    const updated = list.filter((a) => a.id !== id);
+    const updated = list.filter((a) => String(a.id) !== strId);
     localStorage.setItem(STORAGE_KEYS.CUSTOM_ARTICLES, JSON.stringify(updated));
 
     // Also remove from full offline cache
     const cached = storageService.getCachedArticles();
-    const updatedCached = cached.filter((a) => a.id !== id);
-    storageService.setCachedArticles(updatedCached);
+    const updatedCached = cached.filter((a) => String(a.id) !== strId);
+    localStorage.setItem(STORAGE_KEYS.CACHED_ARTICLES, JSON.stringify(updatedCached));
 
     return updated;
   },

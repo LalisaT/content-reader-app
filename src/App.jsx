@@ -101,17 +101,21 @@ export default function App() {
 
   // Combined articles (Real-time Cloud Articles + Offline Local Cache + Curated Fallback)
   const allArticles = useMemo(() => {
+    const deletedIds = storageService.getDeletedArticleIds();
+    let list = [];
     if (cloudArticles && cloudArticles.length > 0) {
-      return cloudArticles;
+      list = cloudArticles;
+    } else {
+      const cached = storageService.getCachedArticles();
+      if (cached && cached.length > 0) {
+        list = cached;
+      } else if (customArticles && customArticles.length > 0) {
+        list = [...customArticles, ...initialArticlesData];
+      } else {
+        list = initialArticlesData;
+      }
     }
-    const cached = storageService.getCachedArticles();
-    if (cached && cached.length > 0) {
-      return cached;
-    }
-    if (customArticles && customArticles.length > 0) {
-      return [...customArticles, ...initialArticlesData];
-    }
-    return initialArticlesData;
+    return list.filter((a) => !deletedIds.includes(String(a.id)));
   }, [cloudArticles, customArticles]);
 
   const isAdmin = currentUser && currentUser.role === 'admin';
@@ -241,21 +245,22 @@ export default function App() {
     }
   };
 
-  // Delete custom article (Instant Local + Cloud Firestore Sync)
+  // Delete custom or any article as Admin (Instant Local + Cloud Firestore Sync)
   const handleDeleteCustomArticle = async (id) => {
     if (!isAdmin) {
       alert('Unauthorized: Only Administrators can delete articles.');
       return;
     }
-    if (window.confirm('Are you sure you want to delete this article?')) {
+    if (window.confirm('Are you sure you want to permanently delete this article?')) {
       const updated = storageService.deleteCustomArticle(id);
       setCustomArticles(updated);
+      setCloudArticles((prev) => (prev || []).filter((a) => String(a.id) !== String(id)));
       try {
         await firestoreSyncService.deleteArticle(id);
       } catch (err) {
         console.warn('Article deleted locally, cloud sync pending:', err);
       }
-      if (activeArticle && activeArticle.id === id) {
+      if (activeArticle && String(activeArticle.id) === String(id)) {
         setActiveArticle(null);
       }
     }
