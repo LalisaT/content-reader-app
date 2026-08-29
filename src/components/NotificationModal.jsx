@@ -196,6 +196,13 @@ export default function NotificationModal({
             ))
           )}
         </div>
+
+        {/* Centered Footer Branding */}
+        <div className="py-2.5 px-4 bg-slate-50 dark:bg-slate-950/80 border-t border-slate-100 dark:border-slate-800/80 text-center">
+          <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wide">
+            TipPulse Alert Center
+          </span>
+        </div>
       </div>
     </div>
   );
