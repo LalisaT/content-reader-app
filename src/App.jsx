@@ -6,6 +6,7 @@ import { authService } from './services/authService';
 import { appConfigService, THEME_PALETTES } from './services/appConfigService';
 import { categoryService } from './services/categoryService';
 import { firestoreSyncService } from './services/firestoreSyncService';
+import { notificationService } from './services/notificationService';
 import { SplashScreen } from '@capacitor/splash-screen';
 
 import Navbar from './components/Navbar';
@@ -16,6 +17,7 @@ import RewardedModal from './components/RewardedModal';
 import AdminPostModal from './components/AdminPostModal';
 import AuthModal from './components/AuthModal';
 import AppCustomizerModal from './components/AppCustomizerModal';
+import NotificationModal from './components/NotificationModal';
 
 import HomeFeed from './views/HomeFeed';
 import ArticleDetail from './views/ArticleDetail';
@@ -61,6 +63,8 @@ export default function App() {
   const [isInterstitialOpen, setIsInterstitialOpen] = useState(false);
   const [rewardedModalData, setRewardedModalData] = useState({ isOpen: false, article: null });
   const [isDailyTipOpen, setIsDailyTipOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [notifications, setNotifications] = useState(() => notificationService.getNotifications());
 
   // Real-time Cloud Synchronization & Network Connectivity Listeners
   useEffect(() => {
@@ -69,6 +73,36 @@ export default function App() {
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+
+    // Notification Service Init & Deep Linking Handler
+    const handleNotificationClick = (articleId, articleData) => {
+      if (articleData) {
+        setActiveArticle(articleData);
+        setActiveTab('feed');
+      } else if (articleId) {
+        const cached = storageService.getCachedArticles() || [];
+        const custom = storageService.getCustomArticles() || [];
+        const target = [...cached, ...custom, ...initialArticlesData].find(
+          (a) => String(a.id) === String(articleId)
+        );
+        if (target) {
+          setActiveArticle(target);
+          setActiveTab('feed');
+        }
+      }
+    };
+
+    notificationService.init(handleNotificationClick);
+    window.__tippulse_on_notification_click = handleNotificationClick;
+
+    const handleNotifUpdate = (e) => {
+      if (e.detail) {
+        setNotifications(e.detail);
+      } else {
+        setNotifications(notificationService.getNotifications());
+      }
+    };
+    window.addEventListener('tippulse_notification_updated', handleNotifUpdate);
 
     // 1. Listen for real-time articles
     const unsubArticles = firestoreSyncService.subscribeArticles((articles) => {
@@ -109,6 +143,7 @@ export default function App() {
       clearTimeout(timerDone);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('tippulse_notification_updated', handleNotifUpdate);
       unsubArticles();
       unsubConfig();
       unsubCategories();
@@ -256,6 +291,15 @@ export default function App() {
       console.warn('Article saved locally, cloud sync pending:', err);
     }
 
+    // Trigger instant notification with sound to mobile devices / in-app notification center
+    if (articleData.notifyUsers !== false) {
+      try {
+        await notificationService.notifyNewArticle(articleData);
+      } catch (err) {
+        console.debug('Notification trigger error:', err);
+      }
+    }
+
     // If currently viewing this article, update it live in the reader
     if (activeArticle && activeArticle.id === articleData.id) {
       setActiveArticle(articleData);
@@ -383,6 +427,8 @@ export default function App() {
             appConfig={appConfig}
             currentTheme={readerTheme}
             onToggleTheme={handleCycleTheme}
+            unreadNotificationCount={notifications.filter((n) => !n.read).length}
+            onOpenNotifications={() => setIsNotificationOpen(true)}
           />
 
           {/* Offline Mode Banner (Shows when mobile data / wifi is off) */}
@@ -563,6 +609,31 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Notification Center Modal */}
+      <NotificationModal
+        isOpen={isNotificationOpen}
+        onClose={() => setIsNotificationOpen(false)}
+        notifications={notifications}
+        onSelectArticle={(articleId) => {
+          setIsNotificationOpen(false);
+          const target = allArticles.find((a) => String(a.id) === String(articleId));
+          if (target) {
+            setActiveArticle(target);
+            setActiveTab('feed');
+          }
+        }}
+        onMarkAllRead={() => {
+          const updated = notificationService.markAllAsRead();
+          setNotifications(updated);
+        }}
+        onClearAll={() => {
+          const updated = notificationService.clearAll();
+          setNotifications(updated);
+        }}
+        currentUser={currentUser}
+        onOpenAuth={(requiredAdmin) => setAuthModalState({ isOpen: true, requiredAdmin })}
+      />
 
       {/* Ultra-Fast Sub-0.3s Smooth Animated Splash with Glowing Circle Ring */}
       {splashActive && (

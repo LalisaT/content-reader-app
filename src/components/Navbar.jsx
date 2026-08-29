@@ -19,7 +19,8 @@ import {
   Sun,
   Moon,
   Coffee,
-  User
+  User,
+  Bell
 } from 'lucide-react';
 
 const LOGO_ICON_MAP = {
@@ -38,6 +39,8 @@ export default function Navbar({
   appConfig,
   currentTheme = 'light',
   onToggleTheme,
+  unreadNotificationCount = 0,
+  onOpenNotifications,
 }) {
   const isAdmin = currentUser && currentUser.role === 'admin';
   const LogoIconComp = LOGO_ICON_MAP[appConfig?.logoIcon] || BookOpen;
@@ -132,30 +135,22 @@ export default function Navbar({
             <Search className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          {/* User Account Profile */}
-          {currentUser ? (
-            <div className="flex items-center pl-1">
-              <button
-                onClick={() => onTabChange('settings')}
-                title={`Logged in as ${currentUser.name} (${currentUser.role})`}
-                className="flex items-center space-x-1.5 p-0.5 rounded-full hover:ring-2 hover:ring-indigo-500/50 transition-all"
-              >
-                <img
-                  src={currentUser.avatar}
-                  alt={currentUser.name}
-                  className="w-7 h-7 rounded-full object-cover border border-slate-300 dark:border-slate-700"
-                />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => onOpenAuth(false)}
-              title="Sign In / User Account"
-              className="p-2 rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
-            >
-              <User className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2]" />
-            </button>
-          )}
+          {/* Notification Bell Button (Replaces Login icon in header bar) */}
+          <button
+            onClick={onOpenNotifications}
+            title="Notifications & Alerts"
+            className="p-2 rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors relative"
+          >
+            <Bell className={`w-4 h-4 sm:w-5 sm:h-5 stroke-[2] ${unreadNotificationCount > 0 ? 'text-sky-600 dark:text-sky-400 fill-sky-500/20' : ''}`} />
+            
+            {/* Unread Counter Badge / Glowing Pulse */}
+            {unreadNotificationCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500 border-2 border-white dark:border-slate-900"></span>
+              </span>
+            )}
+          </button>
         </div>
       </div>
     </header>

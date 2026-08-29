@@ -28,7 +28,8 @@ import {
   Lightbulb,
   AlertTriangle,
   ExternalLink,
-  Code
+  Code,
+  Bell
 } from 'lucide-react';
 import RichMarkdownRenderer from './RichMarkdownRenderer';
 
@@ -57,6 +58,7 @@ export default function AdminPostModal({
   const [content, setContent] = useState('');
   const [isPremium, setIsPremium] = useState(false);
   const [needsData, setNeedsData] = useState(false);
+  const [sendNotification, setSendNotification] = useState(true);
   const [activeTab, setActiveTab] = useState('editor'); // 'editor' | 'preview'
   const [editorTab, setEditorTab] = useState('write'); // 'write' | 'preview'
   const fileInputRef = useRef(null);
@@ -207,6 +209,7 @@ export default function AdminPostModal({
       summary: (summary || title || '').trim(),
       keyTakeaways: (takeaways || []).map((t) => (t || '').trim()).filter(Boolean),
       content: (content || '').trim(),
+      notifyUsers: Boolean(sendNotification),
     };
 
     onSaveArticle(savedData);
@@ -717,6 +720,43 @@ export default function AdminPostModal({
                   onChange={(e) => setIsPremium(e.target.checked)}
                   onClick={(e) => e.stopPropagation()}
                   className="w-5 h-5 accent-amber-500 rounded cursor-pointer ml-3 flex-shrink-0"
+                />
+              </div>
+
+              {/* Instant Push & Device Sound Notification Toggle */}
+              <div 
+                onClick={() => setSendNotification(!sendNotification)}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer select-none flex items-center justify-between ${
+                  sendNotification
+                    ? 'bg-sky-500/10 dark:bg-sky-950/40 border-sky-400 dark:border-sky-600 shadow-xs'
+                    : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
+                    sendNotification ? 'bg-sky-500 text-white shadow-xs' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                  }`}>
+                    <Bell className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center space-x-1.5">
+                      <span>Send Instant Notification with Sound</span>
+                      <span className="text-[10px] bg-sky-500 text-white font-black px-1.5 py-0.5 rounded">
+                        ALL DEVICES
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-snug">
+                      Automatically pops up in phone notification area with chime sound and deep links to this tip.
+                    </p>
+                  </div>
+                </div>
+
+                <input
+                  type="checkbox"
+                  checked={sendNotification}
+                  onChange={(e) => setSendNotification(e.target.checked)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-5 h-5 accent-sky-500 rounded cursor-pointer ml-3 flex-shrink-0"
                 />
               </div>
 
