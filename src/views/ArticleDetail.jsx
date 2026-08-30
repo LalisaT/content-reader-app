@@ -26,6 +26,7 @@ import AudioPlayer from '../components/AudioPlayer';
 import BannerAd from '../components/BannerAd';
 import RichMarkdownRenderer from '../components/RichMarkdownRenderer';
 import { storageService } from '../services/storageService';
+import { deepLinkService } from '../services/deepLinkService';
 
 export default function ArticleDetail({
   article,
@@ -74,19 +75,22 @@ export default function ArticleDetail({
   }, []);
 
   const handleShare = async () => {
+    const shareUrl = deepLinkService.generateShareLink(article);
+    const shareText = deepLinkService.generateShareMessage(article);
+
     if (navigator.share) {
       try {
         await navigator.share({
           title: article.title,
-          text: article.summary,
-          url: window.location.href,
+          text: shareText,
+          url: shareUrl,
         });
       } catch {
         // Share cancelled
       }
     } else {
-      navigator.clipboard?.writeText(window.location.href);
-      alert('Article link copied to clipboard!');
+      navigator.clipboard?.writeText(shareUrl);
+      alert('✨ Smart Play Store Referral Link copied to clipboard!\n\nNew users who install from this link will be taken directly to this post upon launch.');
     }
   };
 

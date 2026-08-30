@@ -7,6 +7,7 @@ import { appConfigService, THEME_PALETTES } from './services/appConfigService';
 import { categoryService } from './services/categoryService';
 import { firestoreSyncService } from './services/firestoreSyncService';
 import { notificationService } from './services/notificationService';
+import { deepLinkService } from './services/deepLinkService';
 import { SplashScreen } from '@capacitor/splash-screen';
 
 import Navbar from './components/Navbar';
@@ -94,6 +95,20 @@ export default function App() {
 
     notificationService.init(handleNotificationClick);
     window.__tippulse_on_notification_click = handleNotificationClick;
+
+    // Deferred & Standard Deep Link Resolver (Preserves post navigation after Play Store install)
+    deepLinkService.init((articleId) => {
+      if (!articleId) return;
+      const cached = storageService.getCachedArticles() || [];
+      const custom = storageService.getCustomArticles() || [];
+      const target = [...cached, ...custom, ...initialArticlesData].find(
+        (a) => String(a.id) === String(articleId)
+      );
+      if (target) {
+        setActiveArticle(target);
+        setActiveTab('feed');
+      }
+    });
 
     const handleNotifUpdate = (e) => {
       if (e.detail) {
