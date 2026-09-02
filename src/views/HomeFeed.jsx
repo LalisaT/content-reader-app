@@ -17,15 +17,19 @@ export default function HomeFeed({
   const currentCategory = onSelectCategory ? selectedCategory : localCategory;
   const handleCategoryChange = onSelectCategory || setLocalCategory;
 
-  // Filter articles based on active category
+  // Pick the top curated content article with a photo for the featured hero
+  const featuredArticle = articles.find(
+    (a) => a.id !== 'welcome-to-tippulse' && !String(a.id).startsWith('welcome') && Boolean((a.image || a.imageUrl) && a.image !== '/app-icon.png')
+  ) || articles[0];
+
+  // Filter articles based on active category (exclude welcome article from standard All feed)
   const filteredArticles = currentCategory === 'All'
-    ? articles
+    ? articles.filter((a) => a.id !== 'welcome-to-tippulse')
     : articles.filter((a) => {
         if (!a.category) return false;
         return a.category.toLowerCase().trim() === currentCategory.toLowerCase().trim();
       });
 
-  const featuredArticle = articles[0];
   const [heroImgErr, setHeroImgErr] = useState(false);
 
   return (
@@ -111,8 +115,8 @@ export default function HomeFeed({
 
       {/* Clean Article Stream (No intrusive ads on home feed) */}
       <div className="px-4 space-y-3.5">
-        {filteredArticles.map((article, index) => {
-          if (selectedCategory === 'All' && index === 0) return null;
+        {filteredArticles.map((article) => {
+          if (selectedCategory === 'All' && featuredArticle && article.id === featuredArticle.id) return null;
           return (
             <ArticleCard
               key={article.id}
