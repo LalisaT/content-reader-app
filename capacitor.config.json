@@ -4,9 +4,9 @@
   "webDir": "dist",
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration": 0,
-      "launchAutoHide": true,
-      "launchFadeOutDuration": 50,
+      "launchShowDuration": 30000,
+      "launchAutoHide": false,
+      "launchFadeOutDuration": 250,
       "backgroundColor": "#ffffff",
       "androidSplashResourceName": "splash",
       "androidScaleType": "CENTER_CROP",

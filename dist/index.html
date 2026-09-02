@@ -8,10 +8,14 @@
     <meta name="theme-color" content="#ffffff" />
     <meta name="description" content="TipPulse - Curated daily tips, tech guides, productivity hacks, and lifestyle articles." />
     <title>TipPulse - Daily Tips & News Reader</title>
-    <!-- Google Fonts -->
+    <!-- Non-blocking Google Fonts with instant system font fallback -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap" media="print" onload="this.media='all'">
+    <noscript>
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&display=swap">
+    </noscript>
     
     <style>
       html, body {
@@ -21,10 +25,13 @@
         padding: 0;
         height: 100%;
         overflow-x: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-BI-aJZLO.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BWxRSArc.css">
+    <script type="module" crossorigin src="/assets/index-Dtc14-MM.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/icons-B48iX04K.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-DW4IXSev.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-Cqp5YDbq.css">
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased select-none font-sans overflow-x-hidden min-h-screen">
     <div id="root"></div>
