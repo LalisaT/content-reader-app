@@ -144,14 +144,14 @@ export default function App() {
     // Immediately hide native splash layer so the animated overlay takes over seamlessly
     SplashScreen.hide({ fadeOutDuration: 0 }).catch(() => {});
 
-    // Ultra-Fast 0.3s Startup: 200ms display + 100ms silky fade directly into ready feed
+    // Instant Professional Launch (Sub-0.16s: 80ms pop + 80ms fluid fade straight into feed)
     const timerFade = setTimeout(() => {
       setSplashFadeOut(true);
-    }, 200);
+    }, 80);
 
     const timerDone = setTimeout(() => {
       setSplashActive(false);
-    }, 300);
+    }, 160);
 
     return () => {
       clearTimeout(timerFade);
@@ -650,10 +650,10 @@ export default function App() {
         onOpenAuth={(requiredAdmin) => setAuthModalState({ isOpen: true, requiredAdmin })}
       />
 
-      {/* Ultra-Fast Sub-0.3s Smooth Animated Splash with Glowing Circle Ring */}
+      {/* Ultra-Fast Sub-0.16s Smooth Animated Splash with Glowing Circle Ring */}
       {splashActive && (
         <div
-          className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-white transition-opacity duration-150 ease-out pointer-events-none ${
+          className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-white transition-opacity duration-75 ease-out pointer-events-none ${
             splashFadeOut ? 'opacity-0' : 'opacity-100'
           }`}
         >
