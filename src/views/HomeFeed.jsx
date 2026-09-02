@@ -17,20 +17,15 @@ export default function HomeFeed({
   const currentCategory = onSelectCategory ? selectedCategory : localCategory;
   const handleCategoryChange = onSelectCategory || setLocalCategory;
 
-  // Pick the top curated content article with a photo for the featured hero
-  const featuredArticle = articles.find(
-    (a) => a.id !== 'welcome-to-tippulse' && !String(a.id).startsWith('welcome') && Boolean((a.image || a.imageUrl) && a.image !== '/app-icon.png')
-  ) || articles[0];
-
-  // Filter articles based on active category (exclude welcome article from standard All feed)
+  // Filter articles based on active category
   const filteredArticles = currentCategory === 'All'
-    ? articles.filter((a) => a.id !== 'welcome-to-tippulse')
+    ? articles
     : articles.filter((a) => {
         if (!a.category) return false;
         return a.category.toLowerCase().trim() === currentCategory.toLowerCase().trim();
       });
 
-  const [heroImgErr, setHeroImgErr] = useState(false);
+  const featuredArticle = articles[0];
 
   return (
     <div className="max-w-2xl mx-auto pb-24 animate-in fade-in duration-200">
@@ -49,23 +44,12 @@ export default function HomeFeed({
             className="group relative rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 dark:border-slate-700/80 cursor-pointer bg-slate-900 text-white transition-all hover:shadow-xl"
           >
             {/* Background Image with Dark Overlay */}
-            <div className="relative h-64 sm:h-72 w-full overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
-              {!heroImgErr && (featuredArticle.image || featuredArticle.imageUrl) && (featuredArticle.image !== '/app-icon.png') ? (
-                <img
-                  src={featuredArticle.image || featuredArticle.imageUrl}
-                  alt=""
-                  referrerPolicy="no-referrer"
-                  crossOrigin="anonymous"
-                  onError={() => setHeroImgErr(true)}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-indigo-950 via-slate-900 to-sky-950 flex items-center justify-center">
-                  <div className="w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-sky-300 shadow-xl">
-                    <Sparkles className="w-10 h-10 stroke-[1.5]" />
-                  </div>
-                </div>
-              )}
+            <div className="relative h-64 sm:h-72 w-full overflow-hidden">
+              <img
+                src={featuredArticle.image || featuredArticle.imageUrl}
+                alt={featuredArticle.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
             </div>
 
@@ -115,8 +99,8 @@ export default function HomeFeed({
 
       {/* Clean Article Stream (No intrusive ads on home feed) */}
       <div className="px-4 space-y-3.5">
-        {filteredArticles.map((article) => {
-          if (selectedCategory === 'All' && featuredArticle && article.id === featuredArticle.id) return null;
+        {filteredArticles.map((article, index) => {
+          if (selectedCategory === 'All' && index === 0) return null;
           return (
             <ArticleCard
               key={article.id}

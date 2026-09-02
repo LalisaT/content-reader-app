@@ -433,6 +433,14 @@ export default function App() {
             onOpenNotifications={() => setIsNotificationOpen(true)}
           />
 
+          {/* Offline Mode Banner (Shows when mobile data / wifi is off) */}
+          {!isOnline && (
+            <div className="bg-amber-500/15 dark:bg-amber-950/40 border-b border-amber-300/40 dark:border-amber-800/40 px-4 py-2 text-center text-xs font-semibold text-amber-800 dark:text-amber-300 flex items-center justify-center space-x-1.5 animate-in fade-in">
+              <WifiOff className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <span>Offline Reading Mode: All your written & saved articles are ready offline.</span>
+            </div>
+          )}
+
           {/* View Container */}
           <main className="flex-1">
             {activeTab === 'feed' && (
