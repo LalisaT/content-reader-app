@@ -292,7 +292,9 @@ export default function ArticleDetail({
           {!imageError && (article.image || article.imageUrl) && (article.image !== '/app-icon.png') && (article.imageUrl !== '/app-icon.png') ? (
             <img
               src={article.image || article.imageUrl}
-              alt={article.title}
+              alt=""
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
               onError={() => setImageError(true)}
               className="w-full h-56 sm:h-72 object-cover"
             />

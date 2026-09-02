@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Clock, Bookmark, Lock, ArrowUpRight, Zap, Cpu, Heart, DollarSign, Brain } from 'lucide-react';
 
 const ICON_MAP = {
@@ -11,6 +11,11 @@ const ICON_MAP = {
 
 export default function ArticleCard({ article, isBookmarked, onToggleBookmark, onOpenArticle }) {
   const IconComponent = ICON_MAP[article.categoryIcon] || Zap;
+  const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [article?.id, article?.image, article?.imageUrl]);
 
   return (
     <div 
@@ -21,12 +26,23 @@ export default function ArticleCard({ article, isBookmarked, onToggleBookmark, o
       <div className="flex gap-4">
         {/* Thumbnail Image */}
         <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-700">
-          <img
-            src={article.image}
-            alt={article.title}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+          {!imgError && (article.image || article.imageUrl) && (article.image !== '/app-icon.png') ? (
+            <img
+              src={article.image || article.imageUrl}
+              alt=""
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              crossOrigin="anonymous"
+              onError={() => setImgError(true)}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-sky-50 via-indigo-50 to-blue-100 dark:from-slate-800 dark:via-slate-750 dark:to-slate-700 text-sky-600 dark:text-sky-400 p-2">
+              <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-700">
+                <IconComponent className="w-5 h-5 stroke-[2]" />
+              </div>
+            </div>
+          )}
           {article.isPremium && (
             <div className="absolute top-1.5 left-1.5 bg-amber-500 text-slate-950 font-extrabold text-[9px] px-1.5 py-0.5 rounded shadow-sm flex items-center space-x-0.5">
               <Lock className="w-2.5 h-2.5" />

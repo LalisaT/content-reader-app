@@ -67,6 +67,9 @@ export default function App() {
 
   // Real-time Cloud Synchronization & Network Connectivity Listeners
   useEffect(() => {
+    // Reveal app ultra-fast the instant React mounts
+    SplashScreen.hide({ fadeOutDuration: 80 }).catch(() => {});
+
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
@@ -137,11 +140,6 @@ export default function App() {
       if (cats && cats.length > 0) {
         setCategories(cats);
       }
-    });
-
-    // Reveal app smoothly as soon as React feed mounts (Single-Screen Experience)
-    requestAnimationFrame(() => {
-      SplashScreen.hide({ fadeOutDuration: 250 }).catch(() => {});
     });
 
     return () => {
