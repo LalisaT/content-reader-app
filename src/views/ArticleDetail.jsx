@@ -116,6 +116,12 @@ export default function ArticleDetail({
   const requiresData = Boolean(article?.needsData || article?.requiresOnline);
   const isDataBlocked = requiresData && !isOnline;
   const isLocked = article?.isPremium && !isUnlocked;
+  const isWelcomeArticle = Boolean(
+    article?.id === 'welcome-to-tippulse' ||
+    String(article?.id || '').startsWith('test_') ||
+    String(article?.id || '').includes('welcome') ||
+    String(article?.title || '').toLowerCase().includes('welcome')
+  );
 
   return (
     <div className={`min-h-screen pb-24 transition-colors ${
@@ -392,35 +398,37 @@ export default function ArticleDetail({
           </div>
         )}
 
-        {/* Dedicated "Invite Friends & Share TipPulse" Interactive Card */}
-        <div className="my-7 p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-sky-500/10 via-blue-500/5 to-indigo-500/10 dark:from-slate-800 dark:via-sky-950/30 dark:to-slate-900 border border-sky-200 dark:border-sky-800/80 shadow-lg shadow-sky-500/5 relative overflow-hidden">
-          <div className="flex items-start space-x-3.5 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 p-1.5 shadow-md shadow-sky-500/10 border border-slate-100 dark:border-slate-700 flex items-center justify-center shrink-0">
-              <img src="/app-icon.png" alt="TipPulse" className="w-full h-full object-contain rounded-xl" />
-            </div>
-            <div>
-              <div className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 text-[10px] font-black uppercase tracking-wider mb-1">
-                <Sparkles className="w-3 h-3 text-sky-500" />
-                <span>Invite Friends & Family</span>
+        {/* Dedicated "Invite Friends & Share TipPulse" Interactive Card (Welcome Notification Only) */}
+        {isWelcomeArticle && (
+          <div className="my-7 p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-sky-500/10 via-blue-500/5 to-indigo-500/10 dark:from-slate-800 dark:via-sky-950/30 dark:to-slate-900 border border-sky-200 dark:border-sky-800/80 shadow-lg shadow-sky-500/5 relative overflow-hidden">
+            <div className="flex items-start space-x-3.5 mb-3">
+              <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 p-1.5 shadow-md shadow-sky-500/10 border border-slate-100 dark:border-slate-700 flex items-center justify-center shrink-0">
+                <img src="/app-icon.png" alt="TipPulse" className="w-full h-full object-contain rounded-xl" />
               </div>
-              <h3 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight">
-                Help Your Friends Stay Ahead! 🚀
-              </h3>
+              <div>
+                <div className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 text-[10px] font-black uppercase tracking-wider mb-1">
+                  <Sparkles className="w-3 h-3 text-sky-500" />
+                  <span>Invite Friends & Family</span>
+                </div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight">
+                  Help Your Friends Stay Ahead! 🚀
+                </h3>
+              </div>
             </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+              Spread the knowledge — invite friends & family to discover daily smart tips, tech hacks, and productivity insights together on TipPulse.
+            </p>
+
+            <button
+              onClick={handleShare}
+              className="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold text-sm shadow-md shadow-sky-500/25 active:scale-[0.99] transition-all cursor-pointer"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>Invite Friends / Share TipPulse</span>
+            </button>
           </div>
-
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-            Spread the knowledge — invite friends & family to discover daily smart tips, tech hacks, and productivity insights together on TipPulse.
-          </p>
-
-          <button
-            onClick={handleShare}
-            className="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold text-sm shadow-md shadow-sky-500/25 active:scale-[0.99] transition-all cursor-pointer"
-          >
-            <Share2 className="w-4 h-4" />
-            <span>Invite Friends / Share TipPulse</span>
-          </button>
-        </div>
+        )}
 
         {/* Inline Article Banner Ad (AdMob Placement) */}
         <div className="my-8">
