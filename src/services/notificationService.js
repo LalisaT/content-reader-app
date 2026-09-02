@@ -101,9 +101,13 @@ export const notificationService = {
           await LocalNotifications.requestPermissions();
         }
 
-        // Add action listener when user taps on the notification in the phone status bar
-        LocalNotifications.addListener('localNotificationActionPerformed', (notificationAction) => {
+        // Play sound when a notification arrives / is received by device
+        LocalNotifications.addListener('localNotificationReceived', () => {
           playNotificationChime();
+        });
+
+        // Add action listener when user taps on the notification in the phone status bar (opens article without extra chime)
+        LocalNotifications.addListener('localNotificationActionPerformed', (notificationAction) => {
           const extra = notificationAction.notification.extra;
           if (extra && extra.articleId && typeof onNotificationClick === 'function') {
             onNotificationClick(extra.articleId, extra.article);

@@ -22,7 +22,6 @@ import {
   User,
   Bell
 } from 'lucide-react';
-import { playNotificationChime } from '../services/notificationService';
 
 const LOGO_ICON_MAP = {
   BookOpen, Sparkles, Flame, Rocket, Compass, Diamond, Crown, Globe, Zap, Heart, Award
@@ -138,10 +137,7 @@ export default function Navbar({
 
           {/* Notification Bell Button (Replaces Login icon in header bar) */}
           <button
-            onClick={() => {
-              playNotificationChime();
-              onOpenNotifications();
-            }}
+            onClick={onOpenNotifications}
             title="Notifications & Alerts"
             className="p-2 rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors relative cursor-pointer"
           >

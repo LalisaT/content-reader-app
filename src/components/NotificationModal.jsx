@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   User
 } from 'lucide-react';
-import { notificationService, playNotificationChime } from '../services/notificationService';
+import { notificationService } from '../services/notificationService';
 
 export default function NotificationModal({
   isOpen,
@@ -48,7 +48,6 @@ export default function NotificationModal({
   };
 
   const handleItemClick = (item) => {
-    playNotificationChime();
     notificationService.markAsRead(item.id);
     onClose();
     if (typeof onSelectArticle === 'function') {
@@ -57,7 +56,6 @@ export default function NotificationModal({
   };
 
   const handleTestChime = () => {
-    playNotificationChime();
     notificationService.notifyNewArticle({
       id: 'welcome-to-tippulse',
       title: 'Welcome to TipPulse! ✨ Your Daily Guide to Smarter Living',
