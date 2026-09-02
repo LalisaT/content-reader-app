@@ -22,67 +22,10 @@
         height: 100%;
         overflow-x: hidden;
       }
-      .pre-splash {
-        position: fixed;
-        inset: 0;
-        background: #ffffff;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 99999;
-      }
-      .pre-splash-box {
-        position: relative;
-        width: 80px;
-        height: 80px;
-        margin-bottom: 14px;
-      }
-      .pre-splash-ring {
-        position: absolute;
-        inset: -8px;
-        border-radius: 26px;
-        border: 2.5px solid transparent;
-        border-top-color: #0284c7;
-        border-right-color: #2563eb;
-        animation: spin-pre 0.6s linear infinite;
-      }
-      .pre-splash-img {
-        width: 80px;
-        height: 80px;
-        border-radius: 16px;
-        object-fit: contain;
-        background: #ffffff;
-        box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.2);
-        border: 1px solid #f1f5f9;
-        position: relative;
-        z-index: 2;
-      }
-      .pre-splash-title {
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        font-size: 24px;
-        font-weight: 900;
-        color: #0284c7;
-        margin: 0;
-        letter-spacing: -0.5px;
-      }
-      @keyframes spin-pre {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-      }
     </style>
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 antialiased select-none font-sans overflow-x-hidden min-h-screen">
-    <div id="root">
-      <!-- Instant 0.0s Pre-render Splash (Zero White Screen Gap) -->
-      <div class="pre-splash">
-        <div class="pre-splash-box">
-          <div class="pre-splash-ring"></div>
-          <img src="/app-icon.png" class="pre-splash-img" alt="TipPulse" />
-        </div>
-        <h1 class="pre-splash-title">TipPulse</h1>
-      </div>
-    </div>
+    <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

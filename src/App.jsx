@@ -32,8 +32,6 @@ import DisclaimerView from './views/DisclaimerView';
 import { Sparkles, X, BookOpen, Loader2, WifiOff } from 'lucide-react';
 
 export default function App() {
-  const [splashActive, setSplashActive] = useState(true);
-  const [splashFadeOut, setSplashFadeOut] = useState(false);
   const [activeTab, setActiveTab] = useState('feed');
   const [activeArticle, setActiveArticle] = useState(null);
   const [bookmarks, setBookmarks] = useState(storageService.getBookmarks());
@@ -141,21 +139,10 @@ export default function App() {
       }
     });
 
-    // Immediately hide native splash layer so the animated overlay takes over seamlessly
+    // Immediately hide native splash layer so the app is instantly ready
     SplashScreen.hide({ fadeOutDuration: 0 }).catch(() => {});
 
-    // Instant Professional Launch (Sub-0.16s: 80ms pop + 80ms fluid fade straight into feed)
-    const timerFade = setTimeout(() => {
-      setSplashFadeOut(true);
-    }, 80);
-
-    const timerDone = setTimeout(() => {
-      setSplashActive(false);
-    }, 160);
-
     return () => {
-      clearTimeout(timerFade);
-      clearTimeout(timerDone);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('tippulse_notification_updated', handleNotifUpdate);
@@ -649,40 +636,6 @@ export default function App() {
         currentUser={currentUser}
         onOpenAuth={(requiredAdmin) => setAuthModalState({ isOpen: true, requiredAdmin })}
       />
-
-      {/* Ultra-Fast Sub-0.16s Smooth Animated Splash with Glowing Circle Ring */}
-      {splashActive && (
-        <div
-          className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-white transition-opacity duration-75 ease-out pointer-events-none ${
-            splashFadeOut ? 'opacity-0' : 'opacity-100'
-          }`}
-        >
-          <div className="flex flex-col items-center justify-center animate-in zoom-in-95 fade-in duration-200 ease-out">
-            {/* Centered Logo with Animated Circle Ring */}
-            <div className="relative mb-3.5">
-              {/* Outer Smooth Fast Spinning Ring */}
-              <div
-                className="absolute -inset-2 rounded-[26px] border-[2.5px] border-transparent border-t-sky-500 border-r-blue-600 animate-spin"
-                style={{ animationDuration: '0.6s' }}
-              />
-
-              {/* White Logo Card */}
-              <div className="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-xl shadow-sky-500/20 border border-slate-100 p-2.5 relative z-10">
-                <img
-                  src={appConfig?.logoImageUrl || "/app-icon.png"}
-                  alt="TipPulse"
-                  className="w-full h-full object-contain rounded-xl"
-                />
-              </div>
-            </div>
-
-            {/* Blue TipPulse Name */}
-            <h1 className="text-2xl font-black tracking-tight text-sky-600 select-none">
-              {appConfig?.appName || 'TipPulse'}
-            </h1>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
