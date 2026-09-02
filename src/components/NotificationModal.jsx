@@ -48,20 +48,22 @@ export default function NotificationModal({
   };
 
   const handleItemClick = (item) => {
+    playNotificationChime();
     notificationService.markAsRead(item.id);
     onClose();
-    if (item.articleId && typeof onSelectArticle === 'function') {
-      onSelectArticle(item.articleId);
+    if (typeof onSelectArticle === 'function') {
+      onSelectArticle(item.articleId || 'welcome-to-tippulse', item);
     }
   };
 
   const handleTestChime = () => {
     playNotificationChime();
     notificationService.notifyNewArticle({
-      id: `test_${Date.now()}`,
-      title: 'Welcome to TipPulse Notifications!',
-      summary: 'You will receive instant alerts with sound whenever a new tip or article is published.',
-      category: 'Pulse Update'
+      id: 'welcome-to-tippulse',
+      title: 'Welcome to TipPulse! ✨ Your Daily Guide to Smarter Living',
+      summary: 'Welcome aboard! Discover daily tips, enable smart notifications, and invite your friends to stay ahead together.',
+      category: 'Pulse Update',
+      imageUrl: '/app-icon.png'
     });
   };
 
@@ -159,12 +161,23 @@ export default function NotificationModal({
                 }`}
               >
                 {/* Unread indicator */}
-                <div className="pt-1.5 shrink-0">
+                <div className="pt-2.5 shrink-0">
                   <div
-                    className={`w-2.5 h-2.5 rounded-full ${
+                    className={`w-2 h-2 rounded-full ${
                       !item.read ? 'bg-sky-500 shadow-xs shadow-sky-500/50' : 'bg-transparent'
                     }`}
                   />
+                </div>
+
+                {/* App Logo / Category Badge */}
+                <div className="shrink-0 pt-0.5">
+                  <div className="w-10 h-10 rounded-2xl bg-white dark:bg-slate-800 p-1.5 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center shadow-xs">
+                    <img
+                      src={item.imageUrl || '/app-icon.png'}
+                      alt="TipPulse"
+                      className="w-full h-full object-contain rounded-xl"
+                    />
+                  </div>
                 </div>
 
                 {/* Content */}

@@ -619,9 +619,24 @@ export default function App() {
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
         notifications={notifications}
-        onSelectArticle={(articleId) => {
+        onSelectArticle={(articleId, notificationItem) => {
           setIsNotificationOpen(false);
-          const target = allArticles.find((a) => String(a.id) === String(articleId));
+          let target = allArticles.find((a) => String(a.id) === String(articleId));
+          if (!target) {
+            target = allArticles.find((a) => a.id === 'welcome-to-tippulse');
+          }
+          if (!target && notificationItem) {
+            target = {
+              id: articleId || 'welcome-to-tippulse',
+              title: notificationItem.title || 'Welcome to TipPulse! ✨',
+              category: notificationItem.category || 'Pulse Update',
+              image: notificationItem.imageUrl || '/app-icon.png',
+              author: 'TipPulse Team',
+              date: 'Today',
+              summary: notificationItem.body || 'Welcome to TipPulse notifications!',
+              content: '### Welcome to TipPulse! 🎉\n\nInvite your friends and family to explore daily curated tips and guides together!'
+            };
+          }
           if (target) {
             setActiveArticle(target);
             setActiveTab('feed');
