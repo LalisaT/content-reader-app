@@ -32,6 +32,8 @@ import DisclaimerView from './views/DisclaimerView';
 import { Sparkles, X, BookOpen, Loader2, WifiOff } from 'lucide-react';
 
 export default function App() {
+  const [enterActive, setEnterActive] = useState(true);
+  const [enterFade, setEnterFade] = useState(false);
   const [activeTab, setActiveTab] = useState('feed');
   const [activeArticle, setActiveArticle] = useState(null);
   const [bookmarks, setBookmarks] = useState(storageService.getBookmarks());
@@ -142,7 +144,13 @@ export default function App() {
     // Immediately hide native splash layer so the app is instantly ready
     SplashScreen.hide({ fadeOutDuration: 0 }).catch(() => {});
 
+    // Ultra-Fast 0.1s (100ms) enter page micro-animation on pure white screen
+    const t1 = setTimeout(() => setEnterFade(true), 50);
+    const t2 = setTimeout(() => setEnterActive(false), 100);
+
     return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('tippulse_notification_updated', handleNotifUpdate);
@@ -636,6 +644,30 @@ export default function App() {
         currentUser={currentUser}
         onOpenAuth={(requiredAdmin) => setAuthModalState({ isOpen: true, requiredAdmin })}
       />
+
+      {/* Ultra-Fast 0.1s (100ms) Pure White Screen Micro-Animation with Tiny Low-Res Asset */}
+      {enterActive && (
+        <div
+          className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-white transition-opacity duration-75 ease-out pointer-events-none ${
+            enterFade ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <div className="flex flex-col items-center justify-center animate-in zoom-in-95 fade-in duration-75 ease-out">
+            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-sky-500/10 border border-slate-100 p-2 relative">
+              <img
+                src="/splash-icon.png"
+                alt="TipPulse"
+                className="w-full h-full object-contain"
+                loading="eager"
+                decoding="sync"
+              />
+            </div>
+            <h1 className="text-xl font-extrabold tracking-tight text-sky-600 mt-2.5 select-none">
+              {appConfig?.appName || 'TipPulse'}
+            </h1>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
