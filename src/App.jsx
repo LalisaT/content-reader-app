@@ -144,14 +144,14 @@ export default function App() {
     // Immediately hide native splash layer so the animated overlay takes over seamlessly
     SplashScreen.hide({ fadeOutDuration: 0 }).catch(() => {});
 
-    // Fast 0.28s smooth pop animation, then 0.15s silky fade directly into the ready feed
+    // Ultra-Fast 0.3s Startup: 200ms display + 100ms silky fade directly into ready feed
     const timerFade = setTimeout(() => {
       setSplashFadeOut(true);
-    }, 280);
+    }, 200);
 
     const timerDone = setTimeout(() => {
       setSplashActive(false);
-    }, 430);
+    }, 300);
 
     return () => {
       clearTimeout(timerFade);
