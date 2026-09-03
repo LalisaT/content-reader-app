@@ -9,6 +9,7 @@ import { firestoreSyncService } from './services/firestoreSyncService';
 import { notificationService } from './services/notificationService';
 import { deepLinkService } from './services/deepLinkService';
 import { SplashScreen } from '@capacitor/splash-screen';
+import { Network } from '@capacitor/network';
 
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
@@ -69,6 +70,17 @@ export default function App() {
   useEffect(() => {
     // Reveal app ultra-fast the instant React mounts
     SplashScreen.hide({ fadeOutDuration: 80 }).catch(() => {});
+
+    // Native Capacitor Android Network Connectivity Sync (detects mobile data/wifi toggle)
+    Network.getStatus().then((status) => {
+      setIsOnline(status.connected);
+    }).catch(() => {
+      setIsOnline(navigator.onLine ?? true);
+    });
+
+    const netListenerPromise = Network.addListener('networkStatusChange', (status) => {
+      setIsOnline(status.connected);
+    });
 
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -143,6 +155,7 @@ export default function App() {
     });
 
     return () => {
+      netListenerPromise.then((handle) => handle.remove()).catch(() => {});
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('tippulse_notification_updated', handleNotifUpdate);
@@ -354,8 +367,12 @@ export default function App() {
     }
   };
 
-  // Trigger Rewarded Ad for locked premium articles
+  // Trigger Rewarded Ad for locked premium articles (Requires active internet connection)
   const handleUnlockPremium = (article) => {
+    if (!isOnline) {
+      alert('⚠️ Internet Connection Required\n\nPlease connect to Mobile Data or Wi-Fi to load and watch the sponsor video to unlock this article.');
+      return;
+    }
     setRewardedModalData({ isOpen: true, article });
   };
 
@@ -401,6 +418,7 @@ export default function App() {
           onBack={handleBackFromArticle}
           onUnlockPremium={handleUnlockPremium}
           isUnlocked={unlockedGuides.includes(activeArticle.id)}
+          isOnline={isOnline}
           readerTheme={readerTheme}
           onChangeReaderTheme={handleChangeTheme}
           fontSize={fontSize}
@@ -571,6 +589,7 @@ export default function App() {
       <RewardedModal
         isOpen={rewardedModalData.isOpen}
         articleTitle={rewardedModalData.article?.title || ''}
+        isOnline={isOnline}
         onClose={() => setRewardedModalData({ isOpen: false, article: null })}
         onRewardEarned={handleRewardEarned}
       />

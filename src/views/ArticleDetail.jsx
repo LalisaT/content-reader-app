@@ -27,6 +27,7 @@ import BannerAd from '../components/BannerAd';
 import RichMarkdownRenderer from '../components/RichMarkdownRenderer';
 import { storageService } from '../services/storageService';
 import { deepLinkService } from '../services/deepLinkService';
+import { Network } from '@capacitor/network';
 
 export default function ArticleDetail({
   article,
@@ -35,6 +36,7 @@ export default function ArticleDetail({
   onBack,
   onUnlockPremium,
   isUnlocked,
+  isOnline: isOnlineProp,
   readerTheme,
   onChangeReaderTheme,
   fontSize,
@@ -46,20 +48,38 @@ export default function ArticleDetail({
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [showAudio, setShowAudio] = useState(false);
-  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [isOnline, setIsOnline] = useState(
+    typeof isOnlineProp === 'boolean' ? isOnlineProp : (typeof navigator !== 'undefined' ? navigator.onLine : true)
+  );
   const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     setImageError(false);
   }, [article?.id]);
 
-  // Track online / offline connectivity state
   useEffect(() => {
+    if (typeof isOnlineProp === 'boolean') {
+      setIsOnline(isOnlineProp);
+    }
+  }, [isOnlineProp]);
+
+  // Track online / offline connectivity state via Capacitor Network
+  useEffect(() => {
+    Network.getStatus().then((status) => {
+      setIsOnline(status.connected);
+    }).catch(() => {});
+
+    const netListenerPromise = Network.addListener('networkStatusChange', (status) => {
+      setIsOnline(status.connected);
+    });
+
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+
     return () => {
+      netListenerPromise.then((handle) => handle.remove()).catch(() => {});
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
@@ -353,11 +373,20 @@ export default function ArticleDetail({
             </p>
 
             <button
-              onClick={() => {
-                if (navigator.onLine) {
-                  setIsOnline(true);
-                } else {
-                  alert('Device is still offline. Please turn on Mobile Data or Wi-Fi to view all writing.');
+              onClick={async () => {
+                try {
+                  const status = await Network.getStatus();
+                  if (status.connected) {
+                    setIsOnline(true);
+                  } else {
+                    alert('Device is still offline. Please turn on Mobile Data or Wi-Fi to view all writing.');
+                  }
+                } catch {
+                  if (navigator.onLine) {
+                    setIsOnline(true);
+                  } else {
+                    alert('Device is still offline. Please turn on Mobile Data or Wi-Fi to view all writing.');
+                  }
                 }
               }}
               className="mt-5 inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-transform active:scale-98 cursor-pointer"
@@ -369,24 +398,38 @@ export default function ArticleDetail({
         ) : isLocked ? (
           <div className="my-8 p-6 rounded-3xl bg-gradient-to-b from-amber-500/10 via-slate-900/5 to-amber-500/10 dark:from-amber-950/40 dark:to-slate-900 border border-amber-300 dark:border-amber-700/60 text-center shadow-lg">
             <div className="w-14 h-14 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center mx-auto mb-3 shadow-md">
-              <Lock className="w-7 h-7" />
+              {isOnline ? <Lock className="w-7 h-7" /> : <WifiOff className="w-7 h-7" />}
             </div>
 
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              Exclusive Full Content
+              {isOnline ? 'Exclusive Full Content' : 'Internet Required to Unlock'}
             </h3>
 
             <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto mt-2 leading-relaxed">
-              The complete writing is free to unlock by watching a short 5-second sponsor video.
+              {isOnline
+                ? 'The complete writing is free to unlock by watching a short 5-second sponsor video.'
+                : 'Sponsor video ads require an active internet connection. Please connect to Mobile Data or Wi-Fi to watch the video and unlock the writing.'}
             </p>
 
-            <button
-              onClick={() => onUnlockPremium(article)}
-              className="mt-5 inline-flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm px-6 py-3 rounded-xl shadow-lg shadow-amber-500/30 transition-transform active:scale-98 cursor-pointer"
-            >
-              <Play className="w-4 h-4 fill-slate-950" />
-              <span>Watch Short Video to Unlock (5s)</span>
-            </button>
+            {isOnline ? (
+              <button
+                onClick={() => onUnlockPremium(article)}
+                className="mt-5 inline-flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm px-6 py-3 rounded-xl shadow-lg shadow-amber-500/30 transition-transform active:scale-98 cursor-pointer"
+              >
+                <Play className="w-4 h-4 fill-slate-950" />
+                <span>Watch Short Video to Unlock (5s)</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  alert('⚠️ Internet Connection Required\n\nPlease turn on Mobile Data or connect to Wi-Fi to load and watch the sponsor video.');
+                }}
+                className="mt-5 inline-flex items-center space-x-2 bg-amber-500/90 hover:bg-amber-600 text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl shadow-md transition-transform active:scale-98 cursor-pointer"
+              >
+                <WifiOff className="w-4 h-4" />
+                <span>Connect to Internet to Watch Video</span>
+              </button>
+            )}
           </div>
         ) : (
           /* Unlocked / Free Article Body with Rich Markdown & Lists Renderer */

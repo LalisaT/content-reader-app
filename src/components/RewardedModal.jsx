@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Award, Play, CheckCircle2, X, Sparkles, ShieldCheck } from 'lucide-react';
+import { Award, Play, CheckCircle2, X, Sparkles, ShieldCheck, WifiOff } from 'lucide-react';
 import { ADMOB_CONFIG } from '../services/admobService';
 
-export default function RewardedModal({ isOpen, onClose, onRewardEarned, articleTitle }) {
+export default function RewardedModal({ isOpen, onClose, onRewardEarned, articleTitle, isOnline = true }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -17,6 +17,10 @@ export default function RewardedModal({ isOpen, onClose, onRewardEarned, article
   }, [isOpen]);
 
   const handleStartRewardVideo = () => {
+    if (!isOnline) {
+      alert('⚠️ Internet Connection Required\n\nPlease turn on Mobile Data or connect to Wi-Fi to load and stream this sponsor video.');
+      return;
+    }
     setIsPlaying(true);
     setProgress(0);
     const duration = 5000; // 5 seconds test video
@@ -80,13 +84,30 @@ export default function RewardedModal({ isOpen, onClose, onRewardEarned, article
                 "{articleTitle}"
               </div>
 
-              <button
-                onClick={handleStartRewardVideo}
-                className="mt-5 w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-extrabold text-sm py-3 px-4 rounded-xl shadow-lg shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all"
-              >
-                <Play className="w-4 h-4 fill-slate-950" />
-                <span>Watch Video & Unlock (5s)</span>
-              </button>
+              {!isOnline && (
+                <div className="mt-3 p-3 rounded-xl bg-amber-500/15 border border-amber-400 dark:border-amber-700/60 text-amber-800 dark:text-amber-300 text-xs font-semibold flex items-center space-x-2 text-left">
+                  <WifiOff className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <span>Internet Connection Required: Please turn on Mobile Data or Wi-Fi to load and stream this sponsor video.</span>
+                </div>
+              )}
+
+              {isOnline ? (
+                <button
+                  onClick={handleStartRewardVideo}
+                  className="mt-5 w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-extrabold text-sm py-3 px-4 rounded-xl shadow-lg shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all cursor-pointer"
+                >
+                  <Play className="w-4 h-4 fill-slate-950" />
+                  <span>Watch Video & Unlock (5s)</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => alert('⚠️ Internet Connection Required\n\nPlease turn on Mobile Data or connect to Wi-Fi to load and stream this sponsor video.')}
+                  className="mt-5 w-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold text-xs py-3 px-4 rounded-xl flex items-center justify-center space-x-2 cursor-pointer border border-slate-200 dark:border-slate-700"
+                >
+                  <WifiOff className="w-4 h-4" />
+                  <span>Connect to Internet to Watch Video</span>
+                </button>
+              )}
             </div>
           )}
 
