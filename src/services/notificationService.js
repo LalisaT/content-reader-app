@@ -127,6 +127,20 @@ export const notificationService = {
     }
   },
 
+  // Helper to check & request phone status bar permissions
+  async requestPhonePermissions() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const res = await LocalNotifications.requestPermissions();
+        return res.display === 'granted';
+      } catch (e) {
+        console.warn('Request notification permissions failed:', e);
+        return false;
+      }
+    }
+    return true;
+  },
+
   // Trigger native heads-up notification in Android status bar + audio chime
   async triggerSystemNotification({ id, title, body, articleId, article, imageUrl }) {
     // 1. Audio chime
@@ -135,7 +149,16 @@ export const notificationService = {
     // 2. Native Android / iOS Heads-up notification
     if (Capacitor.isNativePlatform()) {
       try {
+        // Ensure permission is granted
+        try {
+          const permStatus = await LocalNotifications.checkPermissions();
+          if (permStatus.display !== 'granted') {
+            await LocalNotifications.requestPermissions();
+          }
+        } catch (pErr) {}
+
         const notifId = Math.floor(Math.abs(Number(id) || Date.now()) % 2147483647);
+        // Note: Omit 'schedule' so Android triggers it IMMEDIATELY without AlarmManager restrictions
         await LocalNotifications.schedule({
           notifications: [
             {
@@ -143,9 +166,8 @@ export const notificationService = {
               title: title,
               body: body,
               channelId: 'tippulse_alerts_v3',
-              schedule: { at: new Date(Date.now() + 100) }, // Instant (0.1s)
               sound: 'default',
-              smallIcon: 'ic_stat_icon_config_sample',
+              smallIcon: 'ic_stat_notification',
               iconColor: '#0284c7',
               extra: {
                 articleId: articleId,

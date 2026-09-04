@@ -11,6 +11,11 @@
       "androidSplashResourceName": "splash",
       "androidScaleType": "CENTER_CROP",
       "showSpinner": false
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_notification",
+      "iconColor": "#0284c7",
+      "sound": "default"
     }
   }
 }

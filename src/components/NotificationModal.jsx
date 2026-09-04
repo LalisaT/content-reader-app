@@ -65,8 +65,29 @@ export default function NotificationModal({
     }
   };
 
-  const handleTestChime = () => {
-    notificationService.notifyNewArticle({
+  const [hasPermission, setHasPermission] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    import('@capacitor/local-notifications').then(({ LocalNotifications }) => {
+      import('@capacitor/core').then(({ Capacitor }) => {
+        if (Capacitor.isNativePlatform()) {
+          LocalNotifications.checkPermissions().then((status) => {
+            setHasPermission(status.display === 'granted');
+          }).catch(() => {});
+        }
+      });
+    }).catch(() => {});
+  }, [isOpen]);
+
+  const handleRequestPermission = async () => {
+    const granted = await notificationService.requestPhonePermissions();
+    setHasPermission(granted);
+  };
+
+  const handleTestChime = async () => {
+    await notificationService.requestPhonePermissions();
+    await notificationService.notifyNewArticle({
       id: 'welcome-to-tippulse',
       title: 'Welcome to TipPulse! ✨ Your Daily Guide to Smarter Living',
       summary: 'Welcome aboard! Discover daily tips, enable smart notifications, and invite your friends to stay ahead together.',
@@ -187,6 +208,23 @@ export default function NotificationModal({
                 </div>
               </form>
             )}
+          </div>
+        )}
+
+        {/* Permission Request Banner (if notifications blocked on Android 13+) */}
+        {!hasPermission && (
+          <div className="px-4 py-2.5 bg-amber-500/15 border-b border-amber-300 dark:border-amber-800/80 flex items-center justify-between text-xs">
+            <div className="flex items-center space-x-1.5 text-amber-800 dark:text-amber-200">
+              <Bell className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span className="font-semibold text-[11px]">Phone status bar alerts need permission</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleRequestPermission}
+              className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[11px] rounded-lg shadow-xs transition-colors shrink-0"
+            >
+              Allow Alerts
+            </button>
           </div>
         )}
 
