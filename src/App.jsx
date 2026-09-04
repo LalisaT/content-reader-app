@@ -92,6 +92,7 @@ export default function App() {
 
     // 3. Move Heavy / Network SDKs to Deferred Background Execution (Non-blocking cold boot)
     let unsubArticles = () => {};
+    let unsubNotifications = () => {};
     let unsubConfig = () => {};
     let unsubCategories = () => {};
 
@@ -131,6 +132,14 @@ export default function App() {
         }
       });
 
+      // Background Firestore Subscriptions for Cloud Notifications (Multi-device Sync)
+      unsubNotifications = firestoreSyncService.subscribeNotifications((cloudNotifs) => {
+        if (cloudNotifs && cloudNotifs.length > 0) {
+          const synced = notificationService.syncCloudNotifications(cloudNotifs);
+          setNotifications(synced);
+        }
+      });
+
       // Background Firestore Subscriptions
       unsubArticles = firestoreSyncService.subscribeArticles((articles) => {
         if (articles && articles.length > 0) {
@@ -167,6 +176,7 @@ export default function App() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('tippulse_notification_updated', handleNotifUpdate);
+      unsubNotifications();
       unsubArticles();
       unsubConfig();
       unsubCategories();
@@ -314,10 +324,27 @@ export default function App() {
       console.warn('Article saved locally, cloud sync pending:', err);
     }
 
-    // Trigger instant notification with sound to mobile devices / in-app notification center
+    // Broadcast instant notification to all mobile users & in-app notification center
     if (articleData.notifyUsers !== false) {
       try {
-        await notificationService.notifyNewArticle(articleData);
+        const isEdit = Boolean(editingArticle);
+        const title = isEdit ? `📝 Updated Tip: ${articleData.title}` : `🔔 New Tip: ${articleData.title}`;
+        const body = articleData.summary || (articleData.content ? articleData.content.substring(0, 90) + '...' : 'Tap to read this tip now!');
+        
+        // 1. Broadcast to Firestore for all other users & devices
+        await firestoreSyncService.broadcastNotification({
+          id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          articleId: articleData.id,
+          title: title,
+          body: body,
+          category: articleData.category || 'Tip',
+          imageUrl: articleData.image || articleData.imageUrl || null,
+          createdAt: Date.now(),
+          author: currentUser?.username || 'Admin'
+        });
+
+        // 2. Also trigger local notification for the admin device
+        await notificationService.notifyNewArticle(articleData, title);
       } catch (err) {
         console.debug('Notification trigger error:', err);
       }
@@ -326,6 +353,23 @@ export default function App() {
     // If currently viewing this article, update it live in the reader
     if (activeArticle && activeArticle.id === articleData.id) {
       setActiveArticle(articleData);
+    }
+  };
+
+  // Instant broadcast announcement to all users from Admin
+  const handleBroadcastNotification = async (notifPayload) => {
+    if (!isAdmin) return;
+    try {
+      const fullPayload = {
+        ...notifPayload,
+        id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        createdAt: Date.now(),
+        author: currentUser?.username || 'Admin'
+      };
+      await firestoreSyncService.broadcastNotification(fullPayload);
+      await notificationService.triggerSystemNotification(fullPayload);
+    } catch (err) {
+      console.warn('Broadcast error:', err);
     }
   };
 
@@ -690,6 +734,9 @@ export default function App() {
               const updated = notificationService.clearAll();
               setNotifications(updated);
             }}
+            currentUser={currentUser}
+            isAdmin={isAdmin}
+            onBroadcastNotification={handleBroadcastNotification}
           />
         )}
       </Suspense>

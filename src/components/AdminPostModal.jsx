@@ -740,13 +740,13 @@ export default function AdminPostModal({
                   </div>
                   <div>
                     <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center space-x-1.5">
-                      <span>Send Instant Notification with Sound</span>
+                      <span>{editingArticle ? 'Notify All Mobile Users of Update' : 'Broadcast to All Mobile Devices'}</span>
                       <span className="text-[10px] bg-sky-500 text-white font-black px-1.5 py-0.5 rounded">
-                        ALL DEVICES
+                        ALL USERS
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-snug">
-                      Automatically pops up in phone notification area with chime sound and deep links to this tip.
+                      Broadcasts live to Cloud Firestore so other users on mobile immediately hear chime sound and see notification.
                     </p>
                   </div>
                 </div>

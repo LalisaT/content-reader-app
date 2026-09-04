@@ -2,6 +2,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 import { Capacitor } from '@capacitor/core';
 
 const STORAGE_KEY = 'tippulse_notifications_history';
+const LAST_SYNCED_TIMESTAMP_KEY = 'tippulse_last_synced_notif_ts';
 const NOTIFICATION_SOUND_ENABLED_KEY = 'tippulse_notification_sound_enabled';
 
 // Global Shared AudioContext with Auto-Unlock for Mobile & WebView
@@ -126,21 +127,15 @@ export const notificationService = {
     }
   },
 
-  // Post / Publish Instant Notification across device status bar & in-app
-  async notifyNewArticle(article, customTitle = null) {
-    if (!article) return null;
-
-    const notifId = Math.floor(Date.now() % 2147483647);
-    const title = customTitle || `🔔 New Tip: ${article.title}`;
-    const body = article.summary || (article.content ? article.content.substring(0, 90) + '...' : 'Tap to read this new tip now!');
-    const category = article.category || 'Tip';
-
-    // 1. Play sound
+  // Trigger native heads-up notification in Android status bar + audio chime
+  async triggerSystemNotification({ id, title, body, articleId, article, imageUrl }) {
+    // 1. Audio chime
     playNotificationChime();
 
-    // 2. Trigger native mobile notification if running on Android/iOS
+    // 2. Native Android / iOS Heads-up notification
     if (Capacitor.isNativePlatform()) {
       try {
+        const notifId = Math.floor(Math.abs(Number(id) || Date.now()) % 2147483647);
         await LocalNotifications.schedule({
           notifications: [
             {
@@ -153,8 +148,9 @@ export const notificationService = {
               smallIcon: 'ic_stat_icon_config_sample',
               iconColor: '#0284c7',
               extra: {
-                articleId: article.id,
-                article: article
+                articleId: articleId,
+                article: article || null,
+                imageUrl: imageUrl || null
               }
             }
           ]
@@ -163,20 +159,20 @@ export const notificationService = {
         console.warn('Native notification trigger error:', err);
       }
     } else {
-      // Web notification fallback for browser/PWA
+      // Web notification fallback for desktop / browser
       if ('Notification' in window && Notification.permission === 'granted') {
         try {
           const webNotif = new Notification(title, {
             body: body,
-            icon: '/app-icon.png',
+            icon: imageUrl || '/app-icon.png',
             badge: '/app-icon.png',
-            tag: `tippulse-article-${article.id}`,
-            data: { articleId: article.id }
+            tag: `tippulse-alert-${articleId || Date.now()}`,
+            data: { articleId, article }
           });
           webNotif.onclick = () => {
             window.focus();
             if (typeof window.__tippulse_on_notification_click === 'function') {
-              window.__tippulse_on_notification_click(article.id, article);
+              window.__tippulse_on_notification_click(articleId, article);
             }
           };
         } catch (e) {
@@ -184,21 +180,119 @@ export const notificationService = {
         }
       }
     }
+  },
 
-    // 3. Save to in-app Notification Center history
+  // Sync Cloud Notifications from Firestore to local device
+  // Fires native heads-up alerts & chime whenever a new notification arrives from the cloud
+  syncCloudNotifications(cloudNotifs = [], onNewAlert = null) {
+    if (!Array.isArray(cloudNotifs) || cloudNotifs.length === 0) return this.getNotifications();
+
+    const rawLastSynced = localStorage.getItem(LAST_SYNCED_TIMESTAMP_KEY);
+    const isFirstSync = rawLastSynced === null;
+    let lastSyncedTs = rawLastSynced ? Number(rawLastSynced) : Date.now();
+
+    // Get existing local notifications history
+    const existingList = this.getNotifications();
+    const readStatusMap = new Map();
+    existingList.forEach((n) => {
+      if (n.id) readStatusMap.set(String(n.id), Boolean(n.read));
+    });
+
+    // Detect new incoming alerts that arrived after last sync
+    const newAlerts = [];
+    if (!isFirstSync) {
+      cloudNotifs.forEach((cn) => {
+        const notifTs = Number(cn.createdAt || 0);
+        if (notifTs > lastSyncedTs) {
+          newAlerts.push(cn);
+        }
+      });
+    }
+
+    // Sort new alerts oldest to newest so they appear in sequence
+    newAlerts.sort((a, b) => (Number(a.createdAt) || 0) - (Number(b.createdAt) || 0));
+
+    // Fire notifications for newly arrived items
+    newAlerts.forEach((notif) => {
+      this.triggerSystemNotification({
+        id: notif.id,
+        title: notif.title || '🔔 New Tip Alert',
+        body: notif.body || 'Tap to open the latest tip now!',
+        articleId: notif.articleId,
+        imageUrl: notif.imageUrl
+      });
+
+      if (typeof onNewAlert === 'function') {
+        onNewAlert(notif);
+      }
+
+      if (notif.createdAt && Number(notif.createdAt) > lastSyncedTs) {
+        lastSyncedTs = Number(notif.createdAt);
+      }
+    });
+
+    // Update last synced timestamp in storage
+    localStorage.setItem(LAST_SYNCED_TIMESTAMP_KEY, String(Math.max(lastSyncedTs, Date.now())));
+
+    // Merge cloud notifications into local Notification Center history
+    const mergedList = cloudNotifs.map((cn) => {
+      const idStr = String(cn.id);
+      const isAlreadyRead = readStatusMap.has(idStr) ? readStatusMap.get(idStr) : false;
+      return {
+        id: idStr,
+        articleId: cn.articleId,
+        title: cn.title,
+        body: cn.body,
+        category: cn.category || 'Tip',
+        imageUrl: cn.imageUrl || null,
+        timestamp: cn.createdAt ? new Date(cn.createdAt).toISOString() : new Date().toISOString(),
+        read: isAlreadyRead
+      };
+    });
+
+    // Keep latest 50 notifications
+    const trimmed = mergedList.slice(0, 50);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+      window.dispatchEvent(new CustomEvent('tippulse_notification_updated', { detail: trimmed }));
+    } catch (e) {}
+
+    return trimmed;
+  },
+
+  // Post / Publish Instant Notification across device status bar & in-app (Local Dispatch)
+  async notifyNewArticle(article, customTitle = null) {
+    if (!article) return null;
+
+    const notifId = Math.floor(Date.now() % 2147483647);
+    const title = customTitle || `🔔 New Tip: ${article.title}`;
+    const body = article.summary || (article.content ? article.content.substring(0, 90) + '...' : 'Tap to read this new tip now!');
+    const category = article.category || 'Tip';
+
+    // Trigger heads-up notification and audio chime
+    await this.triggerSystemNotification({
+      id: notifId,
+      title,
+      body,
+      articleId: article.id,
+      article,
+      imageUrl: article.image || article.imageUrl || null
+    });
+
+    // Save to in-app Notification Center history
     const newEntry = {
       id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       articleId: article.id,
-      title: article.title,
+      title: title,
       body: body,
       category: category,
-      imageUrl: article.imageUrl || null,
+      imageUrl: article.image || article.imageUrl || null,
       timestamp: new Date().toISOString(),
       read: false
     };
 
     const currentList = this.getNotifications();
-    const updatedList = [newEntry, ...currentList.slice(0, 49)]; // keep latest 50
+    const updatedList = [newEntry, ...currentList.filter(item => item.articleId !== article.id).slice(0, 49)];
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
       window.dispatchEvent(new CustomEvent('tippulse_notification_updated', { detail: updatedList }));
