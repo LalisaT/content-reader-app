@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import initialArticlesData from './data/articles.json';
 import { storageService } from './services/storageService';
 import { admobService } from './services/admobService';
@@ -14,21 +14,23 @@ import { Network } from '@capacitor/network';
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 import BannerAd from './components/BannerAd';
-import InterstitialModal from './components/InterstitialModal';
-import RewardedModal from './components/RewardedModal';
-import AdminPostModal from './components/AdminPostModal';
-import AuthModal from './components/AuthModal';
-import AppCustomizerModal from './components/AppCustomizerModal';
-import NotificationModal from './components/NotificationModal';
-
 import HomeFeed from './views/HomeFeed';
-import ArticleDetail from './views/ArticleDetail';
-import ExploreView from './views/ExploreView';
-import BookmarksView from './views/BookmarksView';
-import SettingsView from './views/SettingsView';
-import PolicyView from './views/PolicyView';
-import TermsView from './views/TermsView';
-import DisclaimerView from './views/DisclaimerView';
+
+// High-Performance Code-Splitting: Lazy load secondary views & modals off initial boot thread
+const ArticleDetail = lazy(() => import('./views/ArticleDetail'));
+const ExploreView = lazy(() => import('./views/ExploreView'));
+const BookmarksView = lazy(() => import('./views/BookmarksView'));
+const SettingsView = lazy(() => import('./views/SettingsView'));
+const PolicyView = lazy(() => import('./views/PolicyView'));
+const TermsView = lazy(() => import('./views/TermsView'));
+const DisclaimerView = lazy(() => import('./views/DisclaimerView'));
+
+const InterstitialModal = lazy(() => import('./components/InterstitialModal'));
+const RewardedModal = lazy(() => import('./components/RewardedModal'));
+const AdminPostModal = lazy(() => import('./components/AdminPostModal'));
+const AuthModal = lazy(() => import('./components/AuthModal'));
+const AppCustomizerModal = lazy(() => import('./components/AppCustomizerModal'));
+const NotificationModal = lazy(() => import('./components/NotificationModal'));
 
 import { Sparkles, X, BookOpen, Loader2, WifiOff } from 'lucide-react';
 
@@ -68,10 +70,10 @@ export default function App() {
 
   // Real-time Cloud Synchronization & Network Connectivity Listeners
   useEffect(() => {
-    // Reveal app ultra-fast the instant React mounts
-    SplashScreen.hide({ fadeOutDuration: 80 }).catch(() => {});
+    // 1. Reveal app ultra-fast the instant React mounts
+    SplashScreen.hide({ fadeOutDuration: 40 }).catch(() => {});
 
-    // Native Capacitor Android Network Connectivity Sync (detects mobile data/wifi toggle)
+    // 2. Native Capacitor Android Network Connectivity Sync (detects mobile data/wifi toggle)
     Network.getStatus().then((status) => {
       setIsOnline(status.connected);
     }).catch(() => {
@@ -88,12 +90,36 @@ export default function App() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Notification Service Init & Deep Linking Handler
-    const handleNotificationClick = (articleId, articleData) => {
-      if (articleData) {
-        setActiveArticle(articleData);
-        setActiveTab('feed');
-      } else if (articleId) {
+    // 3. Move Heavy / Network SDKs to Deferred Background Execution (Non-blocking cold boot)
+    let unsubArticles = () => {};
+    let unsubConfig = () => {};
+    let unsubCategories = () => {};
+
+    const timer = setTimeout(() => {
+      // Notification Service Init & Deep Linking Handler
+      const handleNotificationClick = (articleId, articleData) => {
+        if (articleData) {
+          setActiveArticle(articleData);
+          setActiveTab('feed');
+        } else if (articleId) {
+          const cached = storageService.getCachedArticles() || [];
+          const custom = storageService.getCustomArticles() || [];
+          const target = [...cached, ...custom, ...initialArticlesData].find(
+            (a) => String(a.id) === String(articleId)
+          );
+          if (target) {
+            setActiveArticle(target);
+            setActiveTab('feed');
+          }
+        }
+      };
+
+      notificationService.init(handleNotificationClick);
+      window.__tippulse_on_notification_click = handleNotificationClick;
+
+      // Deferred Deep Link Resolver
+      deepLinkService.init((articleId) => {
+        if (!articleId) return;
         const cached = storageService.getCachedArticles() || [];
         const custom = storageService.getCustomArticles() || [];
         const target = [...cached, ...custom, ...initialArticlesData].find(
@@ -103,25 +129,28 @@ export default function App() {
           setActiveArticle(target);
           setActiveTab('feed');
         }
-      }
-    };
+      });
 
-    notificationService.init(handleNotificationClick);
-    window.__tippulse_on_notification_click = handleNotificationClick;
+      // Background Firestore Subscriptions
+      unsubArticles = firestoreSyncService.subscribeArticles((articles) => {
+        if (articles && articles.length > 0) {
+          setCloudArticles(articles);
+          storageService.setCachedArticles(articles);
+        }
+      });
 
-    // Deferred & Standard Deep Link Resolver (Preserves post navigation after Play Store install)
-    deepLinkService.init((articleId) => {
-      if (!articleId) return;
-      const cached = storageService.getCachedArticles() || [];
-      const custom = storageService.getCustomArticles() || [];
-      const target = [...cached, ...custom, ...initialArticlesData].find(
-        (a) => String(a.id) === String(articleId)
-      );
-      if (target) {
-        setActiveArticle(target);
-        setActiveTab('feed');
-      }
-    });
+      unsubConfig = firestoreSyncService.subscribeAppConfig((config) => {
+        if (config && config.appName) {
+          setAppConfig((prev) => ({ ...prev, ...config }));
+        }
+      });
+
+      unsubCategories = firestoreSyncService.subscribeCategories((cats) => {
+        if (cats && cats.length > 0) {
+          setCategories(cats);
+        }
+      });
+    }, 100);
 
     const handleNotifUpdate = (e) => {
       if (e.detail) {
@@ -132,29 +161,8 @@ export default function App() {
     };
     window.addEventListener('tippulse_notification_updated', handleNotifUpdate);
 
-    // 1. Listen for real-time articles
-    const unsubArticles = firestoreSyncService.subscribeArticles((articles) => {
-      if (articles && articles.length > 0) {
-        setCloudArticles(articles);
-        storageService.setCachedArticles(articles);
-      }
-    });
-
-    // 2. Listen for real-time branding changes
-    const unsubConfig = firestoreSyncService.subscribeAppConfig((config) => {
-      if (config && config.appName) {
-        setAppConfig((prev) => ({ ...prev, ...config }));
-      }
-    });
-
-    // 3. Listen for real-time categories
-    const unsubCategories = firestoreSyncService.subscribeCategories((cats) => {
-      if (cats && cats.length > 0) {
-        setCategories(cats);
-      }
-    });
-
     return () => {
+      clearTimeout(timer);
       netListenerPromise.then((handle) => handle.remove()).catch(() => {});
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -411,22 +419,24 @@ export default function App() {
     } transition-colors ${fontClass}`}>
       {/* If reading an article, display reader view */}
       {activeArticle ? (
-        <ArticleDetail
-          article={activeArticle}
-          isBookmarked={bookmarks.includes(activeArticle.id)}
-          onToggleBookmark={handleToggleBookmark}
-          onBack={handleBackFromArticle}
-          onUnlockPremium={handleUnlockPremium}
-          isUnlocked={unlockedGuides.includes(activeArticle.id)}
-          isOnline={isOnline}
-          readerTheme={readerTheme}
-          onChangeReaderTheme={handleChangeTheme}
-          fontSize={fontSize}
-          onChangeFontSize={handleChangeFontSize}
-          isAdmin={isAdmin}
-          onEditCurrentArticle={handleEditArticle}
-          onDeleteCurrentArticle={handleDeleteCustomArticle}
-        />
+        <Suspense fallback={null}>
+          <ArticleDetail
+            article={activeArticle}
+            isBookmarked={bookmarks.includes(activeArticle.id)}
+            onToggleBookmark={handleToggleBookmark}
+            onBack={handleBackFromArticle}
+            onUnlockPremium={handleUnlockPremium}
+            isUnlocked={unlockedGuides.includes(activeArticle.id)}
+            isOnline={isOnline}
+            readerTheme={readerTheme}
+            onChangeReaderTheme={handleChangeTheme}
+            fontSize={fontSize}
+            onChangeFontSize={handleChangeFontSize}
+            isAdmin={isAdmin}
+            onEditCurrentArticle={handleEditArticle}
+            onDeleteCurrentArticle={handleDeleteCustomArticle}
+          />
+        </Suspense>
       ) : (
         /* Otherwise display Main App Navigation & Views */
         <div className="flex flex-col min-h-screen">
@@ -474,59 +484,61 @@ export default function App() {
               />
             )}
 
-            {activeTab === 'explore' && (
-              <ExploreView
-                articles={allArticles}
-                bookmarks={bookmarks}
-                categories={categories}
-                onToggleBookmark={handleToggleBookmark}
-                onOpenArticle={handleOpenArticle}
-                onSelectCategory={handleSelectCategoryFromExplore}
-              />
-            )}
+            <Suspense fallback={null}>
+              {activeTab === 'explore' && (
+                <ExploreView
+                  articles={allArticles}
+                  bookmarks={bookmarks}
+                  categories={categories}
+                  onToggleBookmark={handleToggleBookmark}
+                  onOpenArticle={handleOpenArticle}
+                  onSelectCategory={handleSelectCategoryFromExplore}
+                />
+              )}
 
-            {activeTab === 'bookmarks' && (
-              <BookmarksView
-                articles={allArticles}
-                bookmarks={bookmarks}
-                onToggleBookmark={handleToggleBookmark}
-                onOpenArticle={handleOpenArticle}
-                onExploreClick={() => setActiveTab('feed')}
-              />
-            )}
+              {activeTab === 'bookmarks' && (
+                <BookmarksView
+                  articles={allArticles}
+                  bookmarks={bookmarks}
+                  onToggleBookmark={handleToggleBookmark}
+                  onOpenArticle={handleOpenArticle}
+                  onExploreClick={() => setActiveTab('feed')}
+                />
+              )}
 
-            {activeTab === 'settings' && (
-              <SettingsView
-                readerTheme={readerTheme}
-                onChangeReaderTheme={handleChangeTheme}
-                fontSize={fontSize}
-                onChangeFontSize={handleChangeFontSize}
-                onOpenPolicy={() => setActiveTab('policy')}
-                onOpenTerms={() => setActiveTab('terms')}
-                onOpenDisclaimer={() => setActiveTab('disclaimer')}
-                onOpenAdminPost={handleTriggerAdminPost}
-                onOpenCustomizer={() => setIsCustomizerOpen(true)}
-                onEditArticle={handleEditArticle}
-                customArticles={customArticles}
-                onDeleteCustomArticle={handleDeleteCustomArticle}
-                currentUser={currentUser}
-                onOpenAuth={(requiredAdmin) => setAuthModalState({ isOpen: true, requiredAdmin })}
-                onLogout={handleLogout}
-                appConfig={appConfig}
-              />
-            )}
+              {activeTab === 'settings' && (
+                <SettingsView
+                  readerTheme={readerTheme}
+                  onChangeReaderTheme={handleChangeTheme}
+                  fontSize={fontSize}
+                  onChangeFontSize={handleChangeFontSize}
+                  onOpenPolicy={() => setActiveTab('policy')}
+                  onOpenTerms={() => setActiveTab('terms')}
+                  onOpenDisclaimer={() => setActiveTab('disclaimer')}
+                  onOpenAdminPost={handleTriggerAdminPost}
+                  onOpenCustomizer={() => setIsCustomizerOpen(true)}
+                  onEditArticle={handleEditArticle}
+                  customArticles={customArticles}
+                  onDeleteCustomArticle={handleDeleteCustomArticle}
+                  currentUser={currentUser}
+                  onOpenAuth={(requiredAdmin) => setAuthModalState({ isOpen: true, requiredAdmin })}
+                  onLogout={handleLogout}
+                  appConfig={appConfig}
+                />
+              )}
 
-            {activeTab === 'policy' && (
-              <PolicyView onBack={() => setActiveTab('settings')} />
-            )}
+              {activeTab === 'policy' && (
+                <PolicyView onBack={() => setActiveTab('settings')} />
+              )}
 
-            {activeTab === 'terms' && (
-              <TermsView onBack={() => setActiveTab('settings')} />
-            )}
+              {activeTab === 'terms' && (
+                <TermsView onBack={() => setActiveTab('settings')} />
+              )}
 
-            {activeTab === 'disclaimer' && (
-              <DisclaimerView onBack={() => setActiveTab('settings')} />
-            )}
+              {activeTab === 'disclaimer' && (
+                <DisclaimerView onBack={() => setActiveTab('settings')} />
+              )}
+            </Suspense>
           </main>
 
           {/* Anchored Bottom AdMob Banner */}
@@ -543,56 +555,6 @@ export default function App() {
           />
         </div>
       )}
-
-      {/* App Logo, Category & Theme Customizer Modal */}
-      {isAdmin && (
-        <AppCustomizerModal
-          isOpen={isCustomizerOpen}
-          onClose={() => setIsCustomizerOpen(false)}
-          config={appConfig}
-          onSaveConfig={handleSaveAppConfig}
-          onResetConfig={handleResetAppConfig}
-          categories={categories}
-          onAddCategory={handleAddCategory}
-          onDeleteCategory={handleDeleteCategory}
-          onResetCategories={handleResetCategories}
-        />
-      )}
-
-      {/* User & Admin Auth Modal */}
-      <AuthModal
-        isOpen={authModalState.isOpen}
-        requiredAdmin={authModalState.requiredAdmin}
-        onClose={() => setAuthModalState({ isOpen: false, requiredAdmin: false })}
-        onAuthSuccess={handleAuthSuccess}
-      />
-
-      {/* Admin / Creator Post Modal */}
-      <AdminPostModal
-        isOpen={Boolean(isAdmin && isAdminPostOpen)}
-        editingArticle={editingArticle}
-        categories={categories}
-        onClose={() => {
-          setIsAdminPostOpen(false);
-          setEditingArticle(null);
-        }}
-        onSaveArticle={handleSaveCustomArticle}
-      />
-
-      {/* AdMob Interstitial Ad Modal */}
-      <InterstitialModal
-        isOpen={isInterstitialOpen}
-        onClose={() => setIsInterstitialOpen(false)}
-      />
-
-      {/* AdMob Rewarded Video Ad Modal */}
-      <RewardedModal
-        isOpen={rewardedModalData.isOpen}
-        articleTitle={rewardedModalData.article?.title || ''}
-        isOnline={isOnline}
-        onClose={() => setRewardedModalData({ isOpen: false, article: null })}
-        onRewardEarned={handleRewardEarned}
-      />
 
       {/* Daily Quick Tip Popup Dialog */}
       {isDailyTipOpen && (
@@ -631,45 +593,106 @@ export default function App() {
         </div>
       )}
 
-      {/* Notification Center Modal */}
-      <NotificationModal
-        isOpen={isNotificationOpen}
-        onClose={() => setIsNotificationOpen(false)}
-        notifications={notifications}
-        onSelectArticle={(articleId, notificationItem) => {
-          setIsNotificationOpen(false);
-          let target = allArticles.find((a) => String(a.id) === String(articleId));
-          if (!target) {
-            target = allArticles.find((a) => a.id === 'welcome-to-tippulse');
-          }
-          if (!target && notificationItem) {
-            target = {
-              id: articleId || 'welcome-to-tippulse',
-              title: notificationItem.title || 'Welcome to TipPulse! ✨',
-              category: notificationItem.category || 'Pulse Update',
-              image: notificationItem.imageUrl || '/app-icon.png',
-              author: 'TipPulse Team',
-              date: 'Today',
-              summary: notificationItem.body || 'Welcome to TipPulse notifications!',
-              content: '### Welcome to TipPulse! 🎉\n\nInvite your friends and family to explore daily curated tips and guides together!'
-            };
-          }
-          if (target) {
-            setActiveArticle(target);
-            setActiveTab('feed');
-          }
-        }}
-        onMarkAllRead={() => {
-          const updated = notificationService.markAllAsRead();
-          setNotifications(updated);
-        }}
-        onClearAll={() => {
-          const updated = notificationService.clearAll();
-          setNotifications(updated);
-        }}
-        currentUser={currentUser}
-        onOpenAuth={(requiredAdmin) => setAuthModalState({ isOpen: true, requiredAdmin })}
-      />
+      {/* Suspense Container for Lazy-loaded Modals */}
+      <Suspense fallback={null}>
+        {/* App Logo, Category & Theme Customizer Modal */}
+        {isAdmin && isCustomizerOpen && (
+          <AppCustomizerModal
+            isOpen={isCustomizerOpen}
+            onClose={() => setIsCustomizerOpen(false)}
+            config={appConfig}
+            onSaveConfig={handleSaveAppConfig}
+            onResetConfig={handleResetAppConfig}
+            categories={categories}
+            onAddCategory={handleAddCategory}
+            onDeleteCategory={handleDeleteCategory}
+            onResetCategories={handleResetCategories}
+          />
+        )}
+
+        {/* User & Admin Auth Modal */}
+        {authModalState.isOpen && (
+          <AuthModal
+            isOpen={authModalState.isOpen}
+            requiredAdmin={authModalState.requiredAdmin}
+            onClose={() => setAuthModalState({ isOpen: false, requiredAdmin: false })}
+            onAuthSuccess={handleAuthSuccess}
+          />
+        )}
+
+        {/* Admin / Creator Post Modal */}
+        {Boolean(isAdmin && isAdminPostOpen) && (
+          <AdminPostModal
+            isOpen={Boolean(isAdmin && isAdminPostOpen)}
+            editingArticle={editingArticle}
+            categories={categories}
+            onClose={() => {
+              setIsAdminPostOpen(false);
+              setEditingArticle(null);
+            }}
+            onSaveArticle={handleSaveCustomArticle}
+          />
+        )}
+
+        {/* AdMob Interstitial Ad Modal */}
+        {isInterstitialOpen && (
+          <InterstitialModal
+            isOpen={isInterstitialOpen}
+            onClose={() => setIsInterstitialOpen(false)}
+          />
+        )}
+
+        {/* AdMob Rewarded Video Ad Modal */}
+        {rewardedModalData.isOpen && (
+          <RewardedModal
+            isOpen={rewardedModalData.isOpen}
+            articleTitle={rewardedModalData.article?.title || ''}
+            isOnline={isOnline}
+            onClose={() => setRewardedModalData({ isOpen: false, article: null })}
+            onRewardEarned={handleRewardEarned}
+          />
+        )}
+
+        {/* Notification Center Modal */}
+        {isNotificationOpen && (
+          <NotificationModal
+            isOpen={isNotificationOpen}
+            onClose={() => setIsNotificationOpen(false)}
+            notifications={notifications}
+            onSelectArticle={(articleId, notificationItem) => {
+              setIsNotificationOpen(false);
+              let target = allArticles.find((a) => String(a.id) === String(articleId));
+              if (!target) {
+                target = allArticles.find((a) => a.id === 'welcome-to-tippulse');
+              }
+              if (!target && notificationItem) {
+                target = {
+                  id: articleId || 'welcome-to-tippulse',
+                  title: notificationItem.title || 'Welcome to TipPulse! ✨',
+                  category: notificationItem.category || 'Pulse Update',
+                  image: notificationItem.imageUrl || '/app-icon.png',
+                  author: 'TipPulse Team',
+                  date: 'Today',
+                  summary: notificationItem.body || 'Welcome to TipPulse notifications!',
+                  content: '### Welcome to TipPulse! 🎉\n\nInvite your friends and family to explore daily curated tips and guides together!'
+                };
+              }
+              if (target) {
+                setActiveArticle(target);
+                setActiveTab('feed');
+              }
+            }}
+            onMarkAllRead={() => {
+              const updated = notificationService.markAllAsRead();
+              setNotifications(updated);
+            }}
+            onClearAll={() => {
+              const updated = notificationService.clearAll();
+              setNotifications(updated);
+            }}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

@@ -353,9 +353,85 @@ export default function ArticleDetail({
           </div>
         )}
 
-        {/* Data Requirement or Rewarded Ad Lock Overlay */}
-        {isDataBlocked ? (
-          <div className="my-8 p-6 rounded-3xl bg-blue-50 dark:bg-blue-950/40 border-2 border-blue-400/80 dark:border-blue-600/80 text-center shadow-lg animate-in fade-in">
+        {/* Unified Two-Step Unlock Experience: Step 1 (Internet) -> Step 2 (Video Ad) -> Full Writing */}
+        {isLocked ? (
+          <div className="my-8 p-6 rounded-3xl bg-gradient-to-b from-amber-500/10 via-slate-900/5 to-amber-500/10 dark:from-amber-950/40 dark:to-slate-900 border border-amber-300/80 dark:border-amber-700/60 text-center shadow-lg animate-in fade-in duration-200">
+            {!isOnline ? (
+              /* Step 1: Offline - Internet Connection Required */
+              <div>
+                <div className="w-14 h-14 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center mx-auto mb-3 shadow-md">
+                  <WifiOff className="w-7 h-7" />
+                </div>
+
+                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 font-extrabold text-[11px] mb-2 uppercase tracking-wide border border-amber-300/40 dark:border-amber-700/50">
+                  <WifiOff className="w-3.5 h-3.5" />
+                  <span>Step 1 of 2: Internet Connection Required</span>
+                </div>
+
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+                  Connect to Internet to Unlock Writing
+                </h3>
+
+                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto mt-2 leading-relaxed">
+                  This exclusive tip requires an active internet connection to load and stream the short sponsor unlock video. Please turn on Mobile Data or connect to Wi-Fi to proceed.
+                </p>
+
+                <button
+                  onClick={async () => {
+                    try {
+                      const status = await Network.getStatus();
+                      if (status.connected) {
+                        setIsOnline(true);
+                      } else {
+                        alert('Device is still offline. Please turn on Mobile Data or Wi-Fi to load the video ad.');
+                      }
+                    } catch {
+                      if (navigator.onLine) {
+                        setIsOnline(true);
+                      } else {
+                        alert('Device is still offline. Please turn on Mobile Data or Wi-Fi to load the video ad.');
+                      }
+                    }
+                  }}
+                  className="mt-5 inline-flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs px-6 py-3 rounded-xl shadow-md transition-transform active:scale-98 cursor-pointer"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Check Connection & Proceed to Video</span>
+                </button>
+              </div>
+            ) : (
+              /* Step 2: Online - Watch Video to Unlock */
+              <div>
+                <div className="w-14 h-14 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center mx-auto mb-3 shadow-md">
+                  <Play className="w-7 h-7 fill-slate-950" />
+                </div>
+
+                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-extrabold text-[11px] mb-2 uppercase tracking-wide border border-emerald-300/40 dark:border-emerald-700/50">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Step 2 of 2: Internet Connected</span>
+                </div>
+
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+                  Watch Short Video to Unlock (5s)
+                </h3>
+
+                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto mt-2 leading-relaxed">
+                  Internet is connected! Watch a quick 5-second sponsor video to get lifetime reading access to this complete writing.
+                </p>
+
+                <button
+                  onClick={() => onUnlockPremium(article)}
+                  className="mt-5 inline-flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm px-6 py-3 rounded-xl shadow-lg shadow-amber-500/30 transition-transform active:scale-98 cursor-pointer"
+                >
+                  <Play className="w-4 h-4 fill-slate-950" />
+                  <span>Watch Video & Unlock Writing (5s)</span>
+                </button>
+              </div>
+            )}
+          </div>
+        ) : isDataBlocked ? (
+          /* Free Article that only requires Online Data */
+          <div className="my-8 p-6 rounded-3xl bg-gradient-to-b from-blue-500/10 via-slate-900/5 to-blue-500/10 dark:from-blue-950/40 dark:to-slate-900 border border-blue-200 dark:border-blue-800/60 text-center shadow-lg animate-in fade-in">
             <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-3 shadow-md">
               <WifiOff className="w-7 h-7" />
             </div>
@@ -369,7 +445,7 @@ export default function ArticleDetail({
             </h3>
 
             <p className="text-xs text-slate-600 dark:text-slate-300 max-w-md mx-auto mt-2 leading-relaxed">
-              This article was published with online requirement. Please turn on your Mobile Data or connect to Wi-Fi to load and read the full writing.
+              This article was published with online requirement. Please turn on your Mobile Data or connect to Wi-Fi to read the full writing.
             </p>
 
             <button
@@ -394,42 +470,6 @@ export default function ArticleDetail({
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Check Connection & Open Writing</span>
             </button>
-          </div>
-        ) : isLocked ? (
-          <div className="my-8 p-6 rounded-3xl bg-gradient-to-b from-amber-500/10 via-slate-900/5 to-amber-500/10 dark:from-amber-950/40 dark:to-slate-900 border border-amber-300 dark:border-amber-700/60 text-center shadow-lg">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center mx-auto mb-3 shadow-md">
-              {isOnline ? <Lock className="w-7 h-7" /> : <WifiOff className="w-7 h-7" />}
-            </div>
-
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-              {isOnline ? 'Exclusive Full Content' : 'Internet Required to Unlock'}
-            </h3>
-
-            <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto mt-2 leading-relaxed">
-              {isOnline
-                ? 'The complete writing is free to unlock by watching a short 5-second sponsor video.'
-                : 'Sponsor video ads require an active internet connection. Please connect to Mobile Data or Wi-Fi to watch the video and unlock the writing.'}
-            </p>
-
-            {isOnline ? (
-              <button
-                onClick={() => onUnlockPremium(article)}
-                className="mt-5 inline-flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm px-6 py-3 rounded-xl shadow-lg shadow-amber-500/30 transition-transform active:scale-98 cursor-pointer"
-              >
-                <Play className="w-4 h-4 fill-slate-950" />
-                <span>Watch Short Video to Unlock (5s)</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  alert('⚠️ Internet Connection Required\n\nPlease turn on Mobile Data or connect to Wi-Fi to load and watch the sponsor video.');
-                }}
-                className="mt-5 inline-flex items-center space-x-2 bg-amber-500/90 hover:bg-amber-600 text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl shadow-md transition-transform active:scale-98 cursor-pointer"
-              >
-                <WifiOff className="w-4 h-4" />
-                <span>Connect to Internet to Watch Video</span>
-              </button>
-            )}
           </div>
         ) : (
           /* Unlocked / Free Article Body with Rich Markdown & Lists Renderer */
