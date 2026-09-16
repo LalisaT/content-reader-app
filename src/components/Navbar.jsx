@@ -46,7 +46,12 @@ export default function Navbar({
   const LogoIconComp = LOGO_ICON_MAP[appConfig?.logoIcon] || BookOpen;
 
   return (
-    <header className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
+    <header 
+      className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors"
+      style={{
+        paddingTop: 'var(--safe-area-inset-top, env(safe-area-inset-top, 0px))',
+      }}
+    >
       <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
         {/* Dynamic Logo & App Name */}
         <div 

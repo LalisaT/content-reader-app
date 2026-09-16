@@ -28,7 +28,7 @@ export default function HomeFeed({
   const featuredArticle = articles[0];
 
   return (
-    <div className="max-w-2xl mx-auto pb-24 animate-in fade-in duration-200">
+    <div className="max-w-2xl mx-auto pb-safe-nav animate-in fade-in duration-200">
       {/* Category Chips Bar with dynamic categories */}
       <CategoryChips
         categories={categories}

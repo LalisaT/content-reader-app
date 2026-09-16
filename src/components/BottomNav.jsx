@@ -10,7 +10,12 @@ export default function BottomNav({ activeTab, onTabChange, bookmarkCount }) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 transition-colors">
+    <nav 
+      className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 transition-colors"
+      style={{
+        paddingBottom: 'var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))',
+      }}
+    >
       <div className="max-w-md mx-auto px-6 h-14 flex items-center justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;

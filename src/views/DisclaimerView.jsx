@@ -3,7 +3,7 @@ import { ArrowLeft, AlertTriangle, ShieldCheck, Heart, DollarSign, Brain } from 
 
 export default function DisclaimerView({ onBack }) {
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4 pb-24 animate-in fade-in duration-200">
+    <div className="max-w-2xl mx-auto px-4 py-4 pb-safe-nav animate-in fade-in duration-200">
       <button
         onClick={onBack}
         className="flex items-center space-x-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors mb-4"

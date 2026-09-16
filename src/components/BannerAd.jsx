@@ -8,7 +8,10 @@ export default function BannerAd({ position = 'bottom' }) {
   if (!isVisible) return null;
 
   return (
-    <div className={`w-full max-w-md mx-auto px-2 py-1 ${position === 'bottom' ? 'mb-16' : 'my-4'}`}>
+    <div 
+      className={`w-full max-w-md mx-auto px-2 py-1 ${position === 'bottom' ? 'mb-20' : 'my-4'}`}
+      style={position === 'bottom' ? { marginBottom: 'calc(4.5rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)))' } : {}}
+    >
       <div className="relative bg-slate-100 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-750 dark:border-slate-700 rounded-xl p-2.5 flex items-center justify-between shadow-sm overflow-hidden">
         {/* Test Ad Unit Indicator Badge */}
         <div className="flex items-center space-x-2.5 flex-1 min-w-0">

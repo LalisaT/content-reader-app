@@ -12,7 +12,7 @@ export default function BookmarksView({
   const savedArticles = articles.filter((a) => bookmarks.includes(a.id));
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4 pb-24 animate-in fade-in duration-200">
+    <div className="max-w-2xl mx-auto px-4 py-4 pb-safe-nav animate-in fade-in duration-200">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>

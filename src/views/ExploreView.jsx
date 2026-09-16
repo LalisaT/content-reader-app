@@ -51,7 +51,7 @@ export default function ExploreView({
   });
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4 pb-24 animate-in fade-in duration-200">
+    <div className="max-w-2xl mx-auto px-4 py-4 pb-safe-nav animate-in fade-in duration-200">
       {/* Search Input */}
       <div className="relative mb-6">
         <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />

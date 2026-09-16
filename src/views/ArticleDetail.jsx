@@ -144,7 +144,7 @@ export default function ArticleDetail({
   );
 
   return (
-    <div className={`min-h-screen pb-24 transition-colors ${
+    <div className={`min-h-screen pb-safe-nav transition-colors ${
       readerTheme === 'sepia' 
         ? 'theme-sepia' 
         : readerTheme === 'dark' 
@@ -152,7 +152,10 @@ export default function ArticleDetail({
           : 'bg-white text-slate-900'
     }`}>
       {/* Top Reading Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-slate-200 dark:bg-slate-800">
+      <div 
+        className="fixed left-0 right-0 z-50 h-1 bg-slate-200 dark:bg-slate-800"
+        style={{ top: 'var(--safe-area-inset-top, env(safe-area-inset-top, 0px))' }}
+      >
         <div
           className="h-full bg-indigo-600 dark:bg-indigo-400 transition-all duration-75"
           style={{ width: `${scrollProgress}%` }}
@@ -160,7 +163,10 @@ export default function ArticleDetail({
       </div>
 
       {/* Reader Navigation & Customization Toolbar */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-3 sm:px-4 h-14 flex items-center justify-between">
+      <header 
+        className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-3 sm:px-4 h-14 flex items-center justify-between"
+        style={{ paddingTop: 'var(--safe-area-inset-top, env(safe-area-inset-top, 0px))' }}
+      >
         <button
           onClick={onBack}
           className="flex items-center space-x-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"

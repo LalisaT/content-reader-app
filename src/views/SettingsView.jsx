@@ -116,7 +116,7 @@ export default function SettingsView({
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4 pb-24 animate-in fade-in duration-200">
+    <div className="max-w-2xl mx-auto px-4 py-4 pb-safe-nav animate-in fade-in duration-200">
       {/* Header */}
       <div className="mb-5">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">

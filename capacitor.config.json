@@ -16,6 +16,11 @@
       "smallIcon": "ic_stat_notification",
       "iconColor": "#0284c7",
       "sound": "default"
+    },
+    "SystemBars": {
+      "insetsHandling": "css",
+      "style": "DEFAULT",
+      "hidden": false
     }
   }
 }

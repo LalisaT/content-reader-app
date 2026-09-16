@@ -2,10 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+}
+
 @layer base {
   body {
     -webkit-tap-highlight-color: transparent;
   }
+}
+
+/* Safe Area Inset Helpers for Android Edge-to-Edge & System Bars */
+.pb-safe-nav {
+  padding-bottom: calc(5.5rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))) !important;
+}
+
+.pt-safe-header {
+  padding-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px)) !important;
+}
+
+.pb-safe-bottom {
+  padding-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)) !important;
 }
 
 /* Theme: Sepia */
