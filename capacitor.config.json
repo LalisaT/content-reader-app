@@ -4,12 +4,12 @@
   "webDir": "dist",
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration": 200,
+      "launchShowDuration": 150,
       "launchAutoHide": true,
       "launchFadeOutDuration": 50,
       "backgroundColor": "#ffffff",
       "androidSplashResourceName": "splash",
-      "androidScaleType": "CENTER_CROP",
+      "androidScaleType": "CENTER",
       "showSpinner": false
     },
     "LocalNotifications": {
