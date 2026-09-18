@@ -24,17 +24,9 @@ export default function NotificationModal({
   onMarkAllRead,
   onClearAll,
   currentUser,
-  isAdmin: propIsAdmin,
-  onBroadcastNotification,
   onOpenAuth,
 }) {
   if (!isOpen) return null;
-
-  const isAdmin = Boolean(propIsAdmin || (currentUser && currentUser.role === 'admin'));
-  const [showBroadcastBox, setShowBroadcastBox] = React.useState(false);
-  const [broadcastTitle, setBroadcastTitle] = React.useState('');
-  const [broadcastBody, setBroadcastBody] = React.useState('');
-  const [isBroadcasting, setIsBroadcasting] = React.useState(false);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -96,29 +88,6 @@ export default function NotificationModal({
     });
   };
 
-  const handleBroadcastSubmit = async (e) => {
-    e.preventDefault();
-    if (!broadcastTitle.trim()) return;
-    setIsBroadcasting(true);
-    try {
-      if (typeof onBroadcastNotification === 'function') {
-        await onBroadcastNotification({
-          title: `📢 ${broadcastTitle.trim()}`,
-          body: broadcastBody.trim() || 'Tap to open TipPulse and see what is new!',
-          category: 'Announcement',
-          imageUrl: '/app-icon.png'
-        });
-      }
-      setBroadcastTitle('');
-      setBroadcastBody('');
-      setShowBroadcastBox(false);
-    } catch (err) {
-      console.warn('Broadcast failed:', err);
-    } finally {
-      setIsBroadcasting(false);
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in">
       <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[85vh] overflow-hidden relative">
@@ -126,7 +95,7 @@ export default function NotificationModal({
         <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
             <div className="w-10 h-10 rounded-2xl bg-sky-50 dark:bg-sky-950/70 border border-sky-200 dark:border-sky-800/60 flex items-center justify-center text-sky-600 dark:text-sky-400">
-              <Bell className="w-5 h-5 fill-sky-500/20 animate-bounce" />
+              <Bell className="w-5 h-5 fill-sky-500/20" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
@@ -161,55 +130,6 @@ export default function NotificationModal({
             </button>
           </div>
         </div>
-
-        {/* Admin Broadcast Announcement Tool */}
-        {isAdmin && (
-          <div className="px-4 py-2.5 bg-amber-500/10 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800/60">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-700 dark:text-amber-300">
-                <Megaphone className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                <span>Admin Broadcast Studio</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowBroadcastBox(!showBroadcastBox)}
-                className="text-[11px] font-black text-amber-700 dark:text-amber-300 hover:underline px-2 py-0.5 rounded bg-amber-200/60 dark:bg-amber-900/60 transition-colors"
-              >
-                {showBroadcastBox ? 'Cancel' : '+ Broadcast Alert'}
-              </button>
-            </div>
-
-            {showBroadcastBox && (
-              <form onSubmit={handleBroadcastSubmit} className="mt-2.5 space-y-2 animate-in fade-in">
-                <input
-                  type="text"
-                  required
-                  value={broadcastTitle}
-                  onChange={(e) => setBroadcastTitle(e.target.value)}
-                  placeholder="Alert Title (e.g. Special Weekend Daily Challenge!)"
-                  className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 rounded-lg text-xs font-medium focus:outline-none"
-                />
-                <textarea
-                  rows={2}
-                  value={broadcastBody}
-                  onChange={(e) => setBroadcastBody(e.target.value)}
-                  placeholder="Short alert text that appears on users' phone status bar..."
-                  className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 rounded-lg text-xs font-medium focus:outline-none"
-                />
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={isBroadcasting || !broadcastTitle.trim()}
-                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 disabled:opacity-50 text-slate-950 text-xs font-black rounded-lg shadow-sm flex items-center space-x-1 transition-all"
-                  >
-                    <Send className="w-3 h-3" />
-                    <span>{isBroadcasting ? 'Broadcasting...' : 'Send Alert to All Users'}</span>
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        )}
 
         {/* Permission Request Banner (if notifications blocked on Android 13+) */}
         {!hasPermission && (

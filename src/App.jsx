@@ -27,9 +27,7 @@ const DisclaimerView = lazy(() => import('./views/DisclaimerView'));
 
 const InterstitialModal = lazy(() => import('./components/InterstitialModal'));
 const RewardedModal = lazy(() => import('./components/RewardedModal'));
-const AdminPostModal = lazy(() => import('./components/AdminPostModal'));
 const AuthModal = lazy(() => import('./components/AuthModal'));
-const AppCustomizerModal = lazy(() => import('./components/AppCustomizerModal'));
 const NotificationModal = lazy(() => import('./components/NotificationModal'));
 
 import { Sparkles, X, BookOpen, Loader2, WifiOff } from 'lucide-react';
@@ -43,25 +41,22 @@ export default function App() {
   const [fontSize, setFontSize] = useState(storageService.getFontSize());
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  // App Branding & Theme Customization
+  // App Branding & Theme
   const [appConfig, setAppConfig] = useState(appConfigService.getConfig());
-  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
 
   // Dynamic Categories
   const [categories, setCategories] = useState(categoryService.getCategories());
 
-  // User & Admin Authentication
+  // Reader Authentication & Profile
   const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
-  const [authModalState, setAuthModalState] = useState({ isOpen: false, requiredAdmin: false });
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  // Custom Admin Articles & Cloud Real-Time Articles (Offline-First Persistent)
+  // Cloud Real-Time Articles & Custom Articles (Offline-First Persistent)
   const [customArticles, setCustomArticles] = useState(storageService.getCustomArticles());
   const [cloudArticles, setCloudArticles] = useState(() => storageService.getCachedArticles());
   const [isOnline, setIsOnline] = useState(navigator.onLine ?? true);
-  const [editingArticle, setEditingArticle] = useState(null);
 
   // Modals State
-  const [isAdminPostOpen, setIsAdminPostOpen] = useState(false);
   const [isInterstitialOpen, setIsInterstitialOpen] = useState(false);
   const [rewardedModalData, setRewardedModalData] = useState({ isOpen: false, article: null });
   const [isDailyTipOpen, setIsDailyTipOpen] = useState(false);
@@ -202,8 +197,6 @@ export default function App() {
     return list.filter((a) => !deletedIds.includes(String(a.id)));
   }, [cloudArticles, customArticles]);
 
-  const isAdmin = currentUser && currentUser.role === 'admin';
-
   // Sync dark theme class on document element
   useEffect(() => {
     if (readerTheme === 'dark') {
@@ -236,162 +229,15 @@ export default function App() {
     storageService.setThemeMode(nextTheme);
   };
 
-  // Handle Category Management
-  const handleAddCategory = async (label, icon) => {
-    const updated = categoryService.addCategory(label, icon);
-    if (updated) {
-      setCategories(updated);
-      await firestoreSyncService.saveCategories(updated);
-    }
-  };
-
-  const handleDeleteCategory = async (id) => {
-    if (window.confirm(`Delete the category "${id}"?`)) {
-      const updated = categoryService.deleteCategory(id);
-      setCategories(updated);
-      await firestoreSyncService.saveCategories(updated);
-    }
-  };
-
-  const handleResetCategories = async () => {
-    const resetList = categoryService.resetCategories();
-    setCategories(resetList);
-    await firestoreSyncService.saveCategories(resetList);
-  };
-
-  // Handle App Branding / Theme Save
-  const handleSaveAppConfig = async (newConfig) => {
-    const updated = appConfigService.saveConfig(newConfig);
-    setAppConfig(updated);
-    await firestoreSyncService.saveAppConfig(newConfig);
-  };
-
-  const handleResetAppConfig = async () => {
-    const defaultConf = appConfigService.resetConfig();
-    setAppConfig(defaultConf);
-    await firestoreSyncService.saveAppConfig(defaultConf);
-  };
-
-  // Handle Admin Post action trigger (Strict Admin Check)
-  const handleTriggerAdminPost = () => {
-    if (isAdmin) {
-      setEditingArticle(null);
-      setIsAdminPostOpen(true);
-    } else {
-      setAuthModalState({ isOpen: true, requiredAdmin: true });
-    }
-  };
-
-  // Open Edit Modal for a specific article
-  const handleEditArticle = (article) => {
-    if (isAdmin) {
-      setEditingArticle(article);
-      setIsAdminPostOpen(true);
-    } else {
-      setAuthModalState({ isOpen: true, requiredAdmin: true });
-    }
-  };
-
-  // Auth Callbacks
+  // Reader Auth Callbacks
   const handleAuthSuccess = (user) => {
     setCurrentUser(user);
-    if (authModalState.requiredAdmin && user.role === 'admin') {
-      setEditingArticle(null);
-      setIsAdminPostOpen(true);
-    }
+    setIsAuthModalOpen(false);
   };
 
   const handleLogout = () => {
     authService.logout();
     setCurrentUser(null);
-    setIsAdminPostOpen(false);
-  };
-
-  // Save/Update article from Admin Studio (Instant Local + Cloud Firestore Sync)
-  const handleSaveCustomArticle = async (articleData) => {
-    if (!isAdmin) {
-      alert('Unauthorized: Only Administrators can save articles.');
-      return;
-    }
-    // Optimistic local update
-    const updated = storageService.saveCustomArticle(articleData);
-    setCustomArticles(updated);
-    
-    // Cloud Firestore save for all users
-    try {
-      await firestoreSyncService.saveArticle(articleData);
-    } catch (err) {
-      console.warn('Article saved locally, cloud sync pending:', err);
-    }
-
-    // Broadcast instant notification to all mobile users & in-app notification center
-    if (articleData.notifyUsers !== false) {
-      try {
-        const isEdit = Boolean(editingArticle);
-        const title = isEdit ? `📝 Updated Tip: ${articleData.title}` : `🔔 New Tip: ${articleData.title}`;
-        const body = articleData.summary || (articleData.content ? articleData.content.substring(0, 90) + '...' : 'Tap to read this tip now!');
-        
-        // 1. Broadcast to Firestore for all other users & devices
-        await firestoreSyncService.broadcastNotification({
-          id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-          articleId: articleData.id,
-          title: title,
-          body: body,
-          category: articleData.category || 'Tip',
-          imageUrl: articleData.image || articleData.imageUrl || null,
-          createdAt: Date.now(),
-          author: currentUser?.username || 'Admin'
-        });
-
-        // 2. Also trigger local notification for the admin device
-        await notificationService.notifyNewArticle(articleData, title);
-      } catch (err) {
-        console.debug('Notification trigger error:', err);
-      }
-    }
-
-    // If currently viewing this article, update it live in the reader
-    if (activeArticle && activeArticle.id === articleData.id) {
-      setActiveArticle(articleData);
-    }
-  };
-
-  // Instant broadcast announcement to all users from Admin
-  const handleBroadcastNotification = async (notifPayload) => {
-    if (!isAdmin) return;
-    try {
-      const fullPayload = {
-        ...notifPayload,
-        id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        createdAt: Date.now(),
-        author: currentUser?.username || 'Admin'
-      };
-      await firestoreSyncService.broadcastNotification(fullPayload);
-      await notificationService.triggerSystemNotification(fullPayload);
-    } catch (err) {
-      console.warn('Broadcast error:', err);
-    }
-  };
-
-  // Delete custom or any article as Admin (Instant Local + Cloud Firestore Sync)
-  const handleDeleteCustomArticle = async (id) => {
-    if (!isAdmin) {
-      alert('Unauthorized: Only Administrators can delete articles.');
-      return;
-    }
-    if (window.confirm('Are you sure you want to permanently delete this article?')) {
-      const updated = storageService.deleteCustomArticle(id);
-      setCustomArticles(updated);
-      setCloudArticles((prev) => (prev || []).filter((a) => String(a.id) !== String(id)));
-      try {
-        await firestoreSyncService.deleteArticle(id);
-      } catch (err) {
-        console.warn('Article deleted locally, cloud sync pending:', err);
-      }
-      if (activeArticle && String(activeArticle.id) === String(id)) {
-        setActiveArticle(null);
-      }
-    }
   };
 
   // Handle Bookmarking
@@ -476,9 +322,6 @@ export default function App() {
             onChangeReaderTheme={handleChangeTheme}
             fontSize={fontSize}
             onChangeFontSize={handleChangeFontSize}
-            isAdmin={isAdmin}
-            onEditCurrentArticle={handleEditArticle}
-            onDeleteCurrentArticle={handleDeleteCustomArticle}
           />
         </Suspense>
       ) : (
@@ -493,10 +336,8 @@ export default function App() {
             }}
             bookmarkCount={bookmarks.length}
             onOpenDailyTip={() => setIsDailyTipOpen(true)}
-            onOpenAdminPost={handleTriggerAdminPost}
-            onOpenCustomizer={() => setIsCustomizerOpen(true)}
             currentUser={currentUser}
-            onOpenAuth={(requiredAdmin) => setAuthModalState({ isOpen: true, requiredAdmin })}
+            onOpenAuth={() => setIsAuthModalOpen(true)}
             onLogout={handleLogout}
             appConfig={appConfig}
             currentTheme={readerTheme}
@@ -559,13 +400,8 @@ export default function App() {
                   onOpenPolicy={() => setActiveTab('policy')}
                   onOpenTerms={() => setActiveTab('terms')}
                   onOpenDisclaimer={() => setActiveTab('disclaimer')}
-                  onOpenAdminPost={handleTriggerAdminPost}
-                  onOpenCustomizer={() => setIsCustomizerOpen(true)}
-                  onEditArticle={handleEditArticle}
-                  customArticles={customArticles}
-                  onDeleteCustomArticle={handleDeleteCustomArticle}
                   currentUser={currentUser}
-                  onOpenAuth={(requiredAdmin) => setAuthModalState({ isOpen: true, requiredAdmin })}
+                  onOpenAuth={() => setIsAuthModalOpen(true)}
                   onLogout={handleLogout}
                   appConfig={appConfig}
                 />
@@ -639,42 +475,12 @@ export default function App() {
 
       {/* Suspense Container for Lazy-loaded Modals */}
       <Suspense fallback={null}>
-        {/* App Logo, Category & Theme Customizer Modal */}
-        {isAdmin && isCustomizerOpen && (
-          <AppCustomizerModal
-            isOpen={isCustomizerOpen}
-            onClose={() => setIsCustomizerOpen(false)}
-            config={appConfig}
-            onSaveConfig={handleSaveAppConfig}
-            onResetConfig={handleResetAppConfig}
-            categories={categories}
-            onAddCategory={handleAddCategory}
-            onDeleteCategory={handleDeleteCategory}
-            onResetCategories={handleResetCategories}
-          />
-        )}
-
-        {/* User & Admin Auth Modal */}
-        {authModalState.isOpen && (
+        {/* Reader Profile Auth Modal */}
+        {isAuthModalOpen && (
           <AuthModal
-            isOpen={authModalState.isOpen}
-            requiredAdmin={authModalState.requiredAdmin}
-            onClose={() => setAuthModalState({ isOpen: false, requiredAdmin: false })}
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
             onAuthSuccess={handleAuthSuccess}
-          />
-        )}
-
-        {/* Admin / Creator Post Modal */}
-        {Boolean(isAdmin && isAdminPostOpen) && (
-          <AdminPostModal
-            isOpen={Boolean(isAdmin && isAdminPostOpen)}
-            editingArticle={editingArticle}
-            categories={categories}
-            onClose={() => {
-              setIsAdminPostOpen(false);
-              setEditingArticle(null);
-            }}
-            onSaveArticle={handleSaveCustomArticle}
           />
         )}
 
@@ -734,9 +540,6 @@ export default function App() {
               const updated = notificationService.clearAll();
               setNotifications(updated);
             }}
-            currentUser={currentUser}
-            isAdmin={isAdmin}
-            onBroadcastNotification={handleBroadcastNotification}
           />
         )}
       </Suspense>

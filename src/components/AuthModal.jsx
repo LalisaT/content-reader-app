@@ -9,10 +9,12 @@ import {
 } from 'lucide-react';
 import { authService } from '../services/authService';
 
-export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmin = false }) {
+export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
+  const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(requiredAdmin ? 'Administrator login is required to access publishing tools.' : '');
+  const [error, setError] = useState('');
 
   if (!isOpen) return null;
 
@@ -25,16 +27,22 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
       return;
     }
 
-    const res = authService.login(username.trim(), password);
-    if (res.success) {
-      if (requiredAdmin && res.user.role !== 'admin') {
-        setError('This account does not have Administrator privileges.');
-        return;
+    if (isRegister) {
+      const res = authService.register(username.trim(), name.trim(), password);
+      if (res.success) {
+        onAuthSuccess(res.user);
+        onClose();
+      } else {
+        setError(res.error || 'Registration failed.');
       }
-      onAuthSuccess(res.user);
-      onClose();
     } else {
-      setError(res.error || 'Invalid admin credentials.');
+      const res = authService.login(username.trim(), password);
+      if (res.success) {
+        onAuthSuccess(res.user);
+        onClose();
+      } else {
+        setError(res.error || 'Invalid username or password.');
+      }
     }
   };
 
@@ -45,14 +53,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center space-x-2.5">
             <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm">
-              <ShieldCheck className="w-5 h-5 stroke-[2.2]" />
+              <User className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
               <h3 className="font-bold text-base leading-tight">
-                Admin Sign In
+                {isRegister ? 'Create Reader Profile' : 'Reader Sign In'}
               </h3>
               <p className="text-[11px] text-slate-400">
-                Sign in to manage & publish articles
+                {isRegister ? 'Save reading preferences and history' : 'Sign in to access your saved bookmarks'}
               </p>
             </div>
           </div>
@@ -75,9 +83,27 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
           )}
 
           <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+            {isRegister && (
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Full Name / Nickname
+                </label>
+                <div className="relative">
+                  <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Alex"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Admin Username
+                Username
               </label>
               <div className="relative">
                 <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -86,7 +112,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. Lalisa"
+                  placeholder="e.g. reader1"
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-indigo-500/40 focus:outline-none"
                 />
               </div>
@@ -94,7 +120,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
 
             <div>
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Admin Password
+                Password
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -113,9 +139,22 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, requiredAdmi
               type="submit"
               className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-xs py-3 px-4 rounded-xl shadow-md shadow-indigo-600/30 flex items-center justify-center space-x-1.5 transition-all"
             >
-              <span>Sign In as Admin</span>
+              <span>{isRegister ? 'Create Profile' : 'Sign In'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
+
+            <div className="pt-2 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRegister(!isRegister);
+                  setError('');
+                }}
+                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+              >
+                {isRegister ? 'Already have a profile? Sign In' : 'New reader? Create Profile'}
+              </button>
+            </div>
           </form>
         </div>
       </div>

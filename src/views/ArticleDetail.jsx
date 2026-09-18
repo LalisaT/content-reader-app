@@ -41,9 +41,6 @@ export default function ArticleDetail({
   onChangeReaderTheme,
   fontSize,
   onChangeFontSize,
-  isAdmin = false,
-  onEditCurrentArticle,
-  onDeleteCurrentArticle,
 }) {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
@@ -177,27 +174,7 @@ export default function ArticleDetail({
 
         {/* Reader Customization Controls */}
         <div className="flex items-center space-x-1 sm:space-x-2">
-          {/* Admin Edit / Delete Actions */}
-          {isAdmin && (
-            <div className="flex items-center space-x-1 bg-amber-50 dark:bg-amber-950/60 p-0.5 rounded-lg border border-amber-200 dark:border-amber-800 mr-1">
-              <button
-                onClick={() => onEditCurrentArticle(article)}
-                title="Edit this post as Admin"
-                className="p-1.5 rounded-md text-amber-900 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors flex items-center space-x-1 text-xs font-bold"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Edit</span>
-              </button>
-              <button
-                onClick={() => onDeleteCurrentArticle(article.id)}
-                title="Delete this article permanently as Admin"
-                className="p-1.5 rounded-md text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-colors flex items-center space-x-1 text-xs font-bold"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Delete</span>
-              </button>
-            </div>
-          )}
+
 
           {/* Font Size Toggle */}
           <button

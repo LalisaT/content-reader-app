@@ -32,8 +32,6 @@ export default function Navbar({
   onTabChange,
   bookmarkCount,
   onOpenDailyTip,
-  onOpenAdminPost,
-  onOpenCustomizer,
   currentUser,
   onOpenAuth,
   appConfig,
@@ -42,7 +40,6 @@ export default function Navbar({
   unreadNotificationCount = 0,
   onOpenNotifications,
 }) {
-  const isAdmin = currentUser && currentUser.role === 'admin';
   const LogoIconComp = LOGO_ICON_MAP[appConfig?.logoIcon] || BookOpen;
 
   return (
@@ -94,28 +91,7 @@ export default function Navbar({
             )}
           </button>
 
-          {/* Admin App Customizer Button */}
-          {isAdmin && (
-            <button
-              onClick={onOpenCustomizer}
-              title="Customize App Logo, Categories & Palette"
-              className="p-1.5 rounded-full text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 hover:bg-indigo-100 border border-indigo-200 dark:border-indigo-800 transition-colors"
-            >
-              <Palette className="w-4 h-4" />
-            </button>
-          )}
 
-          {/* Admin / Post Creation Button (Admin Only) */}
-          {isAdmin && (
-            <button
-              onClick={onOpenAdminPost}
-              title="Create New Article"
-              className="flex items-center space-x-1 px-2.5 py-1.5 text-xs font-bold rounded-full shadow-sm transition-all hover:scale-102 bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-amber-500/30"
-            >
-              <PlusCircle className="w-3.5 h-3.5 text-slate-950" />
-              <span className="hidden sm:inline">Write</span>
-            </button>
-          )}
 
           {/* Daily Quick Tip Sparkle */}
           <button

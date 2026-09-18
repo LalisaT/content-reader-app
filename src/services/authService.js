@@ -4,48 +4,9 @@
 const AUTH_STORAGE_KEYS = {
   CURRENT_USER: 'tippulse_current_user',
   USERS_DB: 'tippulse_users_db',
-  ADMIN_CONFIG: 'tippulse_admin_config',
-};
-
-// Default Admin credentials configured for lalion
-const DEFAULT_ADMIN = {
-  username: 'lalion',
-  password: '15739482',
-  name: 'lalion',
-  role: 'admin',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80',
 };
 
 export const authService = {
-  // Get stored admin credentials
-  getAdminConfig: () => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEYS.ADMIN_CONFIG);
-      return stored ? JSON.parse(stored) : DEFAULT_ADMIN;
-    } catch {
-      return DEFAULT_ADMIN;
-    }
-  },
-
-  // Update admin password
-  updateAdminCredentials: (newPassword, newName) => {
-    const current = authService.getAdminConfig();
-    const updated = {
-      ...current,
-      password: newPassword || current.password,
-      name: newName || current.name,
-    };
-    localStorage.setItem(AUTH_STORAGE_KEYS.ADMIN_CONFIG, JSON.stringify(updated));
-
-    // Update active session if currently logged in as admin
-    const active = authService.getCurrentUser();
-    if (active && active.role === 'admin') {
-      const updatedUser = { ...active, name: updated.name };
-      localStorage.setItem(AUTH_STORAGE_KEYS.CURRENT_USER, JSON.stringify(updatedUser));
-    }
-    return true;
-  },
-
   // Get current logged-in user
   getCurrentUser: () => {
     try {
@@ -56,11 +17,8 @@ export const authService = {
     }
   },
 
-  // Check if current user is Admin
-  isAdmin: () => {
-    const user = authService.getCurrentUser();
-    return user && user.role === 'admin';
-  },
+  // In the mobile client, administrative access is disabled for zero-trust security
+  isAdmin: () => false,
 
   // User database helper
   getUsersDB: () => {
@@ -74,27 +32,10 @@ export const authService = {
 
   // Sign In
   login: (username, password) => {
-    const admin = authService.getAdminConfig();
-
-    // 1. Check Admin credentials (username: lalion / password: 15739482)
-    if (
-      (username.trim().toLowerCase() === admin.username.toLowerCase() || username.trim().toLowerCase() === 'lalion' || username.trim().toLowerCase() === 'admin') &&
-      (password === admin.password || password === '15739482')
-    ) {
-      const adminSession = {
-        username: 'lalion',
-        name: admin.name || 'lalion',
-        role: 'admin',
-        avatar: admin.avatar,
-      };
-      localStorage.setItem(AUTH_STORAGE_KEYS.CURRENT_USER, JSON.stringify(adminSession));
-      return { success: true, user: adminSession };
-    }
-
-    // 2. Check regular users database
+    const cleanUsername = (username || '').trim().toLowerCase();
     const users = authService.getUsersDB();
     const matchedUser = users.find(
-      (u) => u.username.toLowerCase() === username.trim().toLowerCase() && u.password === password
+      (u) => u.username.toLowerCase() === cleanUsername && u.password === password
     );
 
     if (matchedUser) {
@@ -113,11 +54,9 @@ export const authService = {
 
   // Register a new regular user
   register: (username, name, password) => {
-    const cleanUsername = username.trim().toLowerCase();
-    const admin = authService.getAdminConfig();
-
-    if (cleanUsername === admin.username.toLowerCase() || cleanUsername === 'lalion' || cleanUsername === 'admin') {
-      return { success: false, error: 'This username is reserved for the Administrator.' };
+    const cleanUsername = (username || '').trim().toLowerCase();
+    if (!cleanUsername || !password) {
+      return { success: false, error: 'Username and password are required.' };
     }
 
     const users = authService.getUsersDB();
@@ -127,7 +66,7 @@ export const authService = {
 
     const newUser = {
       username: cleanUsername,
-      name: name.trim() || cleanUsername,
+      name: (name || '').trim() || cleanUsername,
       password: password,
       role: 'user',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80',
