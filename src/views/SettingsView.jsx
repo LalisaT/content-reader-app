@@ -233,6 +233,17 @@ export default function SettingsView({
           <p className="text-[11px] text-slate-400 mt-2">
             {appConfig?.appName || 'TipPulse'} v1.0.0 • Built for Daily Educational & Practical Tips
           </p>
+          <div className="mt-3 inline-flex items-center justify-center space-x-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-2xs">
+            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Built with</span>
+            <img
+              src="/lalion-logo.png"
+              alt="Lalion"
+              className="w-4 h-4 rounded-full object-contain ring-1 ring-slate-300 dark:ring-slate-600"
+            />
+            <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200 tracking-wide">
+              Lalion
+            </span>
+          </div>
         </div>
       </div>
     </div>
