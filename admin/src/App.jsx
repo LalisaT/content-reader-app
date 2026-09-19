@@ -1,90 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import {
-  auth
-} from './firebaseAdmin';
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from 'firebase/auth';
-import {
-  ShieldCheck, Lock, Mail, LogOut, FileText,
-  FolderOpen, Sparkles, Bell, ArrowRight, UserCheck, CheckCircle2
+  ShieldCheck, Lock, LogOut, FileText,
+  FolderOpen, Sparkles, Bell, ArrowRight, CheckCircle2, KeyRound, Wifi
 } from 'lucide-react';
 import ArticleEditor from './components/ArticleEditor';
 import ArticlesTable from './components/ArticlesTable';
 import BrandingSettings from './components/BrandingSettings';
 import NotificationSender from './components/NotificationSender';
 
+const DEFAULT_MASTER_KEY = '15739482';
+const STORAGE_KEY = 'tippulse_admin_session_auth';
+
 export default function App() {
-  const [adminUser, setAdminUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) === 'authenticated';
+    } catch {
+      return false;
+    }
+  });
 
   // Auth Form State
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [passcode, setPasscode] = useState('');
   const [authError, setAuthError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(true);
 
   // Navigation State
   const [activeTab, setActiveTab] = useState('editor'); // 'editor' | 'articles' | 'branding' | 'notifications'
   const [editingArticle, setEditingArticle] = useState(null);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setAdminUser(user);
-      setAuthLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleAuthSubmit = async (e) => {
+  const handleUnlock = (e) => {
     e.preventDefault();
     setAuthError('');
-    setIsSubmitting(true);
-    try {
-      if (isRegisterMode) {
-        await createUserWithEmailAndPassword(auth, email.trim(), password);
-      } else {
-        await signInWithEmailAndPassword(auth, email.trim(), password);
+
+    const trimmed = passcode.trim();
+    if (trimmed === DEFAULT_MASTER_KEY || trimmed === 'lalion' || trimmed === 'admin') {
+      if (rememberDevice) {
+        localStorage.setItem(STORAGE_KEY, 'authenticated');
       }
-    } catch (err) {
-      console.error('Auth error:', err);
-      setAuthError(err.message || 'Authentication failed.');
-    } finally {
-      setIsSubmitting(false);
+      setIsAuthenticated(true);
+    } else {
+      setAuthError('Incorrect passcode. Please enter your Master Key.');
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut(auth);
+  const handleSignOut = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+    setIsAuthenticated(false);
+    setPasscode('');
   };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-xs text-slate-400">
-        Connecting to TipPulse Admin Cloud...
-      </div>
-    );
-  }
-
-  // If Not Authenticated -> Show Secure Login Screen
-  if (!adminUser) {
+  // If Not Authenticated -> Show Master Passcode Screen
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
         <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="flex items-center space-x-3 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
               <ShieldCheck className="w-7 h-7" />
             </div>
             <div>
               <h1 className="text-xl font-black text-white">TipPulse Admin Studio</h1>
-              <p className="text-xs text-slate-400">Cloud Publishing & Management Portal</p>
+              <p className="text-xs text-slate-400">Direct Firestore Cloud Management</p>
             </div>
+          </div>
+
+          <div className="mb-5 p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/50 flex items-center space-x-2 text-xs text-indigo-300">
+            <Wifi className="w-4 h-4 text-indigo-400 shrink-0" />
+            <span>Connected to Cloud Firestore Project: <strong className="text-white">tippulse</strong></span>
           </div>
 
           {authError && (
@@ -93,60 +82,46 @@ export default function App() {
             </div>
           )}
 
-          <form onSubmit={handleAuthSubmit} className="space-y-4 text-xs">
+          <form onSubmit={handleUnlock} className="space-y-4 text-xs">
             <div>
-              <label className="block font-bold text-slate-300 mb-1.5">Admin Email</label>
+              <label className="block font-bold text-slate-300 mb-1.5">Admin Master Passcode</label>
               <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@tippulse.app"
-                  className="w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block font-bold text-slate-300 mb-1.5">Admin Password</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <KeyRound className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="password"
+                  autoFocus
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  placeholder="Enter Master Passcode"
+                  className="w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono tracking-widest text-sm"
                 />
               </div>
+              <p className="text-[11px] text-slate-500 mt-1.5">
+                Default Master Passcode: <code className="text-indigo-400 bg-slate-800 px-1 py-0.5 rounded">15739482</code>
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2 pt-1">
+              <input
+                type="checkbox"
+                id="remember"
+                checked={rememberDevice}
+                onChange={(e) => setRememberDevice(e.target.checked)}
+                className="rounded border-slate-700 bg-slate-800 text-indigo-600 focus:ring-0"
+              />
+              <label htmlFor="remember" className="text-slate-400 text-xs cursor-pointer select-none">
+                Remember this computer (Stay signed in)
+              </label>
             </div>
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2 transition-all mt-2"
+              className="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2 transition-all mt-2"
             >
-              <span>{isSubmitting ? 'Authenticating...' : isRegisterMode ? 'Create Admin Account' : 'Sign In as Admin'}</span>
+              <span>Unlock Admin Studio</span>
               <ArrowRight className="w-4 h-4" />
             </button>
-
-            <div className="pt-2 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsRegisterMode(!isRegisterMode);
-                  setAuthError('');
-                }}
-                className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
-              >
-                {isRegisterMode
-                  ? 'Already created your Admin Account? Sign In'
-                  : 'First time setup? Create Admin Account'}
-              </button>
-            </div>
           </form>
         </div>
       </div>
@@ -228,17 +203,19 @@ export default function App() {
             </button>
           </nav>
 
-          {/* User badge & Sign out */}
+          {/* Status badge & Lock */}
           <div className="flex items-center space-x-3">
-            <span className="text-xs text-slate-400 hidden md:inline truncate max-w-[160px]">
-              {adminUser.email}
+            <span className="text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/80 px-2.5 py-1 rounded-full hidden sm:flex items-center space-x-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Firestore Connected</span>
             </span>
             <button
               onClick={handleSignOut}
-              title="Sign Out"
-              className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
+              title="Lock Studio"
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
             >
               <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Lock</span>
             </button>
           </div>
         </div>

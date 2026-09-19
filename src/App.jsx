@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import initialArticlesData from './data/articles.json';
 import { storageService } from './services/storageService';
 import { admobService } from './services/admobService';
-import { authService } from './services/authService';
 import { appConfigService, THEME_PALETTES } from './services/appConfigService';
 import { categoryService } from './services/categoryService';
 import { firestoreSyncService } from './services/firestoreSyncService';
@@ -27,7 +26,6 @@ const DisclaimerView = lazy(() => import('./views/DisclaimerView'));
 
 const InterstitialModal = lazy(() => import('./components/InterstitialModal'));
 const RewardedModal = lazy(() => import('./components/RewardedModal'));
-const AuthModal = lazy(() => import('./components/AuthModal'));
 const NotificationModal = lazy(() => import('./components/NotificationModal'));
 
 import { Sparkles, X, BookOpen, Loader2, WifiOff } from 'lucide-react';
@@ -46,10 +44,6 @@ export default function App() {
 
   // Dynamic Categories
   const [categories, setCategories] = useState(categoryService.getCategories());
-
-  // Reader Authentication & Profile
-  const [currentUser, setCurrentUser] = useState(authService.getCurrentUser());
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Cloud Real-Time Articles & Custom Articles (Offline-First Persistent)
   const [customArticles, setCustomArticles] = useState(storageService.getCustomArticles());
@@ -229,17 +223,6 @@ export default function App() {
     storageService.setThemeMode(nextTheme);
   };
 
-  // Reader Auth Callbacks
-  const handleAuthSuccess = (user) => {
-    setCurrentUser(user);
-    setIsAuthModalOpen(false);
-  };
-
-  const handleLogout = () => {
-    authService.logout();
-    setCurrentUser(null);
-  };
-
   // Handle Bookmarking
   const handleToggleBookmark = (id) => {
     const updated = storageService.toggleBookmark(id);
@@ -336,9 +319,6 @@ export default function App() {
             }}
             bookmarkCount={bookmarks.length}
             onOpenDailyTip={() => setIsDailyTipOpen(true)}
-            currentUser={currentUser}
-            onOpenAuth={() => setIsAuthModalOpen(true)}
-            onLogout={handleLogout}
             appConfig={appConfig}
             currentTheme={readerTheme}
             onToggleTheme={handleCycleTheme}
@@ -400,9 +380,6 @@ export default function App() {
                   onOpenPolicy={() => setActiveTab('policy')}
                   onOpenTerms={() => setActiveTab('terms')}
                   onOpenDisclaimer={() => setActiveTab('disclaimer')}
-                  currentUser={currentUser}
-                  onOpenAuth={() => setIsAuthModalOpen(true)}
-                  onLogout={handleLogout}
                   appConfig={appConfig}
                 />
               )}
@@ -475,15 +452,6 @@ export default function App() {
 
       {/* Suspense Container for Lazy-loaded Modals */}
       <Suspense fallback={null}>
-        {/* Reader Profile Auth Modal */}
-        {isAuthModalOpen && (
-          <AuthModal
-            isOpen={isAuthModalOpen}
-            onClose={() => setIsAuthModalOpen(false)}
-            onAuthSuccess={handleAuthSuccess}
-          />
-        )}
-
         {/* AdMob Interstitial Ad Modal */}
         {isInterstitialOpen && (
           <InterstitialModal

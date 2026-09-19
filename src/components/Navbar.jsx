@@ -19,7 +19,6 @@ import {
   Sun,
   Moon,
   Coffee,
-  User,
   Bell
 } from 'lucide-react';
 
@@ -32,8 +31,6 @@ export default function Navbar({
   onTabChange,
   bookmarkCount,
   onOpenDailyTip,
-  currentUser,
-  onOpenAuth,
   appConfig,
   currentTheme = 'light',
   onToggleTheme,
