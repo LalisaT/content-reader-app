@@ -4,11 +4,12 @@ import {
   Lock, CheckCircle2, AlertCircle, Plus, Trash2,
   Heading1, Heading2, Heading3, Bold, Italic,
   Quote, List, ListOrdered, Lightbulb, AlertTriangle, Link as LinkIcon,
-  Wifi, Bell, MousePointerClick, ExternalLink, X
+  Wifi, Bell, MousePointerClick, ExternalLink, X, Upload, Loader2, RefreshCw
 } from 'lucide-react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseAdmin';
 import RichPreview from './RichPreview';
+import { processAndUploadImage } from '../utils/imageUpload';
 
 const PRESET_IMAGES = [
   { label: 'Tech & Code', url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80' },
@@ -33,6 +34,19 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
   const [needsData, setNeedsData] = useState(false);
   const [broadcastNotification, setBroadcastNotification] = useState(true);
 
+  // Photo Upload & Featured Banner Tabs
+  const [imageTab, setImageTab] = useState('upload'); // 'upload' | 'presets' | 'url'
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  // Dedicated "Check Before Post" Full Preview Modal
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+
+  // In-Article Content Image Modal
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [contentImgAlt, setContentImgAlt] = useState('Guide Illustration');
+  const [contentImgUrl, setContentImgUrl] = useState('');
+  const [isUploadingContentImg, setIsUploadingContentImg] = useState(false);
+
   // Interactive Button Creator State
   const [isButtonModalOpen, setIsButtonModalOpen] = useState(false);
   const [btnLabel, setBtnLabel] = useState('Click Here');
@@ -43,6 +57,8 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
   const [toast, setToast] = useState(null);
 
   const textareaRef = useRef(null);
+  const bannerFileInputRef = useRef(null);
+  const contentImageFileInputRef = useRef(null);
 
   useEffect(() => {
     if (editingArticle) {
@@ -120,6 +136,83 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
       }, 50);
     }
     setIsButtonModalOpen(false);
+  };
+
+  const handleBannerFile = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file (PNG, JPG, WebP).', true);
+      return;
+    }
+    setIsUploadingImage(true);
+    try {
+      const result = await processAndUploadImage(file, 'article_banners');
+      setImage(result.url);
+      showToast('Banner photo uploaded and ready!');
+    } catch (err) {
+      console.error('Banner upload error:', err);
+      showToast('Failed to process image: ' + err.message, true);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleBannerFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) handleBannerFile(file);
+  };
+
+  const handleBannerDrop = (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    if (file) handleBannerFile(file);
+  };
+
+  const handleContentImageFile = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file.', true);
+      return;
+    }
+    setIsUploadingContentImg(true);
+    try {
+      const result = await processAndUploadImage(file, 'article_content');
+      setContentImgUrl(result.url);
+      showToast('Image uploaded and ready to insert!');
+    } catch (err) {
+      console.error('Content image upload error:', err);
+      showToast('Failed to process image: ' + err.message, true);
+    } finally {
+      setIsUploadingContentImg(false);
+    }
+  };
+
+  const handleInsertContentImage = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const url = contentImgUrl.trim();
+    if (!url) {
+      showToast('Please upload an image or enter an image URL.', true);
+      return;
+    }
+    const alt = contentImgAlt.trim() || 'Illustration';
+    const snippet = `\n\n![${alt}](${url})\n\n`;
+
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      setContent((prev) => `${prev}${snippet}`);
+    } else {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newContent = content.substring(0, start) + snippet + content.substring(end);
+      setContent(newContent);
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + snippet.length, start + snippet.length);
+      }, 50);
+    }
+    setIsImageModalOpen(false);
+    setContentImgUrl('');
+    setContentImgAlt('Guide Illustration');
   };
 
   const insertText = (beforeText, afterText = '', defaultPlaceholder = '') => {
@@ -274,25 +367,40 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
             </button>
           )}
 
+          {/* Dedicated Check Live Preview Button */}
+          <button
+            type="button"
+            onClick={() => setIsPreviewModalOpen(true)}
+            className="px-3.5 py-2 bg-slate-900 hover:bg-slate-700/80 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 hover:text-white font-bold text-xs rounded-xl shadow-md flex items-center space-x-1.5 transition-all"
+            title="Preview exactly what readers see before publishing"
+          >
+            <Eye className="w-4 h-4 text-emerald-400" />
+            <span className="hidden sm:inline">Check</span>
+            <span>Live Preview</span>
+          </button>
+
           {/* View toggles (Split vs Edit vs Preview) */}
-          <div className="hidden md:flex items-center bg-slate-900 rounded-xl p-0.5 border border-slate-700 text-xs">
+          <div className="flex items-center bg-slate-900 rounded-xl p-0.5 border border-slate-700 text-xs">
             <button
+              type="button"
               onClick={() => setActiveView('editor')}
-              className={`px-3 py-1 rounded-lg font-medium transition-colors ${activeView === 'editor' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+              className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${activeView === 'editor' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
             >
-              Editor Only
+              Editor
             </button>
             <button
+              type="button"
               onClick={() => setActiveView('split')}
-              className={`px-3 py-1 rounded-lg font-medium transition-colors ${activeView === 'split' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+              className={`hidden md:inline-block px-2.5 py-1 rounded-lg font-medium transition-colors ${activeView === 'split' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
             >
-              Split View
+              Split
             </button>
             <button
+              type="button"
               onClick={() => setActiveView('preview')}
-              className={`px-3 py-1 rounded-lg font-medium transition-colors ${activeView === 'preview' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+              className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${activeView === 'preview' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
             >
-              Phone Preview
+              Side Phone
             </button>
           </div>
 
@@ -354,33 +462,159 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
               </div>
             </div>
 
-            {/* Featured Image Selector */}
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">Featured Banner Image</label>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-2">
-                {PRESET_IMAGES.map((p) => (
+            {/* Featured Banner Image Uploader & Presets */}
+            <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label className="text-xs font-bold text-slate-200 flex items-center space-x-1.5">
+                  <ImageIcon className="w-4 h-4 text-indigo-400" />
+                  <span>Featured Banner Image</span>
+                </label>
+
+                {/* Banner Tab Switcher */}
+                <div className="flex items-center space-x-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px]">
                   <button
-                    key={p.label}
                     type="button"
-                    onClick={() => setImage(p.url)}
-                    className={`relative rounded-lg overflow-hidden h-14 border transition-all ${
-                      image === p.url ? 'border-indigo-500 ring-2 ring-indigo-500/50' : 'border-slate-700 opacity-70 hover:opacity-100'
+                    onClick={() => setImageTab('upload')}
+                    className={`px-3 py-1 rounded-lg font-semibold transition-all flex items-center space-x-1 ${
+                      imageTab === 'upload' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    <img src={p.url} alt={p.label} className="w-full h-full object-cover" />
-                    <span className="absolute inset-x-0 bottom-0 bg-black/70 text-[9px] text-white text-center py-0.5 truncate px-1">
-                      {p.label}
-                    </span>
+                    <Upload className="w-3 h-3" />
+                    <span>Upload Photo</span>
                   </button>
-                ))}
+                  <button
+                    type="button"
+                    onClick={() => setImageTab('presets')}
+                    className={`px-3 py-1 rounded-lg font-semibold transition-all flex items-center space-x-1 ${
+                      imageTab === 'presets' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <span>🖼️ Presets</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setImageTab('url')}
+                    className={`px-3 py-1 rounded-lg font-semibold transition-all flex items-center space-x-1 ${
+                      imageTab === 'url' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <span>🔗 Paste URL</span>
+                  </button>
+                </div>
               </div>
-              <input
-                type="url"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                placeholder="Or paste any custom image URL (https://...)"
-                className="w-full px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-300 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-              />
+
+              {/* Tab 1: Upload Photo Drop Area */}
+              {imageTab === 'upload' && (
+                <div className="space-y-2">
+                  <div
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleBannerDrop}
+                    onClick={() => bannerFileInputRef.current?.click()}
+                    className="border-2 border-dashed border-indigo-500/40 hover:border-indigo-400 rounded-xl p-4 bg-slate-950/60 hover:bg-slate-950 text-center transition-all cursor-pointer group"
+                  >
+                    <input
+                      ref={bannerFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleBannerFileChange}
+                    />
+
+                    {isUploadingImage ? (
+                      <div className="py-5 flex flex-col items-center justify-center space-y-2 text-indigo-400">
+                        <Loader2 className="w-8 h-8 animate-spin" />
+                        <span className="text-xs font-semibold">Compressing and uploading photo...</span>
+                      </div>
+                    ) : image ? (
+                      <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <div className="relative w-full sm:w-44 h-24 rounded-lg overflow-hidden shrink-0 border border-slate-700 bg-slate-900 shadow-md">
+                          <img src={image} alt="Selected Banner" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="text-left flex-1 space-y-1">
+                          <div className="flex items-center space-x-1.5 text-emerald-400 text-xs font-bold">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Photo Loaded & Ready</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400">
+                            Drag & drop another image here, or click to replace it.
+                          </p>
+                          <div className="flex items-center space-x-2 pt-1.5">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                bannerFileInputRef.current?.click();
+                              }}
+                              className="px-3 py-1 text-[11px] font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center space-x-1"
+                            >
+                              <Upload className="w-3 h-3" />
+                              <span>Select New Photo</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setImage(PRESET_IMAGES[0].url);
+                              }}
+                              className="px-3 py-1 text-[11px] font-semibold rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/50"
+                            >
+                              Reset
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="py-6 flex flex-col items-center justify-center space-y-2">
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-950/80 border border-indigo-800 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform shadow-md">
+                          <Upload className="w-6 h-6" />
+                        </div>
+                        <div className="text-xs font-bold text-slate-200">
+                          Click to upload photo or <span className="text-indigo-400 underline">drag & drop</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          PNG, JPG, or WebP. Automatically optimized for mobile phones.
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 2: Preset Library */}
+              {imageTab === 'presets' && (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                    {PRESET_IMAGES.map((p) => (
+                      <button
+                        key={p.label}
+                        type="button"
+                        onClick={() => setImage(p.url)}
+                        className={`relative rounded-lg overflow-hidden h-14 border transition-all ${
+                          image === p.url ? 'border-indigo-500 ring-2 ring-indigo-500/50' : 'border-slate-700 opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        <img src={p.url} alt={p.label} className="w-full h-full object-cover" />
+                        <span className="absolute inset-x-0 bottom-0 bg-black/70 text-[9px] text-white text-center py-0.5 truncate px-1">
+                          {p.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: Paste URL */}
+              {imageTab === 'url' && (
+                <div>
+                  <input
+                    type="url"
+                    value={image}
+                    onChange={(e) => setImage(e.target.value)}
+                    placeholder="https://images.unsplash.com/..."
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-slate-300 placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Summary */}
@@ -516,6 +750,15 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
                   className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white"
                 >
                   <LinkIcon className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsImageModalOpen(true)}
+                  title="Insert In-Article Photo"
+                  className="p-1.5 rounded hover:bg-slate-800 text-indigo-400 hover:text-indigo-300 flex items-center space-x-1"
+                >
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  <span className="text-[10px]">Photo</span>
                 </button>
 
                 <div className="w-px h-4 bg-slate-700 mx-1"></div>
@@ -666,6 +909,170 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* In-Article Photo Insertion Modal */}
+      {isImageModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center space-x-2 text-white font-bold text-sm">
+                <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+                  <ImageIcon className="w-4 h-4" />
+                </div>
+                <span>Insert Photo into Article</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsImageModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleInsertContentImage} className="space-y-3.5 text-xs">
+              {/* Photo Upload Box */}
+              <div>
+                <label className="block text-slate-300 font-bold mb-1">Upload Photo from Device</label>
+                <div
+                  onClick={() => contentImageFileInputRef.current?.click()}
+                  className="border-2 border-dashed border-indigo-500/40 hover:border-indigo-400 rounded-xl p-3.5 bg-slate-950/70 hover:bg-slate-950 text-center cursor-pointer transition-all"
+                >
+                  <input
+                    ref={contentImageFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleContentImageFile(file);
+                    }}
+                  />
+                  {isUploadingContentImg ? (
+                    <div className="py-2 flex items-center justify-center space-x-2 text-indigo-400">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span className="font-semibold">Processing image...</span>
+                    </div>
+                  ) : contentImgUrl ? (
+                    <div className="flex items-center space-x-2.5">
+                      <img src={contentImgUrl} alt="Preview" className="w-14 h-12 object-cover rounded-lg border border-slate-700" />
+                      <div className="text-left flex-1">
+                        <span className="text-emerald-400 font-bold block">✓ Photo Ready</span>
+                        <span className="text-[10px] text-slate-400">Click to pick a different photo</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="py-2 flex items-center justify-center space-x-2 text-slate-300">
+                      <Upload className="w-4 h-4 text-indigo-400" />
+                      <span className="font-semibold">Click to choose image file</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Or Paste URL */}
+              <div>
+                <label className="block text-slate-300 font-bold mb-1">Or Paste Image URL</label>
+                <input
+                  type="url"
+                  value={contentImgUrl}
+                  onChange={(e) => setContentImgUrl(e.target.value)}
+                  placeholder="https://example.com/photo.jpg"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                />
+              </div>
+
+              {/* Alt description */}
+              <div>
+                <label className="block text-slate-300 font-bold mb-1">Image Description / Caption</label>
+                <input
+                  type="text"
+                  value={contentImgAlt}
+                  onChange={(e) => setContentImgAlt(e.target.value)}
+                  placeholder="e.g. Workflow Diagram"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsImageModalOpen(false)}
+                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!contentImgUrl || isUploadingContentImg}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold shadow-md shadow-indigo-600/30 flex items-center space-x-1.5 transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Insert Photo</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Full "Check Live Preview Before Post" Modal */}
+      {isPreviewModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-5 animate-in fade-in overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4 my-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-400">
+                  <Eye className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm sm:text-base font-bold text-white leading-tight">Live Mobile View Check</h3>
+                  <p className="text-[11px] text-slate-400">Preview exactly what readers see before publishing</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsPreviewModalOpen(false)}
+                className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Embedded Live Mobile Preview */}
+            <div className="py-1">
+              <RichPreview article={currentPreviewData} />
+            </div>
+
+            {/* Modal Bottom Actions */}
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setIsPreviewModalOpen(false)}
+                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl border border-slate-700 transition-colors flex items-center space-x-1.5"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Keep Editing</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  setIsPreviewModalOpen(false);
+                  handlePublish(e);
+                }}
+                disabled={isSaving}
+                className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-600/30 flex items-center space-x-2 transition-all cursor-pointer"
+              >
+                <Save className="w-4 h-4" />
+                <span>{isSaving ? 'Publishing...' : 'Looks Great — Publish to App'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -122,97 +122,212 @@ export default function RichPreview({ article }) {
     });
   };
 
+  const [previewMode, setPreviewMode] = React.useState('full'); // 'full' | 'card'
+
   return (
-    <div className="bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden max-w-sm mx-auto shadow-2xl">
-      {/* Mobile Header Bar Mockup */}
-      <div className="bg-slate-900/90 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-        <span className="font-bold text-slate-300">TipPulse Mobile Preview</span>
-        <span>{article.category || 'Category'}</span>
+    <div className="bg-slate-950 rounded-3xl border-2 border-slate-700/80 overflow-hidden max-w-sm mx-auto shadow-2xl ring-1 ring-white/10">
+      {/* Mock Phone Status & Notch Bar */}
+      <div className="bg-slate-900 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+        <span className="font-mono font-bold text-slate-300">9:41</span>
+        <div className="w-16 h-3.5 bg-slate-950 rounded-full mx-auto border border-slate-800 flex items-center justify-center">
+          <div className="w-2 h-2 rounded-full bg-slate-800"></div>
+        </div>
+        <div className="flex items-center space-x-1.5 font-mono">
+          <span>5G</span>
+          <span>100%</span>
+        </div>
       </div>
 
-      {/* Featured Banner Image */}
-      {article.image && (
-        <div className="relative h-44 w-full bg-slate-900">
-          <img
-            src={article.image}
-            alt={article.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.target.style.display = 'none';
-            }}
-          />
-          <div className="absolute top-2.5 left-2.5 flex items-center space-x-1.5">
-            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20">
-              {article.category || 'Guide'}
-            </span>
-            {article.isPremium && (
-              <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-500 text-slate-950 flex items-center space-x-1 shadow-xs">
-                <Lock className="w-2.5 h-2.5" />
-                <span>PRO</span>
+      {/* Mode Switcher Tabs */}
+      <div className="p-2 bg-slate-900/80 border-b border-slate-800 flex items-center justify-center space-x-1">
+        <button
+          type="button"
+          onClick={() => setPreviewMode('full')}
+          className={`flex-1 py-1 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
+            previewMode === 'full'
+              ? 'bg-indigo-600 text-white shadow-xs'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+          }`}
+        >
+          <span>📱 Article Screen</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setPreviewMode('card')}
+          className={`flex-1 py-1 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1.5 ${
+            previewMode === 'card'
+              ? 'bg-indigo-600 text-white shadow-xs'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+          }`}
+        >
+          <span>📰 Feed Card</span>
+        </button>
+      </div>
+
+      {/* FEED CARD VIEW */}
+      {previewMode === 'card' ? (
+        <div className="p-4 bg-slate-900/40 min-h-[400px] flex flex-col justify-start">
+          <div className="text-[10px] uppercase font-bold text-slate-400 mb-2 tracking-wider flex items-center justify-between">
+            <span>Home Feed Appearance</span>
+            <span className="text-indigo-400 font-semibold">Live Preview</span>
+          </div>
+
+          <div className="bg-slate-900 rounded-2xl p-4 border border-slate-700/80 shadow-lg space-y-3">
+            <div className="flex gap-3">
+              {/* Card Thumbnail */}
+              <div className="relative w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-slate-800 border border-slate-700">
+                {article.image ? (
+                  <img
+                    src={article.image}
+                    alt={article.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-600 text-[10px]">
+                    No image
+                  </div>
+                )}
+                {article.isPremium && (
+                  <div className="absolute top-1 left-1 bg-amber-500 text-slate-950 font-extrabold text-[8px] px-1.5 py-0.5 rounded shadow-xs flex items-center space-x-0.5">
+                    <Lock className="w-2 h-2" />
+                    <span>PRO</span>
+                  </div>
+                )}
+                {(article.needsData || article.requiresOnline) && (
+                  <div className="absolute top-1 right-1 bg-blue-600 text-white font-extrabold text-[8px] px-1 py-0.5 rounded shadow-xs flex items-center space-x-0.5">
+                    <Wifi className="w-2 h-2" />
+                    <span>ONLINE</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Card Details */}
+              <div className="flex-1 flex flex-col justify-between min-w-0">
+                <div>
+                  <div className="flex items-center space-x-1.5 text-[11px] mb-1">
+                    <span className="font-semibold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-800/40">
+                      {article.category || 'Productivity'}
+                    </span>
+                    <span className="text-slate-500">•</span>
+                    <span className="text-slate-400 flex items-center text-[10px]">
+                      <Clock className="w-2.5 h-2.5 mr-1" />
+                      {article.readTime || '3 min'}
+                    </span>
+                  </div>
+
+                  <h4 className="font-bold text-white text-xs sm:text-sm leading-snug line-clamp-2">
+                    {article.title || 'Untitled Article'}
+                  </h4>
+                </div>
+
+                <p className="text-[11px] text-slate-400 line-clamp-2 mt-1 italic">
+                  {article.summary || 'Summary description of the guide as readers will see it on their mobile phone...'}
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+              <span className="flex items-center space-x-1">
+                <User className="w-3 h-3 text-indigo-400" />
+                <span>{article.author || 'TipPulse Editor'}</span>
               </span>
-            )}
-            {(article.needsData || article.requiresOnline) && (
-              <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-blue-600 text-white flex items-center space-x-1 shadow-xs">
-                <Wifi className="w-2.5 h-2.5" />
-                <span>DATA</span>
+              <span>{article.date || 'Today'}</span>
+            </div>
+          </div>
+
+          <div className="mt-4 p-3 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 text-center">
+            ☝️ This is how readers see your article when scrolling through the app home feed.
+          </div>
+        </div>
+      ) : (
+        /* FULL ARTICLE VIEW */
+        <div className="max-h-[620px] overflow-y-auto">
+          {/* Featured Banner Image */}
+          {article.image && (
+            <div className="relative h-44 w-full bg-slate-900">
+              <img
+                src={article.image}
+                alt={article.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+              <div className="absolute top-2.5 left-2.5 flex items-center space-x-1.5">
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-black/60 backdrop-blur-md text-white border border-white/20">
+                  {article.category || 'Guide'}
+                </span>
+                {article.isPremium && (
+                  <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-500 text-slate-950 flex items-center space-x-1 shadow-xs">
+                    <Lock className="w-2.5 h-2.5" />
+                    <span>PRO</span>
+                  </span>
+                )}
+                {(article.needsData || article.requiresOnline) && (
+                  <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-blue-600 text-white flex items-center space-x-1 shadow-xs">
+                    <Wifi className="w-2.5 h-2.5" />
+                    <span>DATA</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="p-4 space-y-3">
+            {/* Title */}
+            <h1 className="text-base font-black text-white leading-tight">
+              {article.title || 'Untitled Article'}
+            </h1>
+
+            {/* Metadata */}
+            <div className="flex items-center space-x-3 text-[11px] text-slate-400 border-y border-slate-800/80 py-1.5">
+              <span className="flex items-center space-x-1">
+                <User className="w-3 h-3 text-indigo-400" />
+                <span>{article.author || 'Author'}</span>
               </span>
+              <span className="flex items-center space-x-1">
+                <Clock className="w-3 h-3 text-slate-500" />
+                <span>{article.readTime || '3 min read'}</span>
+              </span>
+              <span className="flex items-center space-x-1">
+                <Calendar className="w-3 h-3 text-slate-500" />
+                <span>{article.date || 'Today'}</span>
+              </span>
+            </div>
+
+            {/* Summary Card */}
+            {article.summary && (
+              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs leading-relaxed italic">
+                "{article.summary}"
+              </div>
             )}
+
+            {/* Key Takeaways */}
+            {article.keyTakeaways && article.keyTakeaways.filter(Boolean).length > 0 && (
+              <div className="p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/40 space-y-1.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-400 flex items-center space-x-1">
+                  <Sparkles className="w-3 h-3" />
+                  <span>Key Takeaways</span>
+                </span>
+                <ul className="space-y-1 text-xs text-indigo-200">
+                  {article.keyTakeaways.filter(Boolean).map((t, idx) => (
+                    <li key={idx} className="flex items-start space-x-1.5">
+                      <span className="text-indigo-400 font-bold">•</span>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Main Body */}
+            <div className="pt-2 text-xs text-slate-300">
+              {renderContent(article.content)}
+            </div>
           </div>
         </div>
       )}
-
-      <div className="p-4 space-y-3">
-        {/* Title */}
-        <h1 className="text-base font-black text-white leading-tight">
-          {article.title || 'Untitled Article'}
-        </h1>
-
-        {/* Metadata */}
-        <div className="flex items-center space-x-3 text-[11px] text-slate-400 border-y border-slate-800/80 py-1.5">
-          <span className="flex items-center space-x-1">
-            <User className="w-3 h-3 text-indigo-400" />
-            <span>{article.author || 'Author'}</span>
-          </span>
-          <span className="flex items-center space-x-1">
-            <Clock className="w-3 h-3 text-slate-500" />
-            <span>{article.readTime || '3 min read'}</span>
-          </span>
-          <span className="flex items-center space-x-1">
-            <Calendar className="w-3 h-3 text-slate-500" />
-            <span>{article.date || 'Today'}</span>
-          </span>
-        </div>
-
-        {/* Summary Card */}
-        {article.summary && (
-          <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 text-xs leading-relaxed italic">
-            "{article.summary}"
-          </div>
-        )}
-
-        {/* Key Takeaways */}
-        {article.keyTakeaways && article.keyTakeaways.filter(Boolean).length > 0 && (
-          <div className="p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/40 space-y-1.5">
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-400 flex items-center space-x-1">
-              <Sparkles className="w-3 h-3" />
-              <span>Key Takeaways</span>
-            </span>
-            <ul className="space-y-1 text-xs text-indigo-200">
-              {article.keyTakeaways.filter(Boolean).map((t, idx) => (
-                <li key={idx} className="flex items-start space-x-1.5">
-                  <span className="text-indigo-400 font-bold">•</span>
-                  <span>{t}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Main Body */}
-        <div className="pt-2 text-xs text-slate-300">
-          {renderContent(article.content)}
-        </div>
-      </div>
     </div>
   );
 }
