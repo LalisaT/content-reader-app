@@ -1,33 +1,77 @@
 import React from 'react';
-import { Sparkles, Clock, Calendar, User, Tag, Lock, Lightbulb, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Sparkles, Clock, Calendar, User, Tag, Lock, Lightbulb, AlertTriangle, ExternalLink, Wifi } from 'lucide-react';
 
 export default function RichPreview({ article }) {
   if (!article) return null;
+
+  const renderInline = (str) => {
+    if (!str) return str;
+    // Simple inline parser for preview: bold, italic, inline link
+    const parts = str.split(/(\*\*.*?\*\*|\*.*?\*|\[.*?\]\(.*?\))/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={idx} className="font-bold text-white">{part.slice(2, -2)}</strong>;
+      }
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <em key={idx} className="italic text-slate-200">{part.slice(1, -1)}</em>;
+      }
+      const linkMatch = part.match(/^\[(.*?)\]\((.*?)\)$/);
+      if (linkMatch) {
+        return (
+          <a key={idx} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline font-semibold inline-flex items-center">
+            <span>{linkMatch[1]}</span>
+            <ExternalLink className="w-3 h-3 ml-0.5" />
+          </a>
+        );
+      }
+      return part;
+    });
+  };
 
   const renderContent = (raw) => {
     if (!raw) return <p className="text-slate-400 italic">No content written yet...</p>;
     const lines = raw.split('\n');
     return lines.map((line, i) => {
       const trimmed = line.trim();
+
+      // Standalone Action Button: [🔘 Button Text](url) or [Button: Text](url)
+      const buttonMatch = trimmed.match(/^\[(🔘.*?|\[Button\].*?|Button:.*?)\]\((.*?)\)$/);
+      if (buttonMatch) {
+        const cleanBtnText = buttonMatch[1].replace(/^(🔘\s*|\[Button\]\s*|Button:\s*)/, '');
+        return (
+          <div key={i} className="my-3 text-center">
+            <a
+              href={buttonMatch[2]}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-xs rounded-xl shadow-md transition-transform active:scale-95 no-underline cursor-pointer"
+            >
+              <span>{cleanBtnText}</span>
+              <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
+            </a>
+          </div>
+        );
+      }
+
       if (trimmed.startsWith('### ')) {
         return (
           <h3 key={i} className="text-base font-bold text-white mt-4 mb-1.5 flex items-center space-x-1.5">
             <span className="w-1.5 h-4 rounded-full bg-indigo-500 inline-block mr-1"></span>
-            {trimmed.replace('### ', '')}
+            {renderInline(trimmed.replace('### ', ''))}
           </h3>
         );
       }
       if (trimmed.startsWith('## ')) {
         return (
           <h2 key={i} className="text-lg font-bold text-white mt-5 mb-2 border-b border-slate-800 pb-1">
-            {trimmed.replace('## ', '')}
+            {renderInline(trimmed.replace('## ', ''))}
           </h2>
         );
       }
       if (trimmed.startsWith('# ')) {
         return (
           <h1 key={i} className="text-xl font-black text-white mt-6 mb-2.5">
-            {trimmed.replace('# ', '')}
+            {renderInline(trimmed.replace('# ', ''))}
           </h1>
         );
       }
@@ -37,7 +81,7 @@ export default function RichPreview({ article }) {
             <Lightbulb className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold block text-indigo-300">Pro Tip</span>
-              <span>{trimmed.replace(/> \[!(TIP|NOTE)\]\s*/, '')}</span>
+              <span>{renderInline(trimmed.replace(/> \[!(TIP|NOTE)\]\s*/, ''))}</span>
             </div>
           </div>
         );
@@ -48,7 +92,7 @@ export default function RichPreview({ article }) {
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold block text-amber-300">Important Warning</span>
-              <span>{trimmed.replace(/> \[!(WARNING|ALERT)\]\s*/, '')}</span>
+              <span>{renderInline(trimmed.replace(/> \[!(WARNING|ALERT)\]\s*/, ''))}</span>
             </div>
           </div>
         );
@@ -56,14 +100,14 @@ export default function RichPreview({ article }) {
       if (trimmed.startsWith('> ')) {
         return (
           <blockquote key={i} className="my-2 pl-3 border-l-2 border-indigo-500 italic text-slate-300 text-xs">
-            {trimmed.replace('> ', '')}
+            {renderInline(trimmed.replace('> ', ''))}
           </blockquote>
         );
       }
       if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
         return (
           <li key={i} className="ml-4 list-disc text-slate-300 text-xs my-0.5">
-            {trimmed.replace(/^[-*]\s+/, '')}
+            {renderInline(trimmed.replace(/^[-*]\s+/, ''))}
           </li>
         );
       }
@@ -72,7 +116,7 @@ export default function RichPreview({ article }) {
       }
       return (
         <p key={i} className="text-slate-300 text-xs leading-relaxed my-1">
-          {trimmed}
+          {renderInline(trimmed)}
         </p>
       );
     });
@@ -105,6 +149,12 @@ export default function RichPreview({ article }) {
               <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-500 text-slate-950 flex items-center space-x-1 shadow-xs">
                 <Lock className="w-2.5 h-2.5" />
                 <span>PRO</span>
+              </span>
+            )}
+            {(article.needsData || article.requiresOnline) && (
+              <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-blue-600 text-white flex items-center space-x-1 shadow-xs">
+                <Wifi className="w-2.5 h-2.5" />
+                <span>DATA</span>
               </span>
             )}
           </div>

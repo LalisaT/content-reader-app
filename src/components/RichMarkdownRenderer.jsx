@@ -30,8 +30,8 @@ export function renderInlineMarkdown(text) {
       const linkText = linkMatch[1];
       const linkUrl = linkMatch[2];
 
-      const isButton = linkText.startsWith('🔘') || linkText.startsWith('[Button]') || linkText.startsWith('Button:');
-      const cleanText = linkText.replace(/^(🔘\s*|\[Button\]\s*|Button:\s*)/, '');
+      const isButton = /^(🔘|\[Button\]|Button:|btn:)/i.test(linkText);
+      const cleanText = linkText.replace(/^(🔘\s*|\[Button\]\s*|Button:\s*|btn:\s*)/i, '');
 
       if (isButton) {
         return (
@@ -272,14 +272,14 @@ export function parseMarkdownBlocks(text) {
     // End list if this line is normal text
     flushList();
 
-    // 9. Standalone Action Button: [🔘 Button Text](url)
-    const buttonMatch = trimmed.match(/^\[(🔘.*?|\[Button\].*?|Button:.*?)\]\((.*?)\)$/);
+    // 9. Standalone Action Button: [🔘 Button Text](url) or [Button: Text](url)
+    const buttonMatch = trimmed.match(/^\[(🔘.*?|\[Button\].*?|Button:.*?|btn:.*?)\]\((.*?)\)$/i) || trimmed.match(/^🔘\s*\[(.*?)\]\((.*?)\)$/);
     if (buttonMatch) {
       flushParagraph();
-      const cleanBtnText = buttonMatch[1].replace(/^(🔘\s*|\[Button\]\s*|Button:\s*)/, '');
+      const cleanBtnText = (buttonMatch[1] || '').replace(/^(🔘\s*|\[Button\]\s*|Button:\s*|btn:\s*)/i, '');
       blocks.push({
         type: 'button',
-        text: cleanBtnText,
+        text: cleanBtnText || 'Open Link',
         url: buttonMatch[2]
       });
       continue;

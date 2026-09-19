@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebaseAdmin';
-import { Search, Edit3, Trash2, Lock, Eye, Sparkles, AlertCircle } from 'lucide-react';
+import { Search, Edit3, Trash2, Lock, Eye, Sparkles, AlertCircle, Wifi } from 'lucide-react';
 
 export default function ArticlesTable({ onEditArticle }) {
   const [articles, setArticles] = useState([]);
@@ -138,6 +138,12 @@ export default function ArticlesTable({ onEditArticle }) {
                     {art.isPremium && (
                       <span className="px-1.5 py-0.5 text-[9px] font-black rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
                         PRO
+                      </span>
+                    )}
+                    {(art.needsData || art.requiresOnline) && (
+                      <span className="px-1.5 py-0.5 text-[9px] font-black rounded bg-blue-500/20 text-blue-300 border border-blue-500/30 shrink-0 flex items-center space-x-1">
+                        <Wifi className="w-2.5 h-2.5" />
+                        <span>DATA</span>
                       </span>
                     )}
                   </div>

@@ -3,7 +3,8 @@ import {
   Sparkles, Save, Eye, Edit3, Image as ImageIcon,
   Lock, CheckCircle2, AlertCircle, Plus, Trash2,
   Heading1, Heading2, Heading3, Bold, Italic,
-  Quote, List, ListOrdered, Lightbulb, AlertTriangle, Link as LinkIcon
+  Quote, List, ListOrdered, Lightbulb, AlertTriangle, Link as LinkIcon,
+  Wifi, Bell, MousePointerClick, ExternalLink, X
 } from 'lucide-react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseAdmin';
@@ -29,7 +30,13 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
   const [takeaways, setTakeaways] = useState(['', '']);
   const [content, setContent] = useState('');
   const [isPremium, setIsPremium] = useState(false);
+  const [needsData, setNeedsData] = useState(false);
   const [broadcastNotification, setBroadcastNotification] = useState(true);
+
+  // Interactive Button Creator State
+  const [isButtonModalOpen, setIsButtonModalOpen] = useState(false);
+  const [btnLabel, setBtnLabel] = useState('Click Here');
+  const [btnUrl, setBtnUrl] = useState('https://');
 
   const [activeView, setActiveView] = useState('split'); // 'editor' | 'preview' | 'split'
   const [isSaving, setIsSaving] = useState(false);
@@ -51,6 +58,7 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
       );
       setContent(editingArticle.content || '');
       setIsPremium(Boolean(editingArticle.isPremium));
+      setNeedsData(Boolean(editingArticle.needsData || editingArticle.requiresOnline));
     } else {
       resetForm();
     }
@@ -65,11 +73,53 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
     setTakeaways(['', '']);
     setContent('');
     setIsPremium(false);
+    setNeedsData(false);
   };
 
   const showToast = (msg, isError = false) => {
     setToast({ msg, isError });
     setTimeout(() => setToast(null), 3500);
+  };
+
+  const openButtonModal = () => {
+    const textarea = textareaRef.current;
+    let label = 'Click Here';
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selected = content.substring(start, end).trim();
+      if (selected) {
+        label = selected;
+      }
+    }
+    setBtnLabel(label);
+    setBtnUrl('https://');
+    setIsButtonModalOpen(true);
+  };
+
+  const handleInsertButton = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const finalLabel = btnLabel.trim() || 'Click Here';
+    let finalUrl = btnUrl.trim() || 'https://';
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://') && !finalUrl.startsWith('mailto:') && !finalUrl.startsWith('tel:')) {
+      finalUrl = `https://${finalUrl}`;
+    }
+    const buttonSnippet = `\n\n[🔘 ${finalLabel}](${finalUrl})\n\n`;
+
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      setContent((prev) => `${prev}${buttonSnippet}`);
+    } else {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newContent = content.substring(0, start) + buttonSnippet + content.substring(end);
+      setContent(newContent);
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + buttonSnippet.length, start + buttonSnippet.length);
+      }, 50);
+    }
+    setIsButtonModalOpen(false);
   };
 
   const insertText = (beforeText, afterText = '', defaultPlaceholder = '') => {
@@ -131,6 +181,8 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
         keyTakeaways: takeaways.filter((t) => t.trim().length > 0),
         content: content,
         isPremium: Boolean(isPremium),
+        needsData: Boolean(needsData),
+        requiresOnline: Boolean(needsData),
         readTime: calculateReadTime(content),
         date: editingArticle?.date || nowFormatted,
         updatedAt: Date.now(),
@@ -179,6 +231,8 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
     keyTakeaways: takeaways,
     content,
     isPremium,
+    needsData,
+    requiresOnline: needsData,
     readTime: calculateReadTime(content),
     date: 'Today',
   };
@@ -463,6 +517,17 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
                 >
                   <LinkIcon className="w-3.5 h-3.5" />
                 </button>
+
+                <div className="w-px h-4 bg-slate-700 mx-1"></div>
+                <button
+                  type="button"
+                  onClick={openButtonModal}
+                  title="Insert Interactive Call-to-Action Button"
+                  className="px-2 py-1 rounded-lg hover:bg-slate-800 text-indigo-400 hover:text-indigo-300 flex items-center space-x-1.5 font-bold transition-colors bg-indigo-500/15 border border-indigo-500/30"
+                >
+                  <MousePointerClick className="w-3.5 h-3.5" />
+                  <span className="text-[10px]">🔘 Button</span>
+                </button>
               </div>
 
               <textarea
@@ -476,30 +541,44 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
               />
             </div>
 
-            {/* Options: Premium PRO and Broadcast Notification */}
-            <div className="pt-2 border-t border-slate-700 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <label className="flex items-center space-x-2 cursor-pointer select-none">
+            {/* Options: Premium PRO, Online Data Required, and Push Notification */}
+            <div className="pt-3 border-t border-slate-700 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <label className="flex items-center space-x-2 cursor-pointer select-none p-2 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700">
                 <input
                   type="checkbox"
                   checked={isPremium}
                   onChange={(e) => setIsPremium(e.target.checked)}
                   className="w-4 h-4 rounded text-indigo-600 focus:ring-0"
                 />
-                <span className="text-slate-300 flex items-center space-x-1">
-                  <Lock className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Lock as PRO Article (Requires user to watch video ad to unlock)</span>
+                <span className="text-slate-300 flex items-center space-x-1.5 font-medium">
+                  <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>Lock as PRO Article (Video Ad)</span>
                 </span>
               </label>
 
-              <label className="flex items-center space-x-2 cursor-pointer select-none">
+              <label className="flex items-center space-x-2 cursor-pointer select-none p-2 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700">
+                <input
+                  type="checkbox"
+                  checked={needsData}
+                  onChange={(e) => setNeedsData(e.target.checked)}
+                  className="w-4 h-4 rounded text-blue-600 focus:ring-0"
+                />
+                <span className="text-slate-300 flex items-center space-x-1.5 font-medium">
+                  <Wifi className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                  <span>Require Internet Data</span>
+                </span>
+              </label>
+
+              <label className="flex items-center space-x-2 cursor-pointer select-none p-2 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700">
                 <input
                   type="checkbox"
                   checked={broadcastNotification}
                   onChange={(e) => setBroadcastNotification(e.target.checked)}
                   className="w-4 h-4 rounded text-indigo-600 focus:ring-0"
                 />
-                <span className="text-indigo-300 font-semibold">
-                  Send Push Notification to all users
+                <span className="text-indigo-300 font-semibold flex items-center space-x-1.5">
+                  <Bell className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                  <span>Send Notification Alert</span>
                 </span>
               </label>
             </div>
@@ -513,6 +592,83 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
           </div>
         </div>
       </div>
+
+      {/* Interactive Button Creator Modal */}
+      {isButtonModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center space-x-2 text-white font-bold text-sm">
+                <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+                  <MousePointerClick className="w-4 h-4" />
+                </div>
+                <span>Create Interactive Action Button</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsButtonModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleInsertButton} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-300 font-bold mb-1">Button Label (Text on Button)</label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={btnLabel}
+                  onChange={(e) => setBtnLabel(e.target.value)}
+                  placeholder="e.g. Visit Website, Download App, Get Tips"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-bold mb-1">Target Link URL</label>
+                <input
+                  type="text"
+                  required
+                  value={btnUrl}
+                  onChange={(e) => setBtnUrl(e.target.value)}
+                  placeholder="https://example.com"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400">
+                <span className="block font-medium mb-1.5 text-slate-400">Preview Button:</span>
+                <div className="text-center py-1">
+                  <span className="inline-flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer hover:bg-indigo-500 transition-colors">
+                    <span>{btnLabel || 'Button Text'}</span>
+                    <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsButtonModalOpen(false)}
+                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 flex items-center space-x-1.5 transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Insert Button into Article</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
