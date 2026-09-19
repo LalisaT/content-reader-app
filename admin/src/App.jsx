@@ -8,8 +8,16 @@ import ArticlesTable from './components/ArticlesTable';
 import BrandingSettings from './components/BrandingSettings';
 import NotificationSender from './components/NotificationSender';
 
-const DEFAULT_MASTER_KEY = '15739482';
+// One-way SHA-256 cryptographic hash (Cannot be reversed or decoded back to plain text)
+const MASTER_KEY_HASH = 'f7760d6b76aa1ad0f33caf137d2777730cf57d2e9c8b5e8c9663c574a5fcaf2e';
 const STORAGE_KEY = 'tippulse_admin_session_auth';
+
+async function computeHash(text) {
+  const msgUint8 = new TextEncoder().encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -29,18 +37,22 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('editor'); // 'editor' | 'articles' | 'branding' | 'notifications'
   const [editingArticle, setEditingArticle] = useState(null);
 
-  const handleUnlock = (e) => {
+  const handleUnlock = async (e) => {
     e.preventDefault();
     setAuthError('');
 
-    const trimmed = passcode.trim();
-    if (trimmed === DEFAULT_MASTER_KEY || trimmed === 'lalion' || trimmed === 'admin') {
-      if (rememberDevice) {
-        localStorage.setItem(STORAGE_KEY, 'authenticated');
+    try {
+      const inputHash = await computeHash(passcode.trim());
+      if (inputHash === MASTER_KEY_HASH) {
+        if (rememberDevice) {
+          localStorage.setItem(STORAGE_KEY, 'authenticated');
+        }
+        setIsAuthenticated(true);
+      } else {
+        setAuthError('Incorrect passcode. Access denied.');
       }
-      setIsAuthenticated(true);
-    } else {
-      setAuthError('Incorrect passcode. Please enter your Master Key.');
+    } catch {
+      setAuthError('Error verifying credentials.');
     }
   };
 
@@ -97,9 +109,6 @@ export default function App() {
                   className="w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono tracking-widest text-sm"
                 />
               </div>
-              <p className="text-[11px] text-slate-500 mt-1.5">
-                Default Master Passcode: <code className="text-indigo-400 bg-slate-800 px-1 py-0.5 rounded">15739482</code>
-              </p>
             </div>
 
             <div className="flex items-center space-x-2 pt-1">
