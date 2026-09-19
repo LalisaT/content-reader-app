@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "admin": "vite --config vite.config.admin.js",
-    "build:admin": "vite build --config vite.config.admin.js"
+    "build:admin": "vite build --config vite.config.admin.js",
+    "deploy:admin": "npm run build:admin && npx firebase-tools deploy --only hosting"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",
