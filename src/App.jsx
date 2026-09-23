@@ -29,7 +29,7 @@ const InterstitialModal = lazy(() => import('./components/InterstitialModal'));
 const RewardedModal = lazy(() => import('./components/RewardedModal'));
 const NotificationModal = lazy(() => import('./components/NotificationModal'));
 
-import { Sparkles, X, BookOpen, Loader2, WifiOff } from 'lucide-react';
+import { Sparkles, X, BookOpen, Loader2, WifiOff, LogOut } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('feed');
@@ -56,6 +56,10 @@ export default function App() {
   const [rewardedModalData, setRewardedModalData] = useState({ isOpen: false, article: null });
   const [isDailyTipOpen, setIsDailyTipOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isExitModalOpen, setIsExitModalOpen] = useState(false);
+  const [exitToast, setExitToast] = useState(null);
+  const exitTapCountRef = useRef(0);
+  const exitTapTimerRef = useRef(null);
   const [notifications, setNotifications] = useState(() => notificationService.getNotifications());
 
   // Real-time Cloud Synchronization & Network Connectivity Listeners
@@ -260,6 +264,7 @@ export default function App() {
     isInterstitialOpen,
     isRewardedOpen: rewardedModalData.isOpen,
     isDailyTipOpen,
+    isExitModalOpen,
   });
 
   useEffect(() => {
@@ -270,8 +275,9 @@ export default function App() {
       isInterstitialOpen,
       isRewardedOpen: rewardedModalData.isOpen,
       isDailyTipOpen,
+      isExitModalOpen,
     };
-  }, [activeArticle, activeTab, isNotificationOpen, isInterstitialOpen, rewardedModalData.isOpen, isDailyTipOpen]);
+  }, [activeArticle, activeTab, isNotificationOpen, isInterstitialOpen, rewardedModalData.isOpen, isDailyTipOpen, isExitModalOpen]);
 
   // Handle Android Native Navigation & Hardware Back Button (< key)
   useEffect(() => {
@@ -290,7 +296,14 @@ export default function App() {
 
           const state = appNavStateRef.current;
 
-          // 2. Close any open top-level modals
+          // 2. If exit confirmation modal is open, close it on back press
+          if (state.isExitModalOpen) {
+            setIsExitModalOpen(false);
+            exitTapCountRef.current = 0;
+            return;
+          }
+
+          // 3. Close any open top-level modals
           if (state.isNotificationOpen) {
             setIsNotificationOpen(false);
             return;
@@ -308,21 +321,42 @@ export default function App() {
             return;
           }
 
-          // 3. If reading an article, navigate back to Home Feed!
+          // 4. If reading an article, navigate back to Home Feed!
           if (state.activeArticle) {
             handleBackFromArticle();
             return;
           }
 
-          // 4. If in another tab (Explore, Bookmarks, Settings), navigate back to Home Feed
+          // 5. If in another tab (Explore, Bookmarks, Settings), navigate back to Home Feed
           if (state.activeTab !== 'feed') {
             setActiveTab('feed');
             window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
           }
 
-          // 5. If already on Home Feed with no modals, exit the app
-          CapacitorApp.exitApp();
+          // 6. If on Home Feed with no modals: require 3 taps to show exit confirmation dialog
+          if (exitTapTimerRef.current) {
+            clearTimeout(exitTapTimerRef.current);
+          }
+          exitTapCountRef.current += 1;
+
+          if (exitTapCountRef.current === 1) {
+            setExitToast('Tap back 2 more times to exit');
+            exitTapTimerRef.current = setTimeout(() => {
+              exitTapCountRef.current = 0;
+              setExitToast(null);
+            }, 3500);
+          } else if (exitTapCountRef.current === 2) {
+            setExitToast('Tap back 1 more time to exit');
+            exitTapTimerRef.current = setTimeout(() => {
+              exitTapCountRef.current = 0;
+              setExitToast(null);
+            }, 3500);
+          } else if (exitTapCountRef.current >= 3) {
+            exitTapCountRef.current = 0;
+            setExitToast(null);
+            setIsExitModalOpen(true);
+          }
         });
         backListenerHandle = handle;
       } catch (err) {
@@ -611,6 +645,59 @@ export default function App() {
           />
         )}
       </Suspense>
+
+      {/* Floating Exit Hint Toast */}
+      {exitToast && (
+        <div className="fixed bottom-20 inset-x-0 mx-auto w-fit z-50 px-4 py-2 rounded-full bg-slate-900/90 dark:bg-slate-800/95 text-white border border-slate-700 shadow-xl flex items-center space-x-2 text-xs font-medium animate-in fade-in slide-in-from-bottom-2 pointer-events-none">
+          <span>{exitToast}</span>
+        </div>
+      )}
+
+      {/* Exit Confirmation Dialog (Triggered on 3rd tap on Home Feed) */}
+      {isExitModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-xs rounded-3xl p-6 shadow-2xl space-y-4 text-center animate-in zoom-in-95 duration-150"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 flex items-center justify-center mx-auto text-rose-600 dark:text-rose-400">
+              <LogOut className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                Close {appConfig?.appName || 'TipPulse'}?
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Do you want to close the app?
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsExitModalOpen(false);
+                  exitTapCountRef.current = 0;
+                }}
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors"
+              >
+                No, Stay
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsExitModalOpen(false);
+                  CapacitorApp.exitApp();
+                }}
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white shadow-md shadow-rose-600/30 transition-all cursor-pointer"
+              >
+                Yes, Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
