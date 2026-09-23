@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense, lazy } from 'react';
 import initialArticlesData from './data/articles.json';
 import { storageService } from './services/storageService';
 import { admobService } from './services/admobService';
@@ -9,6 +9,7 @@ import { notificationService } from './services/notificationService';
 import { deepLinkService } from './services/deepLinkService';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Network } from '@capacitor/network';
+import { App as CapacitorApp } from '@capacitor/app';
 
 import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
@@ -234,6 +235,9 @@ export default function App() {
     storageService.addToHistory(article.id);
     setActiveArticle(article);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      window.history.pushState({ view: 'article', id: article.id }, '');
+    } catch {}
   };
 
   // Exit Article Detail View & Check for Natural Break Interstitial Ad
@@ -247,6 +251,102 @@ export default function App() {
       setIsInterstitialOpen(true);
     }
   };
+
+  // Keep navigation references synchronized for Android hardware back button
+  const appNavStateRef = useRef({
+    activeArticle,
+    activeTab,
+    isNotificationOpen,
+    isInterstitialOpen,
+    isRewardedOpen: rewardedModalData.isOpen,
+    isDailyTipOpen,
+  });
+
+  useEffect(() => {
+    appNavStateRef.current = {
+      activeArticle,
+      activeTab,
+      isNotificationOpen,
+      isInterstitialOpen,
+      isRewardedOpen: rewardedModalData.isOpen,
+      isDailyTipOpen,
+    };
+  }, [activeArticle, activeTab, isNotificationOpen, isInterstitialOpen, rewardedModalData.isOpen, isDailyTipOpen]);
+
+  // Handle Android Native Navigation & Hardware Back Button (< key)
+  useEffect(() => {
+    let backListenerHandle = null;
+
+    const registerBackHandler = async () => {
+      try {
+        const handle = await CapacitorApp.addListener('backButton', () => {
+          // 1. Dispatch custom event for child modals (like ShareModal in ArticleDetail)
+          const backEvent = new CustomEvent('tippulse_hardware_back', { cancelable: true });
+          const isCancelled = !window.dispatchEvent(backEvent);
+          if (isCancelled) {
+            // Child modal handled and consumed the back action
+            return;
+          }
+
+          const state = appNavStateRef.current;
+
+          // 2. Close any open top-level modals
+          if (state.isNotificationOpen) {
+            setIsNotificationOpen(false);
+            return;
+          }
+          if (state.isInterstitialOpen) {
+            setIsInterstitialOpen(false);
+            return;
+          }
+          if (state.isRewardedOpen) {
+            setRewardedModalData({ isOpen: false, article: null });
+            return;
+          }
+          if (state.isDailyTipOpen) {
+            setIsDailyTipOpen(false);
+            return;
+          }
+
+          // 3. If reading an article, navigate back to Home Feed!
+          if (state.activeArticle) {
+            handleBackFromArticle();
+            return;
+          }
+
+          // 4. If in another tab (Explore, Bookmarks, Settings), navigate back to Home Feed
+          if (state.activeTab !== 'feed') {
+            setActiveTab('feed');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
+
+          // 5. If already on Home Feed with no modals, exit the app
+          CapacitorApp.exitApp();
+        });
+        backListenerHandle = handle;
+      } catch (err) {
+        console.warn('Capacitor backButton listener not available on this platform:', err);
+      }
+    };
+
+    registerBackHandler();
+
+    // Browser popstate listener for web/gestures
+    const handlePopState = () => {
+      if (appNavStateRef.current.activeArticle) {
+        handleBackFromArticle();
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      if (backListenerHandle) {
+        backListenerHandle.remove();
+      }
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   // Trigger Rewarded Ad for locked premium articles (Requires active internet connection)
   const handleUnlockPremium = (article) => {

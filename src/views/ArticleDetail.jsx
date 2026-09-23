@@ -25,6 +25,7 @@ import {
 import AudioPlayer from '../components/AudioPlayer';
 import BannerAd from '../components/BannerAd';
 import RichMarkdownRenderer from '../components/RichMarkdownRenderer';
+import ShareModal from '../components/ShareModal';
 import { storageService } from '../services/storageService';
 import { deepLinkService } from '../services/deepLinkService';
 import { Network } from '@capacitor/network';
@@ -45,6 +46,7 @@ export default function ArticleDetail({
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [showAudio, setShowAudio] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(
     typeof isOnlineProp === 'boolean' ? isOnlineProp : (typeof navigator !== 'undefined' ? navigator.onLine : true)
   );
@@ -96,24 +98,8 @@ export default function ArticleDetail({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleShare = async () => {
-    const shareUrl = deepLinkService.generateShareLink(article);
-    const shareText = deepLinkService.generateShareMessage(article);
-
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: article.title,
-          text: shareText,
-          url: shareUrl,
-        });
-      } catch {
-        // Share cancelled
-      }
-    } else {
-      navigator.clipboard?.writeText(shareUrl);
-      alert('✨ Smart Play Store Referral Link copied to clipboard!\n\nNew users who install from this link will be taken directly to this post upon launch.');
-    }
+  const handleShare = () => {
+    setIsShareModalOpen(true);
   };
 
   // Font size classes
@@ -523,6 +509,15 @@ export default function ArticleDetail({
           </button>
         </div>
       </article>
+
+      {/* Interactive Share Modal (Telegram, Facebook, WhatsApp, Twitter, Copy, Native Share) */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        article={article}
+        shareUrl={deepLinkService.generateShareLink(article)}
+        shareText={deepLinkService.generateShareMessage(article)}
+      />
     </div>
   );
 }
