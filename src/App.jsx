@@ -117,7 +117,9 @@ export default function App() {
         navigateToArticle(articleId, articleData);
       };
 
-      notificationService.init(handleNotificationClick);
+      notificationService.init(handleNotificationClick, (newNotif) => {
+        setLuxuryNotification(newNotif);
+      });
       window.__tippulse_on_notification_click = handleNotificationClick;
 
       // Deferred Deep Link Resolver

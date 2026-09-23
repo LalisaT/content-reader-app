@@ -227,5 +227,20 @@ export const firestoreSyncService = {
       console.warn('Failed to delete cloud notification:', err);
       return false;
     }
+  },
+
+  // Register device FCM push token in Firestore for background delivery when app is closed
+  registerDeviceToken: async (token) => {
+    if (!token) return;
+    try {
+      const docRef = doc(db, 'fcm_tokens', String(token));
+      await setDoc(docRef, {
+        token: String(token),
+        platform: 'android',
+        updatedAt: Date.now()
+      }, { merge: true });
+    } catch (err) {
+      console.warn('Failed to register FCM device token in Firestore:', err);
+    }
   }
 };

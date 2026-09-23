@@ -1,5 +1,7 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
+import { firestoreSyncService } from './firestoreSyncService';
 
 const STORAGE_KEY = 'tippulse_notifications_history';
 const LAST_SYNCED_TIMESTAMP_KEY = 'tippulse_last_synced_notif_ts';
@@ -81,7 +83,7 @@ export function playNotificationChime() {
 
 export const notificationService = {
   // Initialize Android / iOS Notification Channels and Listeners
-  async init(onNotificationClick) {
+  async init(onNotificationClick, onNewAlert = null) {
     initAudioUnlock();
     if (Capacitor.isNativePlatform()) {
       try {
@@ -98,7 +100,7 @@ export const notificationService = {
           lightColor: '#0284c7'
         });
 
-        // Request permissions
+        // Request standard in-app notifications permission (POST_NOTIFICATIONS)
         const status = await LocalNotifications.checkPermissions();
         if (status.display !== 'granted') {
           await LocalNotifications.requestPermissions();
@@ -109,13 +111,63 @@ export const notificationService = {
           playNotificationChime();
         });
 
-        // Add action listener when user taps on the notification in the phone status bar (opens article without extra chime)
+        // Add action listener when user taps on the notification in the phone status bar
         LocalNotifications.addListener('localNotificationActionPerformed', (notificationAction) => {
           const extra = notificationAction.notification.extra;
           if (extra && extra.articleId && typeof onNotificationClick === 'function') {
             onNotificationClick(extra.articleId, extra.article);
           }
         });
+
+        // -------------------------------------------------------------
+        // PushNotifications (FCM - Firebase Cloud Messaging)
+        // Enables notifications when app is COMPLETELY CLOSED / KILLED
+        // -------------------------------------------------------------
+        try {
+          let pushPerm = await PushNotifications.checkPermissions();
+          if (pushPerm.receive !== 'granted') {
+            pushPerm = await PushNotifications.requestPermissions();
+          }
+          if (pushPerm.receive === 'granted') {
+            await PushNotifications.register();
+          }
+
+          // Register FCM device token in Firestore
+          PushNotifications.addListener('registration', (token) => {
+            console.log('FCM Device Token registered successfully:', token.value);
+            firestoreSyncService.registerDeviceToken(token.value);
+          });
+
+          PushNotifications.addListener('registrationError', (err) => {
+            console.debug('FCM Registration error (needs google-services.json):', err);
+          });
+
+          // When a push notification arrives while app is open
+          PushNotifications.addListener('pushNotificationReceived', (notification) => {
+            playNotificationChime();
+            const data = notification.data || {};
+            if (typeof onNewAlert === 'function') {
+              onNewAlert({
+                id: notification.id || `fcm_${Date.now()}`,
+                title: notification.title || '🔔 New Announcement',
+                body: notification.body || '',
+                category: data.category || 'Tip',
+                articleId: data.articleId || null,
+                imageUrl: data.imageUrl || null
+              });
+            }
+          });
+
+          // When user taps on a push notification (wakes up the closed app)
+          PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+            const data = notification.notification?.data || {};
+            if (data.articleId && typeof onNotificationClick === 'function') {
+              onNotificationClick(data.articleId);
+            }
+          });
+        } catch (pushInitErr) {
+          console.debug('PushNotifications setup notice:', pushInitErr);
+        }
       } catch (err) {
         console.warn('Capacitor LocalNotifications init error:', err);
       }
