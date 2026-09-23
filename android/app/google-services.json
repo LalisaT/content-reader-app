@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "451997794469",
+    "project_id": "tippulse",
+    "storage_bucket": "tippulse.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:451997794469:android:a689701f58dbbf88e40d4c",
+        "android_client_info": {
+          "package_name": "com.tippulse.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAY6DQw9JTGUHQLH1h-d_MsfQHNUnQ0iQ4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
