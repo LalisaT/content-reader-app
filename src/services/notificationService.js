@@ -171,6 +171,8 @@ export const notificationService = {
               sound: 'default',
               smallIcon: 'ic_stat_notification',
               iconColor: '#0284c7',
+              isExactNotification: false,
+              isExactMandatory: false,
               extra: {
                 articleId: articleId,
                 article: article || null,
