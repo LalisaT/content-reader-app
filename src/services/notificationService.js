@@ -3,6 +3,8 @@ import { Capacitor } from '@capacitor/core';
 
 const STORAGE_KEY = 'tippulse_notifications_history';
 const LAST_SYNCED_TIMESTAMP_KEY = 'tippulse_last_synced_notif_ts';
+const SEEN_NOTIFICATIONS_KEY = 'tippulse_seen_notification_ids';
+const SEEN_ARTICLES_KEY = 'tippulse_seen_article_ids';
 const NOTIFICATION_SOUND_ENABLED_KEY = 'tippulse_notification_sound_enabled';
 
 // Global Shared AudioContext with Auto-Unlock for Mobile & WebView
@@ -205,13 +207,18 @@ export const notificationService = {
   },
 
   // Sync Cloud Notifications from Firestore to local device
-  // Fires native heads-up alerts & chime whenever a new notification arrives from the cloud
+  // Fires native heads-up alerts, audio chime, and luxury banner whenever admin publishes a notification
   syncCloudNotifications(cloudNotifs = [], onNewAlert = null) {
     if (!Array.isArray(cloudNotifs) || cloudNotifs.length === 0) return this.getNotifications();
 
-    const rawLastSynced = localStorage.getItem(LAST_SYNCED_TIMESTAMP_KEY);
-    const isFirstSync = rawLastSynced === null;
-    let lastSyncedTs = rawLastSynced ? Number(rawLastSynced) : Date.now();
+    const rawSeen = localStorage.getItem(SEEN_NOTIFICATIONS_KEY);
+    const isFirstRun = rawSeen === null;
+    let seenSet;
+    try {
+      seenSet = new Set(rawSeen ? JSON.parse(rawSeen) : []);
+    } catch (e) {
+      seenSet = new Set();
+    }
 
     // Get existing local notifications history
     const existingList = this.getNotifications();
@@ -220,16 +227,35 @@ export const notificationService = {
       if (n.id) readStatusMap.set(String(n.id), Boolean(n.read));
     });
 
-    // Detect new incoming alerts that arrived after last sync
     const newAlerts = [];
-    if (!isFirstSync) {
+
+    if (isFirstRun) {
+      // First boot: Register older notifications so device isn't spammed with all historic ones.
+      // But if there's a recent notification (created in the last 6 hours), alert the latest one
+      // so testing immediately after publishing is instant!
+      const sorted = [...cloudNotifs].sort((a, b) => (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0));
+      sorted.forEach((cn, idx) => {
+        const idStr = String(cn.id);
+        seenSet.add(idStr);
+        if (idx === 0 && cn.createdAt && (Date.now() - Number(cn.createdAt) < 6 * 60 * 60 * 1000)) {
+          newAlerts.push(cn);
+        }
+      });
+    } else {
+      // Live updates: Detect incoming notifications not yet alerted on this device
       cloudNotifs.forEach((cn) => {
-        const notifTs = Number(cn.createdAt || 0);
-        if (notifTs > lastSyncedTs) {
+        const idStr = String(cn.id);
+        if (!seenSet.has(idStr)) {
+          seenSet.add(idStr);
           newAlerts.push(cn);
         }
       });
     }
+
+    // Persist seen set to avoid re-alerting
+    try {
+      localStorage.setItem(SEEN_NOTIFICATIONS_KEY, JSON.stringify(Array.from(seenSet)));
+    } catch (e) {}
 
     // Sort new alerts oldest to newest so they appear in sequence
     newAlerts.sort((a, b) => (Number(a.createdAt) || 0) - (Number(b.createdAt) || 0));
@@ -247,14 +273,7 @@ export const notificationService = {
       if (typeof onNewAlert === 'function') {
         onNewAlert(notif);
       }
-
-      if (notif.createdAt && Number(notif.createdAt) > lastSyncedTs) {
-        lastSyncedTs = Number(notif.createdAt);
-      }
     });
-
-    // Update last synced timestamp in storage
-    localStorage.setItem(LAST_SYNCED_TIMESTAMP_KEY, String(Math.max(lastSyncedTs, Date.now())));
 
     // Merge cloud notifications into local Notification Center history
     const mergedList = cloudNotifs.map((cn) => {
@@ -280,6 +299,90 @@ export const notificationService = {
     } catch (e) {}
 
     return trimmed;
+  },
+
+  // Sync Cloud Articles to automatically alert when Admin publishes or updates an article
+  syncCloudArticles(articles = [], onNewAlert = null) {
+    if (!Array.isArray(articles) || articles.length === 0) return;
+
+    const rawSeen = localStorage.getItem(SEEN_ARTICLES_KEY);
+    const isFirstRun = rawSeen === null;
+    let seenSet;
+    try {
+      seenSet = new Set(rawSeen ? JSON.parse(rawSeen) : []);
+    } catch (e) {
+      seenSet = new Set();
+    }
+
+    if (isFirstRun) {
+      // First boot: mark existing articles as seen so we don't alert all existing ones
+      articles.forEach((a) => {
+        if (a.id) seenSet.add(String(a.id));
+      });
+      try {
+        localStorage.setItem(SEEN_ARTICLES_KEY, JSON.stringify(Array.from(seenSet)));
+      } catch (e) {}
+      return;
+    }
+
+    // Detect newly added articles
+    const newArticles = [];
+    articles.forEach((art) => {
+      const idStr = String(art.id);
+      if (!seenSet.has(idStr)) {
+        seenSet.add(idStr);
+        newArticles.push(art);
+      }
+    });
+
+    if (newArticles.length === 0) return;
+
+    // Persist seen article IDs
+    try {
+      localStorage.setItem(SEEN_ARTICLES_KEY, JSON.stringify(Array.from(seenSet)));
+    } catch (e) {}
+
+    // Check already alerted notifications to prevent double alerts if admin also posted to notifications collection
+    let seenNotifSet = new Set();
+    try {
+      const rawNotifSeen = localStorage.getItem(SEEN_NOTIFICATIONS_KEY);
+      if (rawNotifSeen) seenNotifSet = new Set(JSON.parse(rawNotifSeen));
+    } catch (e) {}
+
+    newArticles.forEach((article) => {
+      const notifId = `art_notif_${article.id}`;
+      if (seenNotifSet.has(notifId)) return;
+      seenNotifSet.add(notifId);
+
+      const alertItem = {
+        id: notifId,
+        articleId: article.id,
+        title: `✨ New Tip: ${article.title}`,
+        body: article.summary || (article.content ? article.content.substring(0, 95) + '...' : 'A new tip has just been published. Tap to read now!'),
+        category: article.category || 'Tip',
+        imageUrl: article.image || null,
+        timestamp: new Date().toISOString(),
+        read: false,
+        article: article
+      };
+
+      // 1. Android Status Bar + Audio Chime
+      this.triggerSystemNotification(alertItem);
+
+      // 2. In-App Luxury Banner
+      if (typeof onNewAlert === 'function') {
+        onNewAlert(alertItem);
+      }
+
+      // 3. Add to In-App Notification Center history
+      const currentList = this.getNotifications();
+      const updatedList = [alertItem, ...currentList.filter((n) => n.id !== notifId)].slice(0, 50);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+        localStorage.setItem(SEEN_NOTIFICATIONS_KEY, JSON.stringify(Array.from(seenNotifSet)));
+        window.dispatchEvent(new CustomEvent('tippulse_notification_updated', { detail: updatedList }));
+      } catch (e) {}
+    });
   },
 
   // Post / Publish Instant Notification across device status bar & in-app (Local Dispatch)

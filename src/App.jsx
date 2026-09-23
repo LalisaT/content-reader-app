@@ -15,6 +15,7 @@ import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 import BannerAd from './components/BannerAd';
 import HomeFeed from './views/HomeFeed';
+import LuxuryNotificationBanner from './components/LuxuryNotificationBanner';
 
 // High-Performance Code-Splitting: Lazy load secondary views & modals off initial boot thread
 const ArticleDetail = lazy(() => import('./views/ArticleDetail'));
@@ -61,6 +62,26 @@ export default function App() {
   const exitTapCountRef = useRef(0);
   const exitTapTimerRef = useRef(null);
   const [notifications, setNotifications] = useState(() => notificationService.getNotifications());
+  const [luxuryNotification, setLuxuryNotification] = useState(null);
+
+  // Navigate seamlessly to a specific article from notification or deep link
+  const navigateToArticle = (articleId, articleData = null) => {
+    if (articleData) {
+      setActiveArticle(articleData);
+      setActiveTab('feed');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (articleId) {
+      const cached = storageService.getCachedArticles() || [];
+      const custom = storageService.getCustomArticles() || [];
+      const allArticlesList = [...cached, ...custom, ...initialArticlesData];
+      const target = allArticlesList.find((a) => String(a.id) === String(articleId));
+      if (target) {
+        setActiveArticle(target);
+        setActiveTab('feed');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  };
 
   // Real-time Cloud Synchronization & Network Connectivity Listeners
   useEffect(() => {
@@ -93,20 +114,7 @@ export default function App() {
     const timer = setTimeout(() => {
       // Notification Service Init & Deep Linking Handler
       const handleNotificationClick = (articleId, articleData) => {
-        if (articleData) {
-          setActiveArticle(articleData);
-          setActiveTab('feed');
-        } else if (articleId) {
-          const cached = storageService.getCachedArticles() || [];
-          const custom = storageService.getCustomArticles() || [];
-          const target = [...cached, ...custom, ...initialArticlesData].find(
-            (a) => String(a.id) === String(articleId)
-          );
-          if (target) {
-            setActiveArticle(target);
-            setActiveTab('feed');
-          }
-        }
+        navigateToArticle(articleId, articleData);
       };
 
       notificationService.init(handleNotificationClick);
@@ -115,30 +123,27 @@ export default function App() {
       // Deferred Deep Link Resolver
       deepLinkService.init((articleId) => {
         if (!articleId) return;
-        const cached = storageService.getCachedArticles() || [];
-        const custom = storageService.getCustomArticles() || [];
-        const target = [...cached, ...custom, ...initialArticlesData].find(
-          (a) => String(a.id) === String(articleId)
-        );
-        if (target) {
-          setActiveArticle(target);
-          setActiveTab('feed');
-        }
+        navigateToArticle(articleId);
       });
 
       // Background Firestore Subscriptions for Cloud Notifications (Multi-device Sync)
       unsubNotifications = firestoreSyncService.subscribeNotifications((cloudNotifs) => {
         if (cloudNotifs && cloudNotifs.length > 0) {
-          const synced = notificationService.syncCloudNotifications(cloudNotifs);
+          const synced = notificationService.syncCloudNotifications(cloudNotifs, (newNotif) => {
+            setLuxuryNotification(newNotif);
+          });
           setNotifications(synced);
         }
       });
 
-      // Background Firestore Subscriptions
+      // Background Firestore Subscriptions for Articles (Auto-alert on newly published articles)
       unsubArticles = firestoreSyncService.subscribeArticles((articles) => {
         if (articles && articles.length > 0) {
           setCloudArticles(articles);
           storageService.setCachedArticles(articles);
+          notificationService.syncCloudArticles(articles, (newNotif) => {
+            setLuxuryNotification(newNotif);
+          });
         }
       });
 
@@ -424,6 +429,20 @@ export default function App() {
           ? 'theme-sepia bg-[#fbf0d9] text-[#433422]'
           : 'bg-slate-50 text-slate-900'
     } transition-colors ${fontClass}`}>
+      {/* Real-time Cloud Luxury Announcement Banner */}
+      <LuxuryNotificationBanner
+        notification={luxuryNotification}
+        onClose={() => setLuxuryNotification(null)}
+        onViewArticle={(articleId, notifData) => {
+          setLuxuryNotification(null);
+          if (notifData?.id) {
+            const updated = notificationService.markAsRead(notifData.id);
+            setNotifications(updated);
+          }
+          navigateToArticle(articleId, notifData?.article);
+        }}
+      />
+
       {/* If reading an article, display reader view */}
       {activeArticle ? (
         <Suspense fallback={null}>
