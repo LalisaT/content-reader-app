@@ -7,6 +7,7 @@ import { categoryService } from './services/categoryService';
 import { firestoreSyncService } from './services/firestoreSyncService';
 import { notificationService } from './services/notificationService';
 import { deepLinkService } from './services/deepLinkService';
+import { updateService } from './services/updateService';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Network } from '@capacitor/network';
 import { App as CapacitorApp } from '@capacitor/app';
@@ -29,6 +30,7 @@ const DisclaimerView = lazy(() => import('./views/DisclaimerView'));
 const InterstitialModal = lazy(() => import('./components/InterstitialModal'));
 const RewardedModal = lazy(() => import('./components/RewardedModal'));
 const NotificationModal = lazy(() => import('./components/NotificationModal'));
+const AppUpdateModal = lazy(() => import('./components/AppUpdateModal'));
 
 import { Sparkles, X, BookOpen, Loader2, WifiOff, LogOut } from 'lucide-react';
 
@@ -63,6 +65,7 @@ export default function App() {
   const exitTapTimerRef = useRef(null);
   const [notifications, setNotifications] = useState(() => notificationService.getNotifications());
   const [luxuryNotification, setLuxuryNotification] = useState(null);
+  const [updateInfo, setUpdateInfo] = useState(null);
 
   // Navigate seamlessly to a specific article from notification or deep link
   const navigateToArticle = (articleId, articleData = null) => {
@@ -150,8 +153,16 @@ export default function App() {
       });
 
       unsubConfig = firestoreSyncService.subscribeAppConfig((config) => {
-        if (config && config.appName) {
-          setAppConfig((prev) => ({ ...prev, ...config }));
+        if (config) {
+          if (config.appName) {
+            setAppConfig((prev) => ({ ...prev, ...config }));
+          }
+          // Real-time In-App Update Prompt Check
+          updateService.checkForUpdate(config).then((info) => {
+            if (info) {
+              setUpdateInfo(info);
+            }
+          }).catch((err) => console.warn('Update check error:', err));
         }
       });
 
@@ -718,6 +729,20 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Real-time In-App Update Prompt Modal (Update Now or Skip) */}
+      {updateInfo && (
+        <Suspense fallback={null}>
+          <AppUpdateModal
+            updateInfo={updateInfo}
+            onUpdate={() => updateService.openPlayStore(updateInfo.updateUrl)}
+            onSkip={() => {
+              updateService.skipUpdate(updateInfo.latestVersionCode);
+              setUpdateInfo(null);
+            }}
+          />
+        </Suspense>
       )}
     </div>
   );
