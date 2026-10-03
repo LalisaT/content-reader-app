@@ -8,6 +8,18 @@
     ],
     "rewrites": [
       {
+        "source": "/tip",
+        "destination": "/tip.html"
+      },
+      {
+        "source": "/tip/**",
+        "destination": "/tip.html"
+      },
+      {
+        "source": "/article/**",
+        "destination": "/tip.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

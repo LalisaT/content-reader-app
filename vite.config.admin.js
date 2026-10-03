@@ -4,6 +4,7 @@ import { resolve } from 'path';
 
 export default defineConfig({
   root: resolve(__dirname, 'admin'),
+  publicDir: resolve(__dirname, 'public'),
   plugins: [react()],
   server: {
     port: 3100,

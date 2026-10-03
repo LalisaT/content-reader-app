@@ -4,27 +4,25 @@ import { Capacitor } from '@capacitor/core';
 const STORAGE_DEFERRED_KEY = 'tippulse_deferred_article_id';
 const STORAGE_PROCESSED_REFERRER_KEY = 'tippulse_processed_install_referrer';
 const PLAY_STORE_PACKAGE_ID = 'com.tippulse.app';
+const WEB_DOMAIN = 'https://tippulse.web.app';
 
 export const deepLinkService = {
-  // Generate a Smart Deferred Deep Link for sharing
+  // Generate a Smart Universal Deep Link for sharing
+  // When clicked:
+  // - If TipPulse is installed: opens TipPulse directly to this tip!
+  // - If TipPulse is NOT installed: forwards to Google Play Store with deferred referral data!
   generateShareLink(article) {
     if (!article || !article.id) {
-      return `https://play.google.com/store/apps/details?id=${PLAY_STORE_PACKAGE_ID}`;
+      return `${WEB_DOMAIN}/tip`;
     }
-
     const articleId = encodeURIComponent(article.id);
-    
-    // Standard Google Play Store Deferred Install Referrer Link:
-    // When a user without the app clicks this link, Google Play passes &referrer to the app on first launch!
-    const playStoreDeferredLink = `https://play.google.com/store/apps/details?id=${PLAY_STORE_PACKAGE_ID}&referrer=utm_source%3Dapp_share%26article_id%3D${articleId}`;
-    
-    return playStoreDeferredLink;
+    return `${WEB_DOMAIN}/tip?id=${articleId}`;
   },
 
   // Generate Web / Universal Direct Deep Link
   generateUniversalLink(article) {
-    if (!article || !article.id) return 'https://tippulse.app';
-    return `https://tippulse.app/article/${encodeURIComponent(article.id)}`;
+    if (!article || !article.id) return `${WEB_DOMAIN}/tip`;
+    return `${WEB_DOMAIN}/tip?id=${encodeURIComponent(article.id)}`;
   },
 
   // Generate full rich share message for WhatsApp, Telegram, Twitter, SMS, etc.
@@ -54,8 +52,8 @@ export const deepLinkService = {
         return referrerMatch[1];
       }
 
-      // 3. Check Web URL path: /article/123
-      const pathMatch = urlOrString.match(/\/article\/([a-zA-Z0-9_-]+)/i);
+      // 3. Check Web URL path: /article/123 or /tip/123
+      const pathMatch = urlOrString.match(/\/(?:article|tip)\/([a-zA-Z0-9_-]+)/i);
       if (pathMatch && pathMatch[1]) {
         return pathMatch[1];
       }

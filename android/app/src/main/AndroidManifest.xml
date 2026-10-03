@@ -26,11 +26,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- App Links & Universal Deep Linking (https://tippulse.app/article/...) -->
+            <!-- App Links & Universal Deep Linking (https://tippulse.web.app/tip/...) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="tippulse.web.app" android:pathPrefix="/tip" />
+                <data android:scheme="https" android:host="tippulse.web.app" android:pathPrefix="/article" />
+                <data android:scheme="https" android:host="tippulse.web.app" android:pathPrefix="/share" />
                 <data android:scheme="https" android:host="tippulse.app" android:pathPrefix="/article" />
             </intent-filter>
 
