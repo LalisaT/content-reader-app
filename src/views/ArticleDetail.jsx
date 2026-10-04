@@ -127,7 +127,7 @@ export default function ArticleDetail({
   );
 
   return (
-    <div className={`min-h-screen pb-safe-nav transition-colors ${
+    <div className={`min-h-screen pb-32 sm:pb-36 pb-safe-nav transition-colors ${
       readerTheme === 'sepia' 
         ? 'theme-sepia' 
         : readerTheme === 'dark' 

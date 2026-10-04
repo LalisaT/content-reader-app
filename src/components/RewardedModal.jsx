@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { Award, Play, CheckCircle2, X, Sparkles, ShieldCheck, WifiOff } from 'lucide-react';
-import { ADMOB_CONFIG } from '../services/admobService';
+import { ADMOB_CONFIG, admobService } from '../services/admobService';
 
 export default function RewardedModal({ isOpen, onClose, onRewardEarned, articleTitle, isOnline = true }) {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -16,14 +17,34 @@ export default function RewardedModal({ isOpen, onClose, onRewardEarned, article
     }
   }, [isOpen]);
 
-  const handleStartRewardVideo = () => {
+  const handleStartRewardVideo = async () => {
     if (!isOnline) {
       alert('⚠️ Internet Connection Required\n\nPlease turn on Mobile Data or connect to Wi-Fi to load and stream this sponsor video.');
       return;
     }
+
+    if (Capacitor.isNativePlatform()) {
+      setIsPlaying(true);
+      try {
+        const result = await admobService.showRewardedAd();
+        setIsPlaying(false);
+        if (result && result.success) {
+          setIsCompleted(true);
+        } else {
+          alert('Video ad was skipped or not ready. Please try again in a few moments.');
+        }
+      } catch (e) {
+        setIsPlaying(false);
+        console.warn('AdMob Rewarded Error:', e);
+        alert('Could not load sponsor video. Please check your connection and try again.');
+      }
+      return;
+    }
+
+    // Web simulation fallback for browser testing
     setIsPlaying(true);
     setProgress(0);
-    const duration = 5000; // 5 seconds test video
+    const duration = 4000; // 4 seconds test video
     const intervalTime = 50;
     const step = (intervalTime / duration) * 100;
 

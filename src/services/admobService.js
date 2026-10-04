@@ -1,84 +1,321 @@
-// Google AdMob Integration Service for TipPulse
-// Policy Compliant Ad Configuration & Simulation Manager
+// Google AdMob Native Integration Service for TipPulse
+// Implements Official @capacitor-community/admob SDK with Live Production Ad Units
+import { Capacitor } from '@capacitor/core';
+import {
+  AdMob,
+  BannerAdSize,
+  BannerAdPosition,
+  BannerAdPluginEvents,
+  InterstitialAdPluginEvents,
+  RewardAdPluginEvents,
+} from '@capacitor-community/admob';
 
 export const ADMOB_CONFIG = {
   APP_ID: 'ca-app-pub-9121868006610716~6779939377',
   PUBLISHER_ID: 'pub-9121868006610716',
-  // Official Google AdMob Ad Unit IDs
+  // Official Live Production Google AdMob Ad Units
+  UNITS: {
+    BANNER_ANDROID: 'ca-app-pub-9121868006610716/1856941872',
+    INTERSTITIAL_ANDROID: 'ca-app-pub-9121868006610716/2926868005',
+    REWARDED_ANDROID: 'ca-app-pub-9121868006610716/6726125177',
+  },
+  // Backwards compatibility alias
   TEST_IDS: {
     BANNER_ANDROID: 'ca-app-pub-9121868006610716/1856941872',
     INTERSTITIAL_ANDROID: 'ca-app-pub-9121868006610716/2926868005',
     REWARDED_ANDROID: 'ca-app-pub-9121868006610716/6726125177',
-    NATIVE_ADVANCED_ANDROID: 'ca-app-pub-9121868006610716/1856941872',
   },
+  isTesting: false,
   isTestMode: false,
-  // Frequency cap: Show interstitial at most once every 3 article views or 90 seconds
+  // Show interstitial once every 2-3 article reads with 45s cooldown
+  INTERSTITIAL_FREQUENCY_ARTICLES: 3,
   INTERSTITIAL_FREQUENCY_PAGES: 3,
-  INTERSTITIAL_COOLDOWN_MS: 60 * 1000,
+  INTERSTITIAL_COOLDOWN_MS: 45 * 1000,
 };
 
-// Curated mock sponsored native ads that match AdMob native templates
+// Curated high-CTR sponsored partner cards for smooth in-writing placements & web fallbacks
 export const SAMPLE_NATIVE_ADS = [
   {
-    id: 'ad-native-1',
-    headline: 'Master Cloud Engineering with AWS Certified Tracks',
-    advertiser: 'CloudAcademy Pro',
-    bodyText: 'Accelerate your career with hands-on cloud labs and real-world architectures. 30% off today.',
+    id: 'ad-partner-1',
+    headline: 'Master Daily Focus with Smart Habit Architecture',
+    advertiser: 'Pulse Productivity Hub',
+    bodyText: 'Supercharge your daily output with science-backed micro-routines and mindful task flows.',
+    callToAction: 'Explore Insights',
+    starRating: 4.9,
+    reviewsCount: '18.4k',
+    iconUrl: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=120&q=80',
+    targetUrl: 'https://tippulse.web.app',
+  },
+  {
+    id: 'ad-partner-2',
+    headline: 'Clean Energy & Cognitive Hydration Formula',
+    advertiser: 'NutriPeak Health Lab',
+    bodyText: 'Zero-sugar brain boost and clean sustained physical stamina engineered for thinkers.',
     callToAction: 'Learn More',
     starRating: 4.8,
-    reviewsCount: '14.2k',
-    iconUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=120&q=80',
-    imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
-    targetUrl: 'https://example.com/sponsor-cloud',
-  },
-  {
-    id: 'ad-native-2',
-    headline: 'Supercharge Your Morning: Clean Plant Protein & Electrolytes',
-    advertiser: 'NutriPeak Health',
-    bodyText: 'Zero sugar, 100% organic hydration and focus fuel recommended by top athletes.',
-    callToAction: 'Claim Free Sample',
-    starRating: 4.9,
-    reviewsCount: '8.7k',
+    reviewsCount: '9.2k',
     iconUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=120&q=80',
-    imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80',
-    targetUrl: 'https://example.com/sponsor-nutrition',
+    targetUrl: 'https://tippulse.web.app',
   },
   {
-    id: 'ad-native-3',
-    headline: 'Automate Your Investments with AI-Driven Index Portfolios',
-    advertiser: 'WealthSmart Robo',
-    bodyText: 'Start with as little as $10. SIPC insured with automated tax-loss harvesting.',
-    callToAction: 'Open Account',
-    starRating: 4.7,
-    reviewsCount: '23k',
+    id: 'ad-partner-3',
+    headline: 'Automated Portfolio & Wealth Compounding Engine',
+    advertiser: 'SmartVest AI',
+    bodyText: 'Institutional-grade diversification and automated balancing in an intuitive mobile suite.',
+    callToAction: 'Get Started',
+    starRating: 4.9,
+    reviewsCount: '27k',
     iconUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=120&q=80',
-    imageUrl: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=800&q=80',
-    targetUrl: 'https://example.com/sponsor-finance',
+    targetUrl: 'https://tippulse.web.app',
   }
 ];
 
 class AdMobManager {
   constructor() {
-    this.articleViewCount = 0;
+    this.isInitialized = false;
+    this.isBannerActive = false;
+    this.isInterstitialLoaded = false;
+    this.isRewardedLoaded = false;
+    this.articleReadCount = 0;
     this.lastInterstitialTime = 0;
     this.nativeAdIndex = 0;
+    this.currentBannerMargin = 56;
   }
 
-  // Record article view and check if interstitial is eligible
-  recordArticleView() {
-    this.articleViewCount += 1;
-    const now = Date.now();
-    const isCountEligible = this.articleViewCount % ADMOB_CONFIG.INTERSTITIAL_FREQUENCY_PAGES === 0;
-    const isTimeEligible = now - this.lastInterstitialTime > ADMOB_CONFIG.INTERSTITIAL_COOLDOWN_MS;
-
-    if (isCountEligible && isTimeEligible) {
-      return true;
+  // 1. Initialize Google Mobile Ads SDK on native platform
+  async initialize() {
+    if (!Capacitor.isNativePlatform()) {
+      console.log('AdMob: Running on Web/Browser. Web fallbacks active.');
+      this.isInitialized = true;
+      return;
     }
-    return false;
+
+    if (this.isInitialized) return;
+
+    try {
+      await AdMob.initialize({
+        requestTrackingAuthorization: true,
+        initializeForTesting: ADMOB_CONFIG.isTesting,
+      });
+
+      this.isInitialized = true;
+      console.log('AdMob: Native SDK initialized successfully for com.tippulse.app.');
+
+      this.setupEventListeners();
+
+      // Background preloads for smooth, instantaneous playback
+      setTimeout(() => {
+        this.preloadInterstitial();
+        this.preloadRewarded();
+        this.showBanner(56);
+      }, 500);
+    } catch (err) {
+      console.warn('AdMob initialization error:', err);
+    }
+  }
+
+  // Setup listeners for automatic re-loads and lifecycle events
+  setupEventListeners() {
+    if (!Capacitor.isNativePlatform()) return;
+
+    try {
+      // Banner events
+      AdMob.addListener(BannerAdPluginEvents.Loaded, () => {
+        this.isBannerActive = true;
+        console.log('AdMob: Adaptive Banner loaded successfully.');
+      });
+
+      AdMob.addListener(BannerAdPluginEvents.FailedToLoad, (err) => {
+        console.warn('AdMob: Banner failed to load:', err);
+      });
+
+      // Interstitial events
+      AdMob.addListener(InterstitialAdPluginEvents.Loaded, () => {
+        this.isInterstitialLoaded = true;
+        console.log('AdMob: Interstitial prepared in background.');
+      });
+
+      AdMob.addListener(InterstitialAdPluginEvents.Dismissed, () => {
+        this.isInterstitialLoaded = false;
+        this.lastInterstitialTime = Date.now();
+        // Silently preload next interstitial after 2 seconds
+        setTimeout(() => this.preloadInterstitial(), 2000);
+      });
+
+      AdMob.addListener(InterstitialAdPluginEvents.FailedToLoad, (err) => {
+        this.isInterstitialLoaded = false;
+        console.warn('AdMob: Interstitial failed to load:', err);
+      });
+
+      // Rewarded events
+      AdMob.addListener(RewardAdPluginEvents.Loaded, () => {
+        this.isRewardedLoaded = true;
+        console.log('AdMob: Rewarded Video prepared in background.');
+      });
+
+      AdMob.addListener(RewardAdPluginEvents.Dismissed, () => {
+        this.isRewardedLoaded = false;
+        setTimeout(() => this.preloadRewarded(), 2000);
+      });
+
+      AdMob.addListener(RewardAdPluginEvents.FailedToLoad, (err) => {
+        this.isRewardedLoaded = false;
+        console.warn('AdMob: Rewarded ad failed to load:', err);
+      });
+    } catch (e) {
+      console.warn('AdMob listener setup warning:', e);
+    }
+  }
+
+  // 2. Banner Ad Management
+  async showBanner(margin = 56) {
+    if (!Capacitor.isNativePlatform()) return;
+
+    try {
+      this.currentBannerMargin = margin;
+      await AdMob.showBanner({
+        adId: ADMOB_CONFIG.UNITS.BANNER_ANDROID,
+        adSize: BannerAdSize.ADAPTIVE_BANNER,
+        position: BannerAdPosition.BOTTOM_CENTER,
+        margin,
+        isTesting: ADMOB_CONFIG.isTesting,
+      });
+      this.isBannerActive = true;
+    } catch (err) {
+      console.warn('AdMob showBanner warning:', err);
+    }
+  }
+
+  async hideBanner() {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      await AdMob.hideBanner();
+      this.isBannerActive = false;
+    } catch (e) {}
+  }
+
+  async resumeBanner() {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      await AdMob.resumeBanner();
+      this.isBannerActive = true;
+    } catch (e) {}
+  }
+
+  // Smooth banner adjustment when switching between reading mode and feed navigation
+  async setBannerReadingMode(isReading) {
+    if (!Capacitor.isNativePlatform()) return;
+    const targetMargin = isReading ? 0 : 56;
+    if (this.currentBannerMargin === targetMargin && this.isBannerActive) return;
+
+    try {
+      // Re-anchor banner with desired bottom offset
+      await this.showBanner(targetMargin);
+    } catch (e) {
+      console.warn('AdMob setBannerReadingMode error:', e);
+    }
+  }
+
+  // 3. Interstitial Ad Management (Preload + Natural Break Trigger)
+  async preloadInterstitial() {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      await AdMob.prepareInterstitial({
+        adId: ADMOB_CONFIG.UNITS.INTERSTITIAL_ANDROID,
+        isTesting: ADMOB_CONFIG.isTesting,
+      });
+      this.isInterstitialLoaded = true;
+    } catch (err) {
+      this.isInterstitialLoaded = false;
+      console.warn('AdMob preloadInterstitial error:', err);
+    }
+  }
+
+  // Frequency-capped natural break trigger (e.g., exiting article back to feed)
+  async showInterstitialIfEligible(onWebFallback) {
+    this.articleReadCount += 1;
+    const now = Date.now();
+    const countMatch = this.articleReadCount % ADMOB_CONFIG.INTERSTITIAL_FREQUENCY_ARTICLES === 0;
+    const cooldownPassed = (now - this.lastInterstitialTime) > ADMOB_CONFIG.INTERSTITIAL_COOLDOWN_MS;
+
+    if (!countMatch || !cooldownPassed) {
+      return false;
+    }
+
+    this.lastInterstitialTime = now;
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        if (this.isInterstitialLoaded) {
+          await AdMob.showInterstitial();
+          return true;
+        } else {
+          // Quick on-demand preload attempt
+          await this.preloadInterstitial();
+          if (this.isInterstitialLoaded) {
+            await AdMob.showInterstitial();
+            return true;
+          }
+        }
+      } catch (err) {
+        console.warn('AdMob showInterstitial error:', err);
+      }
+      return false;
+    }
+
+    // Web fallback simulation
+    if (typeof onWebFallback === 'function') {
+      onWebFallback();
+    }
+    return true;
+  }
+
+  // Legacy helper methods for backwards compatibility
+  recordArticleView() {
+    this.articleReadCount += 1;
+    const now = Date.now();
+    const isCountEligible = this.articleReadCount % ADMOB_CONFIG.INTERSTITIAL_FREQUENCY_ARTICLES === 0;
+    const isTimeEligible = now - this.lastInterstitialTime > ADMOB_CONFIG.INTERSTITIAL_COOLDOWN_MS;
+    return isCountEligible && isTimeEligible;
   }
 
   markInterstitialShown() {
     this.lastInterstitialTime = Date.now();
+  }
+
+  // 4. Rewarded Video Ad Management (Unlocking Premium Articles)
+  async preloadRewarded() {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      await AdMob.prepareRewardVideoAd({
+        adId: ADMOB_CONFIG.UNITS.REWARDED_ANDROID,
+        isTesting: ADMOB_CONFIG.isTesting,
+      });
+      this.isRewardedLoaded = true;
+    } catch (err) {
+      this.isRewardedLoaded = false;
+      console.warn('AdMob preloadRewarded error:', err);
+    }
+  }
+
+  async showRewardedAd() {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        if (!this.isRewardedLoaded) {
+          await this.preloadRewarded();
+        }
+        const rewardItem = await AdMob.showRewardVideoAd();
+        // Immediately preload the next rewarded ad
+        setTimeout(() => this.preloadRewarded(), 2000);
+        return { success: true, rewardItem };
+      } catch (err) {
+        console.warn('AdMob showRewardedAd error:', err);
+        return { success: false, error: err };
+      }
+    }
+
+    // Web simulation
+    return { success: true, simulated: true };
   }
 
   getNextNativeAd() {

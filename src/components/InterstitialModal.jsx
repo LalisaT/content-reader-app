@@ -82,7 +82,6 @@ export default function InterstitialModal({ isOpen, onClose }) {
           <div className="mt-5 flex items-center space-x-3">
             <button
               onClick={() => {
-                alert('Opening sponsor destination website...');
                 onClose();
               }}
               className="flex-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2 transition-all"

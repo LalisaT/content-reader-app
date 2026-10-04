@@ -1,4 +1,5 @@
 import React from 'react';
+import BannerAd from './BannerAd';
 import {
   ExternalLink,
   Info,
@@ -296,15 +297,15 @@ export function parseMarkdownBlocks(text) {
 /**
  * Rich Markdown Renderer Component
  */
-export default function RichMarkdownRenderer({ content, className = '' }) {
+export default function RichMarkdownRenderer({ content, className = '', enableInArticleAd = true }) {
   if (!content) return null;
 
   const blocks = parseMarkdownBlocks(content);
+  // Calculate natural break point for in-writing sponsored card if article has at least 5 blocks
+  const inArticleAdIndex = enableInArticleAd && blocks.length >= 5 ? Math.floor(blocks.length / 2) : -1;
 
-  return (
-    <div className={`space-y-4 text-slate-800 dark:text-slate-200 leading-relaxed ${className}`}>
-      {blocks.map((block, idx) => {
-        switch (block.type) {
+  const renderBlock = (block, idx) => {
+    switch (block.type) {
           case 'hr':
             return <hr key={idx} className="my-6 border-slate-200 dark:border-slate-800" />;
 
@@ -433,7 +434,18 @@ export default function RichMarkdownRenderer({ content, className = '' }) {
               </p>
             );
         }
-      })}
+    };
+
+  return (
+    <div className={`space-y-4 text-slate-800 dark:text-slate-200 leading-relaxed ${className}`}>
+      {blocks.map((block, idx) => (
+        <React.Fragment key={idx}>
+          {renderBlock(block, idx)}
+          {idx === inArticleAdIndex && (
+            <BannerAd position="inline" className="my-6" />
+          )}
+        </React.Fragment>
+      ))}
     </div>
   );
 }

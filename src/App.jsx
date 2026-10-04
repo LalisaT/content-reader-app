@@ -88,6 +88,9 @@ export default function App() {
 
   // Real-time Cloud Synchronization & Network Connectivity Listeners
   useEffect(() => {
+    // 0. Initialize Google Mobile Ads SDK (AdMob) for real production ads
+    admobService.initialize();
+
     // 1. Reveal app ultra-fast the instant React mounts
     SplashScreen.hide({ fadeOutDuration: 40 }).catch(() => {});
 
@@ -256,6 +259,7 @@ export default function App() {
   const handleOpenArticle = (article) => {
     storageService.addToHistory(article.id);
     setActiveArticle(article);
+    admobService.setBannerReadingMode(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     try {
       window.history.pushState({ view: 'article', id: article.id }, '');
@@ -265,13 +269,13 @@ export default function App() {
   // Exit Article Detail View & Check for Natural Break Interstitial Ad
   const handleBackFromArticle = () => {
     setActiveArticle(null);
+    admobService.setBannerReadingMode(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Check frequency cap for Interstitial
-    if (admobService.recordArticleView()) {
-      admobService.markInterstitialShown();
+    // Check frequency cap & display native Interstitial Ad (or web fallback modal)
+    admobService.showInterstitialIfEligible(() => {
       setIsInterstitialOpen(true);
-    }
+    });
   };
 
   // Keep navigation references synchronized for Android hardware back button
