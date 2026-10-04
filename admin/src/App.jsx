@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck, Lock, LogOut, FileText,
   FolderOpen, Sparkles, Bell, ArrowRight, CheckCircle2, KeyRound, Wifi,
-  Vote
+  Vote, Tag
 } from 'lucide-react';
 import ArticleEditor from './components/ArticleEditor';
 import ArticlesTable from './components/ArticlesTable';
 import BrandingSettings from './components/BrandingSettings';
 import NotificationSender from './components/NotificationSender';
 import PollsManager from './components/PollsManager';
+import CategoriesManager from './components/CategoriesManager';
 
 // One-way SHA-256 cryptographic hash (Cannot be reversed or decoded back to plain text)
 const MASTER_KEY_HASH = 'f7760d6b76aa1ad0f33caf137d2777730cf57d2e9c8b5e8c9663c574a5fcaf2e';
@@ -224,6 +225,18 @@ export default function App() {
               <Vote className="w-3.5 h-3.5 text-violet-400" />
               <span className="hidden sm:inline">Polls</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('categories')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors ${
+                activeTab === 'categories'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <Tag className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Categories</span>
+            </button>
           </nav>
 
           {/* Status badge & Lock */}
@@ -272,6 +285,8 @@ export default function App() {
         {activeTab === 'notifications' && <NotificationSender />}
 
         {activeTab === 'polls' && <PollsManager />}
+
+        {activeTab === 'categories' && <CategoriesManager />}
       </main>
     </div>
   );

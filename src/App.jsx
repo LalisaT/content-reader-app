@@ -269,7 +269,9 @@ export default function App() {
     storageService.addToHistory(article.id);
     setActiveArticle(article);
     admobService.setBannerReadingMode(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     try {
       window.history.pushState({ view: 'article', id: article.id }, '');
     } catch {}
@@ -279,7 +281,9 @@ export default function App() {
   const handleBackFromArticle = () => {
     setActiveArticle(null);
     admobService.setBannerReadingMode(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 
     // Check frequency cap & display native Interstitial Ad (or web fallback modal)
     admobService.showInterstitialIfEligible(() => {
@@ -484,6 +488,8 @@ export default function App() {
             onChangeReaderTheme={handleChangeTheme}
             fontSize={fontSize}
             onChangeFontSize={handleChangeFontSize}
+            polls={polls}
+            onVotePoll={(pollId, optionId) => firestoreSyncService.votePoll(pollId, optionId)}
           />
         </Suspense>
       ) : (

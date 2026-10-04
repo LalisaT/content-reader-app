@@ -3,7 +3,7 @@ import { BarChart3, CheckCircle2, Vote, Sparkles, Users, Lock } from 'lucide-rea
 import { storageService } from '../services/storageService';
 import { firestoreSyncService } from '../services/firestoreSyncService';
 
-export default function CommunityPollCard({ poll, onVoted }) {
+export default function CommunityPollCard({ poll, onVoted, onVote }) {
   const [selectedOption, setSelectedOption] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasVoted, setHasVoted] = useState(() => storageService.hasUserVoted(poll?.id));
@@ -31,6 +31,9 @@ export default function CommunityPollCard({ poll, onVoted }) {
 
       if (typeof onVoted === 'function') {
         onVoted(poll.id, selectedOption);
+      }
+      if (typeof onVote === 'function') {
+        onVote(selectedOption);
       }
     } catch (e) {
       console.warn('Poll vote submission warning:', e);

@@ -5,9 +5,9 @@ import {
   Heading1, Heading2, Heading3, Bold, Italic,
   Quote, List, ListOrdered, Lightbulb, AlertTriangle, Link as LinkIcon,
   Wifi, Bell, MousePointerClick, ExternalLink, X, Upload, Loader2, RefreshCw,
-  Music, Headphones, Youtube, ShieldAlert
+  Music, Headphones, Youtube, ShieldAlert, Vote, FolderPlus, Tag
 } from 'lucide-react';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebaseAdmin';
 import RichPreview from './RichPreview';
 import { processAndUploadImage } from '../utils/imageUpload';
@@ -49,6 +49,20 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
   const [artist, setArtist] = useState('');
   const [duration, setDuration] = useState('');
 
+  // Dynamic Categories from Firestore
+  const [availableCategories, setAvailableCategories] = useState(DEFAULT_CATEGORIES);
+  const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isSavingCategory, setIsSavingCategory] = useState(false);
+
+  // In-Article Poll Integration State
+  const [availablePolls, setAvailablePolls] = useState([]);
+  const [attachPoll, setAttachPoll] = useState(false);
+  const [pollMode, setPollMode] = useState('existing'); // 'existing' | 'new'
+  const [selectedPollId, setSelectedPollId] = useState('');
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState(['', '']);
+
   // Photo Upload & Featured Banner Tabs
   const [imageTab, setImageTab] = useState('upload'); // 'upload' | 'presets' | 'url'
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -75,6 +89,37 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
   const bannerFileInputRef = useRef(null);
   const contentImageFileInputRef = useRef(null);
 
+  // Real-time Cloud Categories listener
+  useEffect(() => {
+    try {
+      const catRef = doc(db, 'settings', 'categories');
+      const unsub = onSnapshot(catRef, (docSnap) => {
+        if (docSnap.exists() && Array.isArray(docSnap.data().list) && docSnap.data().list.length > 0) {
+          const list = docSnap.data().list.map((c) => (typeof c === 'string' ? c : c.label || c.id));
+          setAvailableCategories(list);
+        }
+      });
+      return unsub;
+    } catch (e) {
+      console.warn('Categories listener error:', e);
+    }
+  }, []);
+
+  // Real-time Cloud Polls listener
+  useEffect(() => {
+    try {
+      const pollsRef = collection(db, 'polls');
+      const q = query(pollsRef, orderBy('createdAt', 'desc'));
+      const unsub = onSnapshot(q, (snapshot) => {
+        const list = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        setAvailablePolls(list);
+      });
+      return unsub;
+    } catch (e) {
+      console.warn('Polls listener error:', e);
+    }
+  }, []);
+
   useEffect(() => {
     if (editingArticle) {
       setTitle(editingArticle.title || '');
@@ -93,6 +138,16 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
       setYoutubeUrl(editingArticle.youtubeUrl || editingArticle.youtubeId || '');
       setArtist(editingArticle.artist || '');
       setDuration(editingArticle.duration || '');
+      if (editingArticle.pollId) {
+        setAttachPoll(true);
+        setPollMode('existing');
+        setSelectedPollId(editingArticle.pollId);
+      } else {
+        setAttachPoll(false);
+        setSelectedPollId('');
+        setPollQuestion('');
+        setPollOptions(['', '']);
+      }
     } else {
       resetForm();
     }
@@ -111,6 +166,10 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
     setYoutubeUrl('');
     setArtist('');
     setDuration('');
+    setAttachPoll(false);
+    setSelectedPollId('');
+    setPollQuestion('');
+    setPollOptions(['', '']);
   };
 
   const showToast = (msg, isError = false) => {
@@ -157,6 +216,37 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
       }, 50);
     }
     setIsButtonModalOpen(false);
+  };
+
+  const handleQuickAddCategory = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const clean = newCategoryName.trim();
+    if (!clean) return;
+    setIsSavingCategory(true);
+    try {
+      const catRef = doc(db, 'settings', 'categories');
+      const currentList = Array.isArray(availableCategories) ? availableCategories : DEFAULT_CATEGORIES;
+      const already = currentList.some((c) => (typeof c === 'string' ? c : c.label || c.id).toLowerCase() === clean.toLowerCase());
+      if (!already) {
+        const newCatObj = {
+          id: clean,
+          label: clean,
+          icon: 'Sparkles',
+          gradient: 'from-indigo-600 to-violet-600'
+        };
+        const updated = [...currentList.map(c => typeof c === 'string' ? { id: c, label: c, icon: 'Sparkles', gradient: 'from-indigo-600 to-violet-600' } : c), newCatObj];
+        await setDoc(catRef, { list: updated, updatedAt: Date.now() }, { merge: true });
+        setAvailableCategories(updated.map(c => c.label || c.id));
+      }
+      setCategory(clean);
+      setNewCategoryName('');
+      setIsAddCategoryModalOpen(false);
+      showToast(`Category "${clean}" created & selected!`);
+    } catch (err) {
+      showToast(`Failed to add category: ${err.message || err}`, true);
+    } finally {
+      setIsSavingCategory(false);
+    }
   };
 
   const handleBannerFile = async (file) => {
@@ -287,6 +377,43 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
 
       const ytId = extractYouTubeId(youtubeUrl);
 
+      // Handle attached in-article poll
+      let finalPollId = null;
+      if (attachPoll) {
+        if (pollMode === 'existing') {
+          finalPollId = selectedPollId || null;
+        } else if (pollMode === 'new') {
+          if (!pollQuestion.trim()) {
+            showToast('Please provide a Question for the in-article poll.', true);
+            setIsSaving(false);
+            return;
+          }
+          const validOptions = pollOptions.filter((o) => o.trim().length > 0);
+          if (validOptions.length < 2) {
+            showToast('Please provide at least 2 options for the poll.', true);
+            setIsSaving(false);
+            return;
+          }
+          finalPollId = `poll-${Date.now()}`;
+          const pollData = {
+            id: finalPollId,
+            question: pollQuestion.trim(),
+            description: `Poll inside article: ${title.trim()}`,
+            options: validOptions.map((opt, i) => ({
+              id: `opt-${i + 1}-${Math.random().toString(36).substring(2, 6)}`,
+              text: opt.trim(),
+              votes: 0,
+            })),
+            isActive: true,
+            totalVotes: 0,
+            articleId: articleId,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+          await setDoc(doc(db, 'polls', finalPollId), pollData);
+        }
+      }
+
       const articlePayload = {
         id: articleId,
         title: title.trim(),
@@ -307,6 +434,7 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
         youtubeId: ytId || null,
         artist: artist.trim() || null,
         duration: duration.trim() || null,
+        pollId: finalPollId || null,
       };
 
       // 1. Save to Cloud Firestore
@@ -359,6 +487,14 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
     youtubeId: extractYouTubeId(youtubeUrl),
     artist,
     duration,
+    pollId: attachPoll ? (pollMode === 'existing' ? selectedPollId : 'preview-new-poll') : null,
+    poll: attachPoll && pollMode === 'new' ? {
+      id: 'preview-new-poll',
+      question: pollQuestion || 'Poll Question Preview',
+      options: pollOptions.filter(Boolean).map((t, i) => ({ id: `p-${i}`, text: t, votes: 0 })),
+      totalVotes: 0,
+      isActive: true,
+    } : (availablePolls.find((p) => p.id === selectedPollId) || null),
   };
 
   return (
@@ -469,15 +605,26 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
             {/* Category + Author */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Category</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-300">Category</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddCategoryModalOpen(true)}
+                    className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center space-x-0.5 cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Add</span>
+                  </button>
+                </div>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
                 >
-                  {DEFAULT_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
+                  {availableCategories.map((cat) => {
+                    const label = typeof cat === 'string' ? cat : (cat.label || cat.id);
+                    return <option key={label} value={label}>{label}</option>;
+                  })}
                 </select>
               </div>
 
@@ -958,6 +1105,144 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
               />
             </div>
 
+            {/* In-Article Community Poll Attachment Section */}
+            <div className="bg-gradient-to-br from-violet-950/40 via-purple-950/20 to-slate-900 border border-violet-800/60 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-violet-600/30 border border-violet-500/40 flex items-center justify-center text-violet-400 shadow-sm">
+                    <Vote className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-black text-white flex items-center space-x-2">
+                      <span>In-Article Community Poll</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/40 uppercase">
+                        Interactive
+                      </span>
+                    </h4>
+                    <p className="text-[11px] text-slate-400">Readers can cast their vote directly inside this article as they read</p>
+                  </div>
+                </div>
+
+                <label className="flex items-center space-x-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={attachPoll}
+                    onChange={(e) => setAttachPoll(e.target.checked)}
+                    className="w-4 h-4 rounded text-violet-600 focus:ring-0"
+                  />
+                  <span className="text-xs font-bold text-violet-300">Enable Poll</span>
+                </label>
+              </div>
+
+              {attachPoll && (
+                <div className="pt-2 border-t border-slate-800 space-y-3">
+                  {/* Poll Mode Tabs: Existing Poll vs Create New */}
+                  <div className="flex items-center space-x-2 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setPollMode('existing')}
+                      className={`flex-1 py-1.5 rounded-lg font-bold transition-all ${
+                        pollMode === 'existing' ? 'bg-violet-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Select Existing Poll ({availablePolls.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPollMode('new')}
+                      className={`flex-1 py-1.5 rounded-lg font-bold transition-all ${
+                        pollMode === 'new' ? 'bg-violet-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Create New Poll for this Article
+                    </button>
+                  </div>
+
+                  {pollMode === 'existing' ? (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">Choose Poll</label>
+                      {availablePolls.length === 0 ? (
+                        <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 text-xs">
+                          No polls found in Cloud. Switch to "Create New Poll for this Article" tab above!
+                        </div>
+                      ) : (
+                        <select
+                          value={selectedPollId}
+                          onChange={(e) => setSelectedPollId(e.target.value)}
+                          className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white focus:outline-none focus:border-violet-500"
+                        >
+                          <option value="">-- Select a Poll to Embed --</option>
+                          {availablePolls.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.question} ({p.options?.length || 0} choices, {p.totalVotes || 0} votes)
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-300 mb-1">
+                          Poll Question <span className="text-rose-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={pollQuestion}
+                          onChange={(e) => setPollQuestion(e.target.value)}
+                          placeholder="e.g. Which daily habit do you struggle with the most?"
+                          className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-xs font-bold text-slate-300">Vote Options (2 to 6 choices)</label>
+                          {pollOptions.length < 6 && (
+                            <button
+                              type="button"
+                              onClick={() => setPollOptions([...pollOptions, ''])}
+                              className="text-xs text-violet-400 hover:text-violet-300 font-semibold flex items-center space-x-1"
+                            >
+                              <Plus className="w-3 h-3" />
+                              <span>Add Choice</span>
+                            </button>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          {pollOptions.map((opt, idx) => (
+                            <div key={idx} className="flex items-center space-x-2">
+                              <span className="w-5 text-center text-xs font-bold text-slate-500">{idx + 1}.</span>
+                              <input
+                                type="text"
+                                value={opt}
+                                onChange={(e) => {
+                                  const copy = [...pollOptions];
+                                  copy[idx] = e.target.value;
+                                  setPollOptions(copy);
+                                }}
+                                placeholder={`Option ${idx + 1}`}
+                                className="flex-1 px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                              />
+                              {pollOptions.length > 2 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setPollOptions(pollOptions.filter((_, i) => i !== idx))}
+                                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-800"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Options: Premium PRO, Online Data Required, and Push Notification */}
             <div className="pt-3 border-t border-slate-700 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <label className="flex items-center space-x-2 cursor-pointer select-none p-2 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700">
@@ -1247,6 +1532,62 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
                 <span>{isSaving ? 'Publishing...' : 'Looks Great — Publish to App'}</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Add Category Modal */}
+      {isAddCategoryModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div className="flex items-center space-x-2 text-white font-bold text-sm">
+                <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+                  <Tag className="w-4 h-4" />
+                </div>
+                <span>Create New Category</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddCategoryModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleQuickAddCategory} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-slate-300 font-bold mb-1">Category Label</label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="e.g. Life Hacks, Science, Meditation"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsAddCategoryModalOpen(false)}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingCategory}
+                  className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md flex items-center space-x-1"
+                >
+                  {isSavingCategory ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                  <span>Save Category</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

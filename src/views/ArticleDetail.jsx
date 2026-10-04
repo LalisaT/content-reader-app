@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import AudioPlayer from '../components/AudioPlayer';
 import YouTubeMusicPlayer, { extractYouTubeId } from '../components/YouTubeMusicPlayer';
+import CommunityPollCard from '../components/CommunityPollCard';
 import RichMarkdownRenderer from '../components/RichMarkdownRenderer';
 import ShareModal from '../components/ShareModal';
 import { storageService } from '../services/storageService';
@@ -42,6 +43,8 @@ export default function ArticleDetail({
   onChangeReaderTheme,
   fontSize,
   onChangeFontSize,
+  polls = [],
+  onVotePoll,
 }) {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
@@ -54,6 +57,18 @@ export default function ArticleDetail({
 
   useEffect(() => {
     setImageError(false);
+    // Force immediate scroll to the very top so article never opens at the bottom
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    setScrollProgress(0);
+
+    const scrollTimer = setTimeout(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 30);
+    return () => clearTimeout(scrollTimer);
   }, [article?.id]);
 
   useEffect(() => {
@@ -499,6 +514,25 @@ export default function ArticleDetail({
             </button>
           </div>
         )}
+
+        {/* In-Article Community Poll (Live Voting Inside Writing) */}
+        {(() => {
+          const articlePoll = article?.pollId
+            ? polls.find((p) => p.id === article.pollId)
+            : (article?.poll || (polls.length > 0 ? polls.find((p) => p.articleId === article?.id) : null));
+
+          if (articlePoll) {
+            return (
+              <div className="my-6 animate-in fade-in">
+                <CommunityPollCard
+                  poll={articlePoll}
+                  onVote={(optionId) => onVotePoll && onVotePoll(articlePoll.id, optionId)}
+                />
+              </div>
+            );
+          }
+          return null;
+        })()}
 
         {/* Reader Feedback & Claps */}
         <div className="flex items-center justify-between py-4 border-t border-slate-200 dark:border-slate-800">

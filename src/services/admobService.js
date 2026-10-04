@@ -109,6 +109,13 @@ class AdMobManager {
         this.preloadRewarded();
         this.showBanner(56);
       }, 500);
+
+      // 24/7 Continuous Banner Keep-Alive Heartbeat
+      setInterval(() => {
+        if (Capacitor.isNativePlatform() && this.isInitialized && !this.isBannerActive) {
+          this.showBanner(this.currentBannerMargin);
+        }
+      }, 35000);
     } catch (err) {
       console.warn('AdMob initialization error:', err);
     }
@@ -122,12 +129,33 @@ class AdMobManager {
       // Banner events
       AdMob.addListener(BannerAdPluginEvents.Loaded, () => {
         this.isBannerActive = true;
-        console.log('AdMob: Adaptive Banner loaded successfully.');
+        if (this.bannerRetryTimeout) {
+          clearTimeout(this.bannerRetryTimeout);
+          this.bannerRetryTimeout = null;
+        }
+        console.log('AdMob: Adaptive Banner loaded & active 24/7.');
       });
 
       AdMob.addListener(BannerAdPluginEvents.FailedToLoad, (err) => {
-        console.warn('AdMob: Banner failed to load:', err);
+        console.warn('AdMob: Banner failed to load, retrying in 15s:', err);
+        this.isBannerActive = false;
+        if (this.bannerRetryTimeout) clearTimeout(this.bannerRetryTimeout);
+        this.bannerRetryTimeout = setTimeout(() => {
+          this.showBanner(this.currentBannerMargin);
+        }, 15000);
       });
+
+      // Window focus and foreground recovery to keep banner running 24/7
+      if (typeof window !== 'undefined') {
+        window.addEventListener('focus', () => {
+          this.resumeBanner();
+        });
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) {
+            this.resumeBanner();
+          }
+        });
+      }
 
       // Interstitial events
       AdMob.addListener(InterstitialAdPluginEvents.Loaded, () => {
@@ -183,6 +211,10 @@ class AdMobManager {
       this.isBannerActive = true;
     } catch (err) {
       console.warn('AdMob showBanner warning:', err);
+      try {
+        await AdMob.resumeBanner();
+        this.isBannerActive = true;
+      } catch (resumeErr) {}
     }
   }
 

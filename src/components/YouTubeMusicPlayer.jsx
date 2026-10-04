@@ -41,13 +41,10 @@ export default function YouTubeMusicPlayer({
   const [isApiReady, setIsApiReady] = useState(false);
   const playerId = useRef(`yt-music-player-${Math.random().toString(36).substring(2, 9)}`).current;
 
-  // RULE 3 ENFORCEMENT: Hide native AdMob banner when video player is active on screen
+  // Bottom adaptive banner remains docked at bottom of screen 24/7 without overlapping inline video
   useEffect(() => {
-    admobService.hideBanner();
-    return () => {
-      // Resume banner when navigating away from player screen
-      admobService.resumeBanner();
-    };
+    // Ensure banner remains active and visible 24/7
+    admobService.resumeBanner();
   }, []);
 
   // Load Official YouTube IFrame Player API

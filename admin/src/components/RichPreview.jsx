@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Sparkles, Clock, Calendar, User, Tag, Lock, Lightbulb,
-  AlertTriangle, ExternalLink, Wifi, Music, Youtube, Play
+  AlertTriangle, ExternalLink, Wifi, Music, Youtube, Play, Vote
 } from 'lucide-react';
 
 export default function RichPreview({ article }) {
@@ -358,6 +358,35 @@ export default function RichPreview({ article }) {
             <div className="pt-2 text-xs text-slate-300">
               {renderContent(article.content)}
             </div>
+
+            {/* Embedded In-Article Community Poll Preview */}
+            {article.poll && (
+              <div className="my-4 p-4 rounded-2xl bg-gradient-to-br from-violet-950/40 via-purple-950/20 to-slate-900 border border-violet-800/60 space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-7 h-7 rounded-lg bg-violet-600/30 border border-violet-500/40 flex items-center justify-center text-violet-400">
+                    <Vote className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase text-violet-400">In-Article Poll</span>
+                    <h4 className="text-xs font-bold text-white leading-snug">
+                      {article.poll.question || 'Poll Question Preview'}
+                    </h4>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  {(article.poll.options || []).map((opt, i) => (
+                    <div
+                      key={opt.id || i}
+                      className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 flex items-center justify-between"
+                    >
+                      <span>{opt.text || `Option ${i + 1}`}</span>
+                      <span className="text-[10px] font-mono text-slate-500">0%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
