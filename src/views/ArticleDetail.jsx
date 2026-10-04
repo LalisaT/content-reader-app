@@ -23,7 +23,6 @@ import {
   RotateCcw
 } from 'lucide-react';
 import AudioPlayer from '../components/AudioPlayer';
-import BannerAd from '../components/BannerAd';
 import RichMarkdownRenderer from '../components/RichMarkdownRenderer';
 import ShareModal from '../components/ShareModal';
 import { storageService } from '../services/storageService';
@@ -481,11 +480,6 @@ export default function ArticleDetail({
             </button>
           </div>
         )}
-
-        {/* Inline Article Banner Ad (AdMob Placement) */}
-        <div className="my-8">
-          <BannerAd position="inline" />
-        </div>
 
         {/* Reader Feedback & Claps */}
         <div className="flex items-center justify-between py-4 border-t border-slate-200 dark:border-slate-800">
