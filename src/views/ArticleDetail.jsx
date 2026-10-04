@@ -23,6 +23,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import AudioPlayer from '../components/AudioPlayer';
+import YouTubeMusicPlayer, { extractYouTubeId } from '../components/YouTubeMusicPlayer';
 import RichMarkdownRenderer from '../components/RichMarkdownRenderer';
 import ShareModal from '../components/ShareModal';
 import { storageService } from '../services/storageService';
@@ -274,6 +275,24 @@ export default function ArticleDetail({
             textToRead={`${article.summary}. ${article.content}`}
           />
         )}
+
+        {/* Official YouTube Music Player (Special Music Category & Video Embeds) */}
+        {(() => {
+          const ytId = article?.youtubeId || extractYouTubeId(article?.youtubeUrl) || (article?.category === 'Music' ? extractYouTubeId(article?.content) : null);
+          if (ytId) {
+            return (
+              <div className="mb-6">
+                <YouTubeMusicPlayer
+                  videoId={ytId}
+                  title={article.title}
+                  artist={article.artist || article.author}
+                  duration={article.duration}
+                />
+              </div>
+            );
+          }
+          return null;
+        })()}
 
         {/* Cover Photo or Branded Hero Banner */}
         <div className="rounded-3xl overflow-hidden mb-6 shadow-sm border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/50">

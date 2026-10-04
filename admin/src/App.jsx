@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck, Lock, LogOut, FileText,
-  FolderOpen, Sparkles, Bell, ArrowRight, CheckCircle2, KeyRound, Wifi
+  FolderOpen, Sparkles, Bell, ArrowRight, CheckCircle2, KeyRound, Wifi,
+  Vote
 } from 'lucide-react';
 import ArticleEditor from './components/ArticleEditor';
 import ArticlesTable from './components/ArticlesTable';
 import BrandingSettings from './components/BrandingSettings';
 import NotificationSender from './components/NotificationSender';
+import PollsManager from './components/PollsManager';
 
 // One-way SHA-256 cryptographic hash (Cannot be reversed or decoded back to plain text)
 const MASTER_KEY_HASH = 'f7760d6b76aa1ad0f33caf137d2777730cf57d2e9c8b5e8c9663c574a5fcaf2e';
@@ -210,6 +212,18 @@ export default function App() {
               <Bell className="w-3.5 h-3.5 text-sky-400" />
               <span className="hidden sm:inline">Alerts</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('polls')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors ${
+                activeTab === 'polls'
+                  ? 'bg-indigo-600 text-white'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <Vote className="w-3.5 h-3.5 text-violet-400" />
+              <span className="hidden sm:inline">Polls</span>
+            </button>
           </nav>
 
           {/* Status badge & Lock */}
@@ -256,6 +270,8 @@ export default function App() {
         {activeTab === 'branding' && <BrandingSettings />}
 
         {activeTab === 'notifications' && <NotificationSender />}
+
+        {activeTab === 'polls' && <PollsManager />}
       </main>
     </div>
   );

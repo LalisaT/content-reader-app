@@ -66,6 +66,7 @@ export default function App() {
   const [notifications, setNotifications] = useState(() => notificationService.getNotifications());
   const [luxuryNotification, setLuxuryNotification] = useState(null);
   const [updateInfo, setUpdateInfo] = useState(null);
+  const [polls, setPolls] = useState([]);
 
   // Navigate seamlessly to a specific article from notification or deep link
   const navigateToArticle = (articleId, articleData = null) => {
@@ -116,6 +117,7 @@ export default function App() {
     let unsubNotifications = () => {};
     let unsubConfig = () => {};
     let unsubCategories = () => {};
+    let unsubPolls = () => {};
 
     const timer = setTimeout(() => {
       // Notification Service Init & Deep Linking Handler
@@ -174,6 +176,12 @@ export default function App() {
           setCategories(cats);
         }
       });
+
+      unsubPolls = firestoreSyncService.subscribePolls((cloudPolls) => {
+        if (cloudPolls) {
+          setPolls(cloudPolls);
+        }
+      });
     }, 100);
 
     const handleNotifUpdate = (e) => {
@@ -195,6 +203,7 @@ export default function App() {
       unsubArticles();
       unsubConfig();
       unsubCategories();
+      unsubPolls();
     };
   }, []);
 
@@ -516,6 +525,8 @@ export default function App() {
                 onToggleBookmark={handleToggleBookmark}
                 onOpenArticle={handleOpenArticle}
                 onExploreCategory={handleSelectCategoryFromExplore}
+                polls={polls}
+                onVotePoll={(pollId, optionId) => firestoreSyncService.votePoll(pollId, optionId)}
               />
             )}
 

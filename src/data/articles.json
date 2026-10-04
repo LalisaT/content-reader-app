@@ -1,5 +1,27 @@
 [
   {
+    "id": "music-lofi-focus-1",
+    "title": "🎵 Deep Focus & Flow State: Lofi Beats for Study & Reading",
+    "category": "Music",
+    "categoryIcon": "Music",
+    "readTime": "Live Stream",
+    "date": "Oct 4, 2026",
+    "author": "Lofi Girl",
+    "artist": "Lofi Girl",
+    "duration": "Live 24/7",
+    "youtubeUrl": "https://www.youtube.com/watch?v=jfKfPfyJRdk",
+    "youtubeId": "jfKfPfyJRdk",
+    "isPremium": false,
+    "image": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80",
+    "summary": "Gentle, non-intrusive instrumental melodies specifically curated to boost reading comprehension, reduce anxiety, and keep you in deep flow state.",
+    "keyTakeaways": [
+      "Instrumental beats without lyrics prevent cognitive overload during reading.",
+      "Embedded via Official YouTube Player API in full accordance with Google Developer Policies.",
+      "Playback pauses automatically if you exit the app or turn off your screen."
+    ],
+    "content": "### 🎧 The Science of Music and Reading Comprehension\n\nListening to the right auditory textures while reading or studying can dramatically suppress external auditory distractions and stimulate cognitive endurance.\n\n### 🎼 Why Low-Fidelity Beats Enhance Concentration\n- **No Lyric Interference:** Songs with speech-like lyrics compete with your brain's phonological loop—the internal voice you use to read text. Instrumental lofi eliminates this conflict.\n- **Consistent Rhythm:** The steady 70–90 BPM tempo mirrors the resting human heartbeat, triggering parasympathetic relaxation.\n- **White Noise Warmth:** Gentle analog vinyl crackles and tape flutter create an acoustic blanket that masks sudden environmental noises.\n\n> [!TIP]\n> Keep the volume between 30% and 40%. The music should serve as an ambient cushion behind your thoughts, not a headline concert.\n\n### ⚖️ Official Legal YouTube Embed Rules\nThis music experience uses the **Official YouTube IFrame API** in strict compliance with Google Developer Policies:\n1. **Screen-Off Pausing:** In compliance with YouTube terms, audio pauses immediately when leaving the app or turning off the screen.\n2. **No Downloads:** Zero stream-ripping or offline downloads are permitted.\n3. **Unobstructed Viewport:** No ads are ever placed over the video player."
+  },
+  {
     "id": "iptv-sports-1",
     "title": "⚡ 1-Click IPTV M3U & Live Sports Playlist Links (2026 Updated)",
     "category": "Tech & AI",

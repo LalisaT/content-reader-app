@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import CategoryChips from '../components/CategoryChips';
 import ArticleCard from '../components/ArticleCard';
-import { Sparkles, TrendingUp, Compass, ArrowRight } from 'lucide-react';
+import CommunityPollCard from '../components/CommunityPollCard';
+import { Sparkles, TrendingUp, Compass, ArrowRight, Music, Headphones, ShieldCheck } from 'lucide-react';
 
 export default function HomeFeed({
   articles,
@@ -12,10 +13,14 @@ export default function HomeFeed({
   onToggleBookmark,
   onOpenArticle,
   onExploreCategory,
+  polls = [],
+  onVotePoll,
 }) {
   const [localCategory, setLocalCategory] = useState('All');
   const currentCategory = onSelectCategory ? selectedCategory : localCategory;
   const handleCategoryChange = onSelectCategory || setLocalCategory;
+
+  const activePoll = polls.find((p) => p.isActive !== false);
 
   // Filter articles based on active category
   const filteredArticles = currentCategory === 'All'
@@ -35,6 +40,41 @@ export default function HomeFeed({
         activeCategory={currentCategory}
         onSelectCategory={handleCategoryChange}
       />
+
+      {/* Special Dedicated Music Category Welcome Banner */}
+      {currentCategory === 'Music' && (
+        <div className="px-4 mb-4">
+          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-pink-950/60 via-purple-950/40 to-slate-900 border border-pink-800/60 text-white shadow-lg shadow-pink-900/10">
+            <div className="flex items-center space-x-3 mb-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-white shadow-md shadow-pink-500/30 shrink-0">
+                <Music className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-pink-300 bg-pink-950/90 px-2 py-0.5 rounded-full border border-pink-700/60">
+                  Official YouTube Music Hub
+                </span>
+                <h3 className="text-sm sm:text-base font-extrabold text-white mt-0.5">
+                  Relaxing Tracks & Focus Soundscapes
+                </h3>
+              </div>
+            </div>
+            <p className="text-xs text-pink-100/80 leading-relaxed mb-3">
+              Stream legal YouTube music tracks curated for deep study and relaxation. Background playback is disabled on screen off and downloading is strictly prohibited per YouTube terms.
+            </p>
+            <div className="flex items-center space-x-2 text-[10px] text-pink-300 font-semibold bg-black/20 p-2 rounded-xl">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span>100% Legal YouTube Embed • AdMob banners hidden during video playback</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Community Poll Vote Card (if an active poll exists) */}
+      {activePoll && (
+        <div className="px-4 mb-4">
+          <CommunityPollCard poll={activePoll} onVoted={onVotePoll} />
+        </div>
+      )}
 
       {/* Featured Hero Story (shown on 'All' tab) */}
       {selectedCategory === 'All' && featuredArticle && (

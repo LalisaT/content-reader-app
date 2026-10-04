@@ -11,6 +11,7 @@ const STORAGE_KEYS = {
   CUSTOM_ARTICLES: 'tippulse_custom_articles',
   CACHED_ARTICLES: 'tippulse_cached_all_articles',
   DELETED_ARTICLES: 'tippulse_deleted_articles',
+  VOTED_POLLS: 'tippulse_voted_polls',
 };
 
 export const storageService = {
@@ -209,5 +210,37 @@ export const storageService = {
     } catch {
       return [];
     }
+  },
+
+  // Community Poll Votes
+  getVotedPolls: () => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.VOTED_POLLS);
+      return data ? JSON.parse(data) : {};
+    } catch {
+      return {};
+    }
+  },
+
+  saveVotedPoll: (pollId, optionId) => {
+    try {
+      const existing = storageService.getVotedPolls();
+      const updated = { ...existing, [String(pollId)]: String(optionId) };
+      localStorage.setItem(STORAGE_KEYS.VOTED_POLLS, JSON.stringify(updated));
+      return updated;
+    } catch (e) {
+      console.warn('Could not save voted poll:', e);
+      return {};
+    }
+  },
+
+  hasUserVoted: (pollId) => {
+    const voted = storageService.getVotedPolls();
+    return Boolean(voted[String(pollId)]);
+  },
+
+  getUserVotedOption: (pollId) => {
+    const voted = storageService.getVotedPolls();
+    return voted[String(pollId)] || null;
   },
 };

@@ -1,5 +1,8 @@
 import React from 'react';
-import { Sparkles, Clock, Calendar, User, Tag, Lock, Lightbulb, AlertTriangle, ExternalLink, Wifi } from 'lucide-react';
+import {
+  Sparkles, Clock, Calendar, User, Tag, Lock, Lightbulb,
+  AlertTriangle, ExternalLink, Wifi, Music, Youtube, Play
+} from 'lucide-react';
 
 export default function RichPreview({ article }) {
   if (!article) return null;
@@ -206,7 +209,11 @@ export default function RichPreview({ article }) {
               <div className="flex-1 flex flex-col justify-between min-w-0">
                 <div>
                   <div className="flex items-center space-x-1.5 text-[11px] mb-1">
-                    <span className="font-semibold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-800/40">
+                    <span className={`font-semibold px-2 py-0.5 rounded-md border ${
+                      article.category === 'Music'
+                        ? 'text-pink-400 bg-pink-950/60 border-pink-800/40'
+                        : 'text-indigo-400 bg-indigo-950/60 border-indigo-800/40'
+                    }`}>
                       {article.category || 'Productivity'}
                     </span>
                     <span className="text-slate-500">•</span>
@@ -295,6 +302,32 @@ export default function RichPreview({ article }) {
                 <span>{article.date || 'Today'}</span>
               </span>
             </div>
+
+            {/* YouTube Music Player Preview Mockup */}
+            {article.youtubeId && (
+              <div className="rounded-2xl overflow-hidden bg-slate-900 border border-pink-800/60 shadow-lg">
+                <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
+                  <img
+                    src={`https://img.youtube.com/vi/${article.youtubeId}/hqdefault.jpg`}
+                    alt="YouTube Video Preview"
+                    className="w-full h-full object-cover opacity-80"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <div className="w-11 h-11 rounded-full bg-rose-600/90 hover:bg-rose-600 text-white flex items-center justify-center shadow-lg transition-transform active:scale-95">
+                      <Play className="w-5 h-5 fill-white ml-0.5" />
+                    </div>
+                  </div>
+                  <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between text-[10px] text-white bg-black/70 backdrop-blur-xs px-2.5 py-1 rounded-lg">
+                    <span className="flex items-center space-x-1 font-bold truncate">
+                      <Music className="w-3 h-3 text-pink-400 shrink-0" />
+                      <span className="truncate">{article.artist || article.author || 'Music Track'}</span>
+                    </span>
+                    <span className="text-rose-300 font-bold shrink-0 ml-2">Official Legal Player</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Summary Card */}
             {article.summary && (

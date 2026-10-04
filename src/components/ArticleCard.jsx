@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Bookmark, Lock, ArrowUpRight, Zap, Cpu, Heart, DollarSign, Brain } from 'lucide-react';
+import { Clock, Bookmark, Lock, ArrowUpRight, Zap, Cpu, Heart, DollarSign, Brain, Music, Headphones } from 'lucide-react';
 
 const ICON_MAP = {
   Zap,
@@ -7,10 +7,13 @@ const ICON_MAP = {
   Heart,
   DollarSign,
   Brain,
+  Music,
+  Headphones,
 };
 
 export default function ArticleCard({ article, isBookmarked, onToggleBookmark, onOpenArticle }) {
-  const IconComponent = ICON_MAP[article.categoryIcon] || Zap;
+  const isMusic = article.category === 'Music' || Boolean(article.youtubeId);
+  const IconComponent = isMusic ? Music : (ICON_MAP[article.categoryIcon] || Zap);
 
   return (
     <div 
@@ -27,7 +30,13 @@ export default function ArticleCard({ article, isBookmarked, onToggleBookmark, o
             loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
-          {article.isPremium && (
+          {isMusic && (
+            <div className="absolute top-1.5 left-1.5 bg-gradient-to-r from-pink-600 to-rose-600 text-white font-extrabold text-[9px] px-1.5 py-0.5 rounded shadow-sm flex items-center space-x-1">
+              <Music className="w-2.5 h-2.5" />
+              <span>MUSIC</span>
+            </div>
+          )}
+          {article.isPremium && !isMusic && (
             <div className="absolute top-1.5 left-1.5 bg-amber-500 text-slate-950 font-extrabold text-[9px] px-1.5 py-0.5 rounded shadow-sm flex items-center space-x-0.5">
               <Lock className="w-2.5 h-2.5" />
               <span>PRO</span>

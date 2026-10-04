@@ -15,7 +15,9 @@ import {
   Smile,
   Sun,
   Target,
-  Coffee
+  Coffee,
+  Music,
+  Headphones
 } from 'lucide-react';
 
 const ICON_COMPONENTS = {
@@ -35,6 +37,8 @@ const ICON_COMPONENTS = {
   Sun,
   Target,
   Coffee,
+  Music,
+  Headphones
 };
 
 export default function CategoryChips({

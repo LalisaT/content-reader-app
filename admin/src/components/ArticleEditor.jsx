@@ -4,7 +4,8 @@ import {
   Lock, CheckCircle2, AlertCircle, Plus, Trash2,
   Heading1, Heading2, Heading3, Bold, Italic,
   Quote, List, ListOrdered, Lightbulb, AlertTriangle, Link as LinkIcon,
-  Wifi, Bell, MousePointerClick, ExternalLink, X, Upload, Loader2, RefreshCw
+  Wifi, Bell, MousePointerClick, ExternalLink, X, Upload, Loader2, RefreshCw,
+  Music, Headphones, Youtube, ShieldAlert
 } from 'lucide-react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseAdmin';
@@ -18,9 +19,18 @@ const PRESET_IMAGES = [
   { label: 'Finance & Money', url: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80' },
   { label: 'Books & Mind', url: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80' },
   { label: 'Coffee & Routine', url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80' },
+  { label: 'Music & Focus', url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80' },
 ];
 
-const DEFAULT_CATEGORIES = ['Productivity', 'Tech & AI', 'Health', 'Finance', 'Mindset', 'Life Hacks'];
+const DEFAULT_CATEGORIES = ['Productivity', 'Tech & AI', 'Health', 'Finance', 'Mindset', 'Life Hacks', 'Music'];
+
+export function extractYouTubeId(urlOrId) {
+  if (!urlOrId) return '';
+  const trimmed = String(urlOrId).trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+  const match = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+  return match ? match[1] : '';
+}
 
 export default function ArticleEditor({ editingArticle, onArticleSaved, onCancelEdit }) {
   const [title, setTitle] = useState('');
@@ -33,6 +43,11 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
   const [isPremium, setIsPremium] = useState(false);
   const [needsData, setNeedsData] = useState(false);
   const [broadcastNotification, setBroadcastNotification] = useState(true);
+
+  // YouTube / Music Category State
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [artist, setArtist] = useState('');
+  const [duration, setDuration] = useState('');
 
   // Photo Upload & Featured Banner Tabs
   const [imageTab, setImageTab] = useState('upload'); // 'upload' | 'presets' | 'url'
@@ -75,6 +90,9 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
       setContent(editingArticle.content || '');
       setIsPremium(Boolean(editingArticle.isPremium));
       setNeedsData(Boolean(editingArticle.needsData || editingArticle.requiresOnline));
+      setYoutubeUrl(editingArticle.youtubeUrl || editingArticle.youtubeId || '');
+      setArtist(editingArticle.artist || '');
+      setDuration(editingArticle.duration || '');
     } else {
       resetForm();
     }
@@ -90,6 +108,9 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
     setContent('');
     setIsPremium(false);
     setNeedsData(false);
+    setYoutubeUrl('');
+    setArtist('');
+    setDuration('');
   };
 
   const showToast = (msg, isError = false) => {
@@ -264,11 +285,13 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
       const articleId = editingArticle?.id || `tip-${Date.now()}`;
       const nowFormatted = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date());
 
+      const ytId = extractYouTubeId(youtubeUrl);
+
       const articlePayload = {
         id: articleId,
         title: title.trim(),
         category: category.trim(),
-        author: author.trim() || 'TipPulse Editor',
+        author: author.trim() || (category === 'Music' && artist.trim() ? artist.trim() : 'TipPulse Editor'),
         image: image.trim(),
         summary: summary.trim(),
         keyTakeaways: takeaways.filter((t) => t.trim().length > 0),
@@ -276,10 +299,14 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
         isPremium: Boolean(isPremium),
         needsData: Boolean(needsData),
         requiresOnline: Boolean(needsData),
-        readTime: calculateReadTime(content),
+        readTime: category === 'Music' && duration.trim() ? duration.trim() : calculateReadTime(content),
         date: editingArticle?.date || nowFormatted,
         updatedAt: Date.now(),
         createdAt: editingArticle?.createdAt || Date.now(),
+        youtubeUrl: youtubeUrl.trim() || null,
+        youtubeId: ytId || null,
+        artist: artist.trim() || null,
+        duration: duration.trim() || null,
       };
 
       // 1. Save to Cloud Firestore
@@ -297,7 +324,7 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
             category: category.trim(),
             imageUrl: image.trim() || null,
             createdAt: Date.now(),
-            author: author.trim()
+            author: author.trim() || (category === 'Music' && artist.trim() ? artist.trim() : 'TipPulse Editor')
           });
         } catch (notifErr) {
           console.warn('Notification broadcast warning:', notifErr);
@@ -318,7 +345,7 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
   const currentPreviewData = {
     title: title || 'Title of the Tip',
     category,
-    author: author || 'TipPulse Editor',
+    author: author || (category === 'Music' && artist.trim() ? artist.trim() : 'TipPulse Editor'),
     image,
     summary,
     keyTakeaways: takeaways,
@@ -326,8 +353,12 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
     isPremium,
     needsData,
     requiresOnline: needsData,
-    readTime: calculateReadTime(content),
+    readTime: category === 'Music' && duration.trim() ? duration.trim() : calculateReadTime(content),
     date: 'Today',
+    youtubeUrl,
+    youtubeId: extractYouTubeId(youtubeUrl),
+    artist,
+    duration,
   };
 
   return (
@@ -461,6 +492,149 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
                 />
               </div>
             </div>
+
+            {/* Dedicated Music / YouTube Embed Section */}
+            {(category === 'Music' || youtubeUrl) && (
+              <div className="bg-gradient-to-br from-pink-950/40 via-purple-950/20 to-slate-900 border border-pink-800/60 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-pink-600/30 border border-pink-500/40 flex items-center justify-center text-pink-400 shadow-sm">
+                      <Music className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-black text-white flex items-center space-x-2">
+                        <span>Official YouTube Music Track</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/40 uppercase">
+                          Legal Embed
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400">Embed legal study & focus audio via official YouTube IFrame API</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-rose-950/60 border border-rose-800/80 text-rose-400 text-xs font-bold">
+                    <Youtube className="w-4 h-4 text-rose-500" />
+                    <span>YouTube API</span>
+                  </div>
+                </div>
+
+                {/* ⚠️ IMPORTANT: 3 Strict Rules Notice */}
+                <div className="p-3.5 rounded-xl bg-rose-950/60 border border-rose-800/70 text-xs space-y-2">
+                  <div className="font-extrabold text-rose-200 flex items-center space-x-1.5">
+                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>⚠️ 3 Strict Google Developer Rules (Enforced to Avoid App Ban)</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-[11px]">
+                    <div className="p-2 rounded-lg bg-black/40 border border-rose-900/60 text-rose-300/90">
+                      <strong className="block text-rose-200 font-bold mb-0.5">❌ 1. No Screen-Off Play</strong>
+                      Audio automatically pauses when phone screen is locked or app is left.
+                    </div>
+                    <div className="p-2 rounded-lg bg-black/40 border border-rose-900/60 text-rose-300/90">
+                      <strong className="block text-rose-200 font-bold mb-0.5">❌ 2. No Downloading</strong>
+                      Zero stream-ripping or download options allowed or provided.
+                    </div>
+                    <div className="p-2 rounded-lg bg-black/40 border border-rose-900/60 text-rose-300/90">
+                      <strong className="block text-rose-200 font-bold mb-0.5">❌ 3. No Ad Overlays</strong>
+                      AdMob banners are hidden automatically so ads never cover video player.
+                    </div>
+                  </div>
+                </div>
+
+                {/* YouTube Link / ID Input */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    YouTube Video URL or Video ID <span className="text-rose-400">*</span>
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={youtubeUrl}
+                      onChange={(e) => setYoutubeUrl(e.target.value)}
+                      placeholder="e.g. https://www.youtube.com/watch?v=jfKfPfyJRdk or jfKfPfyJRdk"
+                      className="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500 font-mono"
+                    />
+                    {extractYouTubeId(youtubeUrl) && (
+                      <span className="px-2.5 py-1.5 rounded-xl bg-emerald-950/80 border border-emerald-800 text-[10px] font-bold text-emerald-400 shrink-0 flex items-center space-x-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        <span>Valid: {extractYouTubeId(youtubeUrl)}</span>
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Accepts normal YouTube links, youtu.be short links, or direct 11-character video IDs.
+                  </p>
+                </div>
+
+                {/* Artist & Duration Inputs */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Artist / Channel Name</label>
+                    <input
+                      type="text"
+                      value={artist}
+                      onChange={(e) => setArtist(e.target.value)}
+                      placeholder="e.g. Lofi Girl / Chillhop"
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1">Track Duration / Type</label>
+                    <input
+                      type="text"
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                      placeholder="e.g. 3:45 or 24/7 Live Stream"
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Quick Presets for Admin Testing */}
+                <div className="pt-1 border-t border-slate-800">
+                  <div className="text-[10px] font-bold text-slate-400 mb-1.5">⚡ Quick Presets (Click to Load):</div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setYoutubeUrl('https://www.youtube.com/watch?v=jfKfPfyJRdk');
+                        if (!title) setTitle('Lofi Hip Hop Radio – Beats to Relax/Study to');
+                        if (!artist) setArtist('Lofi Girl');
+                        if (!duration) setDuration('Live Stream');
+                        if (!summary) setSummary('Gentle lofi beats and soothing melodies for deep reading, study sessions, and mindful focus.');
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-pink-950/60 border border-slate-800 hover:border-pink-500/50 text-[10px] text-slate-300 transition-colors flex items-center space-x-1"
+                    >
+                      <span>☕ Lofi Girl Beats</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setYoutubeUrl('https://www.youtube.com/watch?v=4xDzrJKXOOY');
+                        if (!title) setTitle('Synthwave Radio – Chill Synth & Atmospheric Beats');
+                        if (!artist) setArtist('Lofi Girl Synth');
+                        if (!duration) setDuration('Live Stream');
+                        if (!summary) setSummary('Uplifting nostalgic synthwave rhythms to power through evening coding and focused reading.');
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-pink-950/60 border border-slate-800 hover:border-pink-500/50 text-[10px] text-slate-300 transition-colors flex items-center space-x-1"
+                    >
+                      <span>🌌 Synthwave Chill</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setYoutubeUrl('https://www.youtube.com/watch?v=WPni755-Krg');
+                        if (!title) setTitle('Calm Piano & Gentle Rain for Maximum Concentration');
+                        if (!artist) setArtist('Ambient Piano');
+                        if (!duration) setDuration('3:00:00');
+                        if (!summary) setSummary('Peaceful piano soundscapes and gentle rain textures designed for distraction-free reading.');
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-pink-950/60 border border-slate-800 hover:border-pink-500/50 text-[10px] text-slate-300 transition-colors flex items-center space-x-1"
+                    >
+                      <span>🎹 Ambient Piano</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Featured Banner Image Uploader & Presets */}
             <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-700 space-y-3">

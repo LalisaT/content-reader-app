@@ -6,14 +6,15 @@ const CATEGORIES_KEY = 'tippulse_custom_categories';
 export const DEFAULT_CATEGORIES = [
   { id: 'Productivity', label: 'Productivity', icon: 'Zap', gradient: 'from-amber-500 to-orange-600' },
   { id: 'Tech & AI', label: 'Tech & AI', icon: 'Cpu', gradient: 'from-blue-600 to-cyan-600' },
+  { id: 'Music', label: 'Music', icon: 'Music', gradient: 'from-fuchsia-600 to-pink-600', isMusicCategory: true },
   { id: 'Health', label: 'Health', icon: 'Heart', gradient: 'from-rose-500 to-pink-600' },
   { id: 'Finance', label: 'Finance', icon: 'DollarSign', gradient: 'from-emerald-600 to-teal-600' },
   { id: 'Mindset', label: 'Mindset', icon: 'Brain', gradient: 'from-purple-600 to-indigo-600' },
 ];
 
 export const AVAILABLE_ICONS = [
-  'Zap', 'Cpu', 'Heart', 'DollarSign', 'Brain', 'Flame', 'Sparkles', 'Rocket', 
-  'Compass', 'Globe', 'BookOpen', 'Award', 'Smile', 'Sun', 'Target', 'Coffee'
+  'Zap', 'Cpu', 'Music', 'Headphones', 'Heart', 'DollarSign', 'Brain', 'Flame', 'Sparkles', 'Rocket', 
+  'Compass', 'Globe', 'BookOpen', 'Award', 'Smile', 'Sun', 'Target', 'Coffee', 'Radio', 'Disc'
 ];
 
 export const categoryService = {
