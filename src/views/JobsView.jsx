@@ -17,7 +17,8 @@ import {
   Layers,
   Globe,
   SlidersHorizontal,
-  GraduationCap
+  GraduationCap,
+  Video
 } from 'lucide-react';
 import JobDetailModal from '../components/JobDetailModal';
 import { storageService } from '../services/storageService';
@@ -173,14 +174,32 @@ export default function JobsView({
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-4 pb-safe-nav animate-in fade-in duration-200">
-      {/* Luxury Careers & Scholarships Hero Banner with Embedded Opacity Animation */}
+      {/* Luxury Careers & Scholarships Hero Banner with Embedded Interview Video Opacity Animation */}
       <div className="relative rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white p-6 sm:p-7 shadow-2xl border border-indigo-900/40 mb-6 overflow-hidden">
         {/* Ambient Hardware-Accelerated Opacity Breathing Orbs */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-amber-500/20 via-indigo-600/10 to-transparent rounded-full blur-3xl pointer-events-none animate-job-opacity-glow"></div>
         <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-gradient-to-tr from-indigo-500/25 via-purple-600/15 to-transparent rounded-full blur-2xl pointer-events-none animate-job-opacity-pulse"></div>
 
+        {/* Ambient Job Interview Video Background (Low Opacity) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 dark:opacity-25 mix-blend-screen">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover filter contrast-125 brightness-90 animate-interview-cam"
+            poster="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1200&q=80"
+          >
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-business-woman-talking-in-a-video-call-42880-large.mp4" type="video/mp4" />
+          </video>
+          {/* Subtle Video Scanline */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/10 to-transparent h-24 animate-interview-scan pointer-events-none"></div>
+          {/* Dark luxury vignette overlay so foreground text is high contrast */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-slate-950/40"></div>
+        </div>
+
         <div className="relative z-10">
-          {/* Header Badges with Live Opacity Pulse Indicator */}
+          {/* Header Badges (Radar Active removed) */}
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center space-x-2">
               <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center space-x-1.5 backdrop-blur-xs">
@@ -192,14 +211,11 @@ export default function JobsView({
               </span>
             </div>
 
-            {/* Live Radar Active Badge with Opacity Ping */}
-            <div className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 backdrop-blur-xs">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-job-beacon absolute inline-flex h-full w-full rounded-full bg-emerald-400"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
-              </span>
-              <span className="text-[9px] font-black tracking-wider uppercase text-emerald-300">
-                Radar Active
+            {/* Virtual Screening Atelier Tag */}
+            <div className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-400/25 text-indigo-300 backdrop-blur-xs">
+              <Video className="w-3 h-3 text-indigo-400" />
+              <span className="text-[9px] font-bold tracking-wider uppercase">
+                Virtual Screening
               </span>
             </div>
           </div>
@@ -211,59 +227,100 @@ export default function JobsView({
             Discover bespoke executive roles, presidential scholarship endowments, and high-yield fellowships with verified global organizations.
           </p>
 
-          {/* Embedded Opacity Animation Showcase Card */}
-          <div className="relative my-4 p-3.5 sm:p-4 rounded-2xl bg-white/[0.04] backdrop-blur-md border border-white/10 overflow-hidden shadow-inner group">
-            {/* Shimmer Light Beam with Opacity Wave */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute -inset-full bg-gradient-to-r from-transparent via-amber-400/15 to-transparent animate-job-shimmer"></div>
+          {/* Embedded Job Interview Video Showcase Card (Low Opacity Styling) */}
+          <div className="relative my-4 rounded-2xl bg-white/[0.04] backdrop-blur-md border border-white/10 overflow-hidden shadow-inner group">
+            {/* Low Opacity Interview Camera Feed Backdrop */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25">
+              <img
+                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80"
+                alt="Executive Interview"
+                className="w-full h-full object-cover filter brightness-90 contrast-125 animate-interview-cam"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/50 to-slate-950/90"></div>
             </div>
 
-            {/* Embedded Live Pulse Rings & Opportunity Ticker */}
-            <div className="relative z-10 flex items-center justify-between gap-3">
-              <div className="flex items-center space-x-3 min-w-0">
-                {/* Concentric Animated Opacity Rings & Glowing Core */}
-                <div className="relative flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/25 via-indigo-600/25 to-purple-600/20 border border-amber-400/40 flex items-center justify-center shadow-lg">
-                  <div className="absolute -inset-1 rounded-2xl border border-amber-400/30 animate-job-ring-opacity"></div>
-                  <div className="absolute inset-0 rounded-xl bg-amber-400/10 animate-job-opacity-pulse"></div>
-                  {currentHighlight.isScholarship ? (
-                    <GraduationCap className="w-5 h-5 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
-                  ) : (
-                    <Briefcase className="w-5 h-5 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
-                  )}
+            {/* Shimmer Light Beam with Opacity Wave */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute -inset-full bg-gradient-to-r from-transparent via-amber-400/10 to-transparent animate-job-shimmer"></div>
+            </div>
+
+            {/* Video Interview HUD & Opacity Animation Content */}
+            <div className="relative z-10 p-3.5 sm:p-4">
+              {/* Top Video HUD Bar */}
+              <div className="flex items-center justify-between gap-2 mb-2.5 pb-2 border-b border-white/10">
+                <div className="flex items-center space-x-2">
+                  {/* Blinking REC Indicator */}
+                  <div className="flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-interview-rec"></span>
+                    <span className="text-[9px] font-black tracking-widest uppercase text-rose-300">REC</span>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-slate-300 tracking-wider">
+                    00:14:38
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-semibold hidden xs:inline">• Virtual Interview Stream</span>
                 </div>
 
-                <div className="min-w-0">
-                  <div className="flex items-center space-x-2 mb-0.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-300 flex items-center space-x-1.5">
-                      <span className="relative flex h-1.5 w-1.5">
-                        <span className="animate-job-beacon absolute inline-flex h-full w-full rounded-full bg-amber-400"></span>
-                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
-                      </span>
-                      <span>{currentHighlight.badge}</span>
-                    </span>
-                    <span className="text-[9px] text-slate-400 font-medium hidden xs:inline">• Live Verification</span>
+                {/* Live Speech Waveform Equalizer & 1080p Badge */}
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-end space-x-0.5 h-3.5 px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+                    <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-1"></span>
+                    <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-2"></span>
+                    <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-3"></span>
+                    <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-4"></span>
+                    <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-2"></span>
                   </div>
-                  <div
-                    className={`text-xs sm:text-sm font-black text-white truncate transition-opacity duration-300 ${
-                      highlightVisible ? 'opacity-100' : 'opacity-20'
-                    }`}
-                  >
-                    {currentHighlight.title}
-                  </div>
-                  <div className="text-[10px] text-slate-300/80 truncate">
-                    {currentHighlight.subtitle}
-                  </div>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-amber-300 px-1.5 py-0.5 rounded bg-amber-400/10 border border-amber-400/20">
+                    1080p HD
+                  </span>
                 </div>
               </div>
 
-              {/* Endowment / Compensation Pill with Breathing Opacity */}
-              <div className="flex-shrink-0 text-right">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
-                  Endowment / Grant
-                </span>
-                <span className="text-xs sm:text-sm font-black text-amber-300 animate-job-opacity-pulse block">
-                  {currentHighlight.value}
-                </span>
+              {/* Interview Role Details & Camera Viewfinder */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center space-x-3 min-w-0">
+                  {/* Camera Viewfinder Icon with Autofocus Brackets */}
+                  <div className="relative flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/25 via-indigo-600/25 to-purple-600/20 border border-amber-400/40 flex items-center justify-center shadow-lg">
+                    <div className="absolute inset-1 border border-dashed border-amber-400/50 rounded-lg animate-job-opacity-pulse pointer-events-none"></div>
+                    {currentHighlight.isScholarship ? (
+                      <GraduationCap className="w-5 h-5 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
+                    ) : (
+                      <Video className="w-5 h-5 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center space-x-2 mb-0.5">
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-300 flex items-center space-x-1.5">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-job-beacon absolute inline-flex h-full w-full rounded-full bg-amber-400"></span>
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
+                        </span>
+                        <span>{currentHighlight.badge}</span>
+                      </span>
+                      <span className="text-[9px] text-slate-400 font-medium hidden xs:inline">• Direct Screening Active</span>
+                    </div>
+                    <div
+                      className={`text-xs sm:text-sm font-black text-white truncate transition-opacity duration-300 ${
+                        highlightVisible ? 'opacity-100' : 'opacity-20'
+                      }`}
+                    >
+                      {currentHighlight.title}
+                    </div>
+                    <div className="text-[10px] text-slate-300/80 truncate">
+                      {currentHighlight.subtitle}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Endowment / Compensation Pill with Breathing Opacity */}
+                <div className="flex-shrink-0 text-right">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
+                    Endowment / Grant
+                  </span>
+                  <span className="text-xs sm:text-sm font-black text-amber-300 animate-job-opacity-pulse block">
+                    {currentHighlight.value}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

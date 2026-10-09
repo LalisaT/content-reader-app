@@ -537,3 +537,79 @@ html.palette-slate .shadow-indigo-500\/30 {
 .animate-job-beacon {
   animation: jobBeaconPing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
+
+/* ==========================================================
+   JOB INTERVIEW VIDEO ANIMATION (LOW OPACITY EMBED)
+   ========================================================== */
+
+@keyframes interviewWave1 {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+
+@keyframes interviewWave2 {
+  0%, 100% { height: 14px; }
+  50% { height: 6px; }
+}
+
+@keyframes interviewWave3 {
+  0%, 100% { height: 8px; }
+  50% { height: 20px; }
+}
+
+@keyframes interviewWave4 {
+  0%, 100% { height: 18px; }
+  50% { height: 7px; }
+}
+
+@keyframes interviewRecBlink {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes interviewCameraPan {
+  0%, 100% {
+    transform: scale(1.03) translate(0%, 0%);
+  }
+  50% {
+    transform: scale(1.08) translate(-1%, -1.5%);
+  }
+}
+
+@keyframes interviewScanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(400%);
+  }
+}
+
+.animate-interview-wave-1 {
+  animation: interviewWave1 0.9s ease-in-out infinite;
+}
+
+.animate-interview-wave-2 {
+  animation: interviewWave2 0.7s ease-in-out infinite;
+}
+
+.animate-interview-wave-3 {
+  animation: interviewWave3 1.1s ease-in-out infinite;
+}
+
+.animate-interview-wave-4 {
+  animation: interviewWave4 0.85s ease-in-out infinite;
+}
+
+.animate-interview-rec {
+  animation: interviewRecBlink 1.2s ease-in-out infinite;
+}
+
+.animate-interview-cam {
+  animation: interviewCameraPan 18s ease-in-out infinite alternate;
+}
+
+.animate-interview-scan {
+  animation: interviewScanline 5s linear infinite;
+}
+
