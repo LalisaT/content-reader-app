@@ -248,7 +248,7 @@ export default function App() {
               }`}
             >
               <Briefcase className="w-3.5 h-3.5 text-amber-400" />
-              <span className="hidden sm:inline">Careers & Jobs</span>
+              <span className="hidden sm:inline">Careers & Scholarships</span>
             </button>
           </nav>
 

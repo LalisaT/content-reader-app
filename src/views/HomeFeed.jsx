@@ -132,22 +132,23 @@ export default function HomeFeed({
             onClick={onNavigateToJobs}
             className="group relative rounded-3xl p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-amber-500/30 text-white shadow-xl cursor-pointer hover:border-amber-400/50 transition-all overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-36 h-36 bg-amber-500/15 rounded-full blur-2xl pointer-events-none animate-job-opacity-glow"></div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3.5 min-w-0">
-                <div className="w-11 h-11 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0 shadow-md">
-                  <Briefcase className="w-5 h-5 text-amber-400" />
+                <div className="relative w-11 h-11 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0 shadow-md">
+                  <div className="absolute inset-0 rounded-2xl border border-amber-400/30 animate-job-ring-opacity"></div>
+                  <Briefcase className="w-5 h-5 text-amber-400 animate-job-opacity-pulse" />
                 </div>
                 <div className="min-w-0">
                   <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center space-x-1 mb-0.5">
                     <Sparkles className="w-3 h-3 text-amber-400 fill-amber-400/20" />
-                    <span>Executive Careers Atelier</span>
+                    <span>Executive Careers & Scholarships</span>
                   </span>
                   <h4 className="text-sm font-black text-white truncate group-hover:text-amber-200 transition-colors">
-                    Executive Vacancies & Leadership Roles
+                    Executive Vacancies & Scholarship Opportunities
                   </h4>
                   <p className="text-[11px] text-slate-300 truncate">
-                    Browse verified remote & global roles ($150k - $225k/yr)
+                    Browse verified executive roles & fully funded scholarships
                   </p>
                 </div>
               </div>

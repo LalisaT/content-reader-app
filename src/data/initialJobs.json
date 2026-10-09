@@ -1,5 +1,51 @@
 [
   {
+    "id": "scholarship-presidential-2026",
+    "title": "Global Presidential Scholarship & Research Fellowship",
+    "company": "Vanguard Global Academic Foundation",
+    "companyLogo": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=150&auto=format&fit=crop&q=80",
+    "department": "Scholarships & Advanced Fellowships",
+    "employmentType": "Endowed Fellowship",
+    "workplaceType": "Remote & Global",
+    "location": "Global Remote / Geneva & Cambridge",
+    "salaryRange": "$120,000 Fully Funded Grant / yr",
+    "experienceLevel": "Graduate / Post-Doc / Distinguished Innovator",
+    "summary": "Premier fully endowed 2026 scholarship and research fellowship supporting breakthrough developments in computational intelligence and sustainable technology.",
+    "description": "The Vanguard Global Academic Foundation is inviting applications for the 2026 Presidential Scholarship & Research Fellowship. This world-renowned endowment provides complete tuition, living stipends, compute clusters, and international symposium sponsorship for exceptional leaders.",
+    "responsibilities": [
+      "Conduct innovative research in artificial intelligence, open decentralized architectures, or digital humanities.",
+      "Collaborate with international research faculty and present bi-annual findings at global symposia.",
+      "Publish open peer-reviewed papers and mentor emerging fellowship scholars."
+    ],
+    "requirements": [
+      "Demonstrated academic excellence, published research, or outstanding open-source portfolio.",
+      "Strong proposal addressing ethical AI, scalable computing, or high-impact technologies.",
+      "Fluency in modern computing principles, mathematics, or computational science."
+    ],
+    "niceToHave": [
+      "Prior recognition in international Olympiads, hackathons, or academic fellowships.",
+      "Track record of public speaking or peer mentorship in technical communities."
+    ],
+    "benefits": [
+      "$120,000 annual tax-advantaged living stipend & research grant",
+      "Full coverage of international travel, accommodations, and academic conferences",
+      "Dedicated access to top-tier GPU compute clusters and research labs",
+      "Direct mentorship from senior foundation trustees and distinguished fellows"
+    ],
+    "skills": ["Frontier AI", "Research & Innovation", "Grant Proposal", "Computer Science", "Academic Writing"],
+    "applyType": "email",
+    "applyEmail": "fellowships@vanguardfoundation.example.com",
+    "applyUrl": "https://vanguardfoundation.example.com/presidential-scholarship",
+    "applyInstructions": "Submit your CV, a 2-page project/study statement, and two academic or industry recommendation letters.",
+    "deadline": "December 15, 2026",
+    "isFeatured": true,
+    "isUrgent": false,
+    "badgeText": "100% Fully Funded Scholarship",
+    "status": "active",
+    "createdAt": 1728475200000,
+    "updatedAt": 1728475200000
+  },
+  {
     "id": "job-apex-ai-arch",
     "title": "Principal AI & Systems Architect",
     "company": "Apex Global Labs",

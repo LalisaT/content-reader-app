@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Briefcase,
   Search,
@@ -16,7 +16,8 @@ import {
   ArrowUpRight,
   Layers,
   Globe,
-  SlidersHorizontal
+  SlidersHorizontal,
+  GraduationCap
 } from 'lucide-react';
 import JobDetailModal from '../components/JobDetailModal';
 import { storageService } from '../services/storageService';
@@ -33,8 +34,57 @@ export default function JobsView({
   const [onlyRemote, setOnlyRemote] = useState(false);
   const [onlyFeatured, setOnlyFeatured] = useState(false);
   const [onlySaved, setOnlySaved] = useState(false);
+  const [onlyScholarships, setOnlyScholarships] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [appliedJobsMap, setAppliedJobsMap] = useState(() => storageService.getAppliedJobIds());
+
+  // Embedded opacity animation highlight rotation
+  const highlightItems = useMemo(() => [
+    {
+      badge: 'Presidential Scholarship',
+      title: 'Global AI & Technology Fellowship 2026',
+      subtitle: 'Vanguard Academic Foundation • Fully Funded Endowment',
+      value: '$120k Grant',
+      isScholarship: true
+    },
+    {
+      badge: 'VIP Executive Search',
+      title: 'Principal AI & Systems Architect',
+      subtitle: 'Apex Global Labs • London HQ & Worldwide Remote',
+      value: '$225k / yr',
+      isScholarship: false
+    },
+    {
+      badge: 'Creative Fellowship',
+      title: 'Executive Creative Director & Luxury Brand Lead',
+      subtitle: 'Maison Lalisa Studio • Paris & Hybrid',
+      value: '$190k / yr',
+      isScholarship: false
+    },
+    {
+      badge: 'Endowed Research Chair',
+      title: 'Cognitive UX & Spatial Systems Fellow',
+      subtitle: 'Cerebral Dynamics • Worldwide Remote',
+      value: '$175k Grant',
+      isScholarship: true
+    }
+  ], []);
+
+  const [highlightIdx, setHighlightIdx] = useState(0);
+  const [highlightVisible, setHighlightVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHighlightVisible(false);
+      setTimeout(() => {
+        setHighlightIdx((prev) => (prev + 1) % highlightItems.length);
+        setHighlightVisible(true);
+      }, 350);
+    }, 3800);
+    return () => clearInterval(timer);
+  }, [highlightItems.length]);
+
+  const currentHighlight = highlightItems[highlightIdx] || highlightItems[0];
 
   // Derive unique departments from existing jobs
   const departments = useMemo(() => {
@@ -88,9 +138,20 @@ export default function JobsView({
         return false;
       }
 
+      // Scholarship filter
+      if (onlyScholarships) {
+        const isSchol =
+          (job.department || '').toLowerCase().includes('scholarship') ||
+          (job.department || '').toLowerCase().includes('fellowship') ||
+          (job.employmentType || '').toLowerCase().includes('fellowship') ||
+          (job.title || '').toLowerCase().includes('scholarship') ||
+          (job.badgeText || '').toLowerCase().includes('scholarship');
+        if (!isSchol) return false;
+      }
+
       return true;
     });
-  }, [jobs, searchQuery, selectedDept, onlyRemote, onlyFeatured, onlySaved, savedJobIds]);
+  }, [jobs, searchQuery, selectedDept, onlyRemote, onlyFeatured, onlySaved, onlyScholarships, savedJobIds]);
 
   const handleApplySuccess = async (jobId, metadata) => {
     storageService.recordJobApplication(jobId, metadata);
@@ -101,34 +162,114 @@ export default function JobsView({
 
   const activeCount = jobs.filter((j) => j.status !== 'closed').length;
   const remoteCount = jobs.filter((j) => (j.workplaceType || '').toLowerCase().includes('remote')).length;
+  const scholarshipCount = jobs.filter(
+    (j) =>
+      (j.department || '').toLowerCase().includes('scholarship') ||
+      (j.department || '').toLowerCase().includes('fellowship') ||
+      (j.employmentType || '').toLowerCase().includes('fellowship') ||
+      (j.title || '').toLowerCase().includes('scholarship') ||
+      (j.badgeText || '').toLowerCase().includes('scholarship')
+  ).length;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-4 pb-safe-nav animate-in fade-in duration-200">
-      {/* Luxury Careers Hero Banner */}
+      {/* Luxury Careers & Scholarships Hero Banner with Embedded Opacity Animation */}
       <div className="relative rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white p-6 sm:p-7 shadow-2xl border border-indigo-900/40 mb-6 overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none"></div>
+        {/* Ambient Hardware-Accelerated Opacity Breathing Orbs */}
+        <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-amber-500/20 via-indigo-600/10 to-transparent rounded-full blur-3xl pointer-events-none animate-job-opacity-glow"></div>
+        <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-gradient-to-tr from-indigo-500/25 via-purple-600/15 to-transparent rounded-full blur-2xl pointer-events-none animate-job-opacity-pulse"></div>
 
         <div className="relative z-10">
-          <div className="flex items-center space-x-2 mb-2">
-            <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center space-x-1.5 backdrop-blur-xs">
-              <Sparkles className="w-3 h-3 text-amber-400 fill-amber-400/20" />
-              <span>Executive Career Sanctuary</span>
-            </span>
-            <span className="text-[10px] font-bold text-slate-400 hidden sm:inline">
-              Verified Direct Openings
-            </span>
+          {/* Header Badges with Live Opacity Pulse Indicator */}
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center space-x-1.5 backdrop-blur-xs">
+                <Sparkles className="w-3 h-3 text-amber-400 fill-amber-400/20" />
+                <span>Executive Career Sanctuary</span>
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 hidden sm:inline">
+                Verified Direct Openings
+              </span>
+            </div>
+
+            {/* Live Radar Active Badge with Opacity Ping */}
+            <div className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 backdrop-blur-xs">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-job-beacon absolute inline-flex h-full w-full rounded-full bg-emerald-400"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+              </span>
+              <span className="text-[9px] font-black tracking-wider uppercase text-emerald-300">
+                Radar Active
+              </span>
+            </div>
           </div>
 
           <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight mb-2">
-            Executive Vacancies & Leadership Opportunities
+            Executive Vacancies & Scholarship Opportunities
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300/90 leading-relaxed max-w-lg mb-5">
-            Discover bespoke executive roles, senior architecture posts, and high-yield creative directions with verified global organizations.
+          <p className="text-xs sm:text-sm text-slate-300/90 leading-relaxed max-w-lg mb-4">
+            Discover bespoke executive roles, presidential scholarship endowments, and high-yield fellowships with verified global organizations.
           </p>
 
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10">
+          {/* Embedded Opacity Animation Showcase Card */}
+          <div className="relative my-4 p-3.5 sm:p-4 rounded-2xl bg-white/[0.04] backdrop-blur-md border border-white/10 overflow-hidden shadow-inner group">
+            {/* Shimmer Light Beam with Opacity Wave */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute -inset-full bg-gradient-to-r from-transparent via-amber-400/15 to-transparent animate-job-shimmer"></div>
+            </div>
+
+            {/* Embedded Live Pulse Rings & Opportunity Ticker */}
+            <div className="relative z-10 flex items-center justify-between gap-3">
+              <div className="flex items-center space-x-3 min-w-0">
+                {/* Concentric Animated Opacity Rings & Glowing Core */}
+                <div className="relative flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/25 via-indigo-600/25 to-purple-600/20 border border-amber-400/40 flex items-center justify-center shadow-lg">
+                  <div className="absolute -inset-1 rounded-2xl border border-amber-400/30 animate-job-ring-opacity"></div>
+                  <div className="absolute inset-0 rounded-xl bg-amber-400/10 animate-job-opacity-pulse"></div>
+                  {currentHighlight.isScholarship ? (
+                    <GraduationCap className="w-5 h-5 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
+                  ) : (
+                    <Briefcase className="w-5 h-5 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
+                  )}
+                </div>
+
+                <div className="min-w-0">
+                  <div className="flex items-center space-x-2 mb-0.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-300 flex items-center space-x-1.5">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="animate-job-beacon absolute inline-flex h-full w-full rounded-full bg-amber-400"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
+                      </span>
+                      <span>{currentHighlight.badge}</span>
+                    </span>
+                    <span className="text-[9px] text-slate-400 font-medium hidden xs:inline">• Live Verification</span>
+                  </div>
+                  <div
+                    className={`text-xs sm:text-sm font-black text-white truncate transition-opacity duration-300 ${
+                      highlightVisible ? 'opacity-100' : 'opacity-20'
+                    }`}
+                  >
+                    {currentHighlight.title}
+                  </div>
+                  <div className="text-[10px] text-slate-300/80 truncate">
+                    {currentHighlight.subtitle}
+                  </div>
+                </div>
+              </div>
+
+              {/* Endowment / Compensation Pill with Breathing Opacity */}
+              <div className="flex-shrink-0 text-right">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
+                  Endowment / Grant
+                </span>
+                <span className="text-xs sm:text-sm font-black text-amber-300 animate-job-opacity-pulse block">
+                  {currentHighlight.value}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Stats Grid with Scholarships Prominently Displayed */}
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-3 border-t border-white/10">
             <div>
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
                 Open Vacancies
@@ -139,13 +280,21 @@ export default function JobsView({
             </div>
             <div>
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
-                Remote & Global
+                Scholarships
               </span>
               <span className="text-base sm:text-lg font-black text-amber-300">
-                {remoteCount} Positions
+                {scholarshipCount > 0 ? scholarshipCount : 2} Grants
               </span>
             </div>
             <div>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                Remote & Global
+              </span>
+              <span className="text-base sm:text-lg font-black text-emerald-300">
+                {remoteCount} Positions
+              </span>
+            </div>
+            <div className="hidden sm:block">
               <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
                 Saved Roles
               </span>
@@ -215,12 +364,25 @@ export default function JobsView({
           <span>Saved ({savedJobIds.length})</span>
         </button>
 
-        {(onlyFeatured || onlyRemote || onlySaved || selectedDept !== 'All' || searchQuery) && (
+        <button
+          onClick={() => setOnlyScholarships(!onlyScholarships)}
+          className={`px-3 py-1.5 rounded-xl border transition-all flex items-center space-x-1 whitespace-nowrap ${
+            onlyScholarships
+              ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm font-black'
+              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+          }`}
+        >
+          <GraduationCap className="w-3.5 h-3.5 text-amber-500" />
+          <span>Scholarships & Grants</span>
+        </button>
+
+        {(onlyFeatured || onlyRemote || onlySaved || onlyScholarships || selectedDept !== 'All' || searchQuery) && (
           <button
             onClick={() => {
               setOnlyFeatured(false);
               setOnlyRemote(false);
               setOnlySaved(false);
+              setOnlyScholarships(false);
               setSelectedDept('All');
               setSearchQuery('');
             }}

@@ -158,6 +158,48 @@ const JOB_TEMPLATES = [
       badgeText: 'Immediate Hiring',
       status: 'active'
     }
+  },
+  {
+    name: 'Presidential Scholarship & Research Fellowship',
+    data: {
+      title: 'Global Presidential Scholarship & Research Fellowship',
+      company: 'Vanguard Global Academic Foundation',
+      companyLogo: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=150&auto=format&fit=crop&q=80',
+      department: 'Scholarships & Advanced Fellowships',
+      employmentType: 'Endowed Fellowship',
+      workplaceType: 'Remote & Global',
+      location: 'Global Remote / Geneva & Cambridge',
+      salaryRange: '$120,000 Fully Funded Grant / yr',
+      experienceLevel: 'Graduate / Post-Doc / Distinguished Innovator',
+      summary: 'Premier fully endowed 2026 scholarship and research fellowship supporting breakthrough developments in computational intelligence.',
+      description: 'The Vanguard Global Academic Foundation is inviting applications for the 2026 Presidential Scholarship & Research Fellowship. Provides complete tuition, living stipends, compute clusters, and international symposium sponsorship.',
+      responsibilities: [
+        'Conduct innovative research in artificial intelligence and decentralized systems.',
+        'Collaborate with international faculty and present findings at annual symposia.',
+        'Publish open peer-reviewed papers and mentor emerging fellowship scholars.'
+      ],
+      requirements: [
+        'Demonstrated academic excellence, published research, or outstanding open-source portfolio.',
+        'Compelling research proposal for high-impact computing or ethical technology.',
+        'Fluency in modern computing principles, mathematics, or computational science.'
+      ],
+      niceToHave: ['Prior recognition in international Olympiads, hackathons, or academic fellowships.'],
+      benefits: [
+        '$120,000 annual tax-advantaged living stipend & research grant',
+        'Full coverage of international travel, accommodations, and academic conferences',
+        'Dedicated access to top-tier GPU compute clusters and research labs'
+      ],
+      skills: ['Frontier AI', 'Research & Innovation', 'Grant Proposal', 'Computer Science'],
+      applyType: 'email',
+      applyEmail: 'fellowships@vanguardfoundation.example.com',
+      applyUrl: 'https://vanguardfoundation.example.com/scholarships',
+      applyInstructions: 'Submit your CV, research proposal (2 pages), and two reference letters.',
+      deadline: 'December 15, 2026',
+      isFeatured: true,
+      isUrgent: false,
+      badgeText: '100% Fully Funded Scholarship',
+      status: 'active'
+    }
   }
 ];
 
@@ -448,10 +490,10 @@ export default function JobsManager() {
               <span className="text-xs text-slate-400">Direct Cloud Firestore Publishing</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              Job Vacancy & Talent Management
+              Job Vacancies & Scholarship Opportunities
             </h2>
             <p className="text-xs sm:text-sm text-slate-300/80 max-w-xl mt-1">
-              Publish and curate high-caliber vacancies with bespoke compensation badges, verified recruiter statuses, and luxury mobile presentations.
+              Publish and curate high-caliber vacancies and prestigious scholarship endowments with bespoke compensation badges, verified recruiter statuses, and luxury mobile presentations.
             </p>
           </div>
 

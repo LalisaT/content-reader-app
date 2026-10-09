@@ -1,3 +1,5 @@
+import initialJobsData from '../data/initialJobs.json';
+
 // Storage Service for TipPulse Reader App
 // Manages bookmarks, read history, user preferences, offline data, and custom admin posts
 
@@ -253,9 +255,13 @@ export const storageService = {
   getCachedJobs: () => {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.CACHED_JOBS);
-      return data ? JSON.parse(data) : [];
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+      return Array.isArray(initialJobsData) ? initialJobsData : [];
     } catch {
-      return [];
+      return Array.isArray(initialJobsData) ? initialJobsData : [];
     }
   },
 

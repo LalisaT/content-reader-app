@@ -132,11 +132,12 @@ export default function ExploreView({
               onClick={onNavigateToJobs}
               className="group p-5 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border border-amber-500/30 text-white shadow-xl hover:border-amber-400/50 cursor-pointer transition-all relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+              <div className="absolute top-0 right-0 w-36 h-36 bg-amber-500/15 rounded-full blur-2xl pointer-events-none animate-job-opacity-glow"></div>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0">
-                    <Briefcase className="w-5 h-5 text-amber-400" />
+                  <div className="relative w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0">
+                    <div className="absolute inset-0 rounded-2xl border border-amber-400/30 animate-job-ring-opacity"></div>
+                    <Briefcase className="w-5 h-5 text-amber-400 animate-job-opacity-pulse" />
                   </div>
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center space-x-1">
@@ -144,17 +145,17 @@ export default function ExploreView({
                       <span>VIP Talent Atelier</span>
                     </span>
                     <h4 className="font-extrabold text-sm sm:text-base text-white">
-                      Executive Careers & Leadership Vacancies
+                      Executive Careers & Scholarship Vacancies
                     </h4>
                   </div>
                 </div>
                 <ArrowUpRight className="w-4 h-4 text-amber-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Discover prestigious verified roles, AI architecture posts, and executive design contracts across global remote & hybrid tiers ($140k - $225k/yr).
+                Discover prestigious verified roles, AI architecture posts, and fully funded scholarships & research grants ($120k - $225k/yr).
               </p>
               <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-amber-300 font-bold">
-                <span>View All Open Opportunities &rarr;</span>
+                <span>View All Vacancies & Scholarships &rarr;</span>
                 <span className="text-[11px] text-slate-400 font-medium">Direct In-App Candidacy</span>
               </div>
             </div>
