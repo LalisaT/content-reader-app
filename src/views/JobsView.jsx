@@ -267,19 +267,19 @@ export default function JobsView({
   return (
     <div className="max-w-2xl mx-auto px-4 py-4 pb-safe-nav animate-in fade-in duration-200">
       {/* Luxury Careers & Scholarships Hero Banner with Embedded Interview Video Opacity Animation */}
-      <div className="relative rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white p-6 sm:p-7 shadow-2xl border border-indigo-900/40 mb-6 overflow-hidden">
+      <div className="relative rounded-3xl bg-gradient-to-br from-indigo-50/90 via-slate-50 to-amber-50/40 text-slate-900 dark:from-slate-950 dark:via-indigo-950 dark:to-slate-900 dark:text-white p-6 sm:p-7 shadow-xl dark:shadow-2xl border border-slate-200/90 dark:border-indigo-900/40 mb-6 overflow-hidden">
         {/* Ambient Hardware-Accelerated Opacity Breathing Orbs */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-amber-500/20 via-indigo-600/10 to-transparent rounded-full blur-3xl pointer-events-none animate-job-opacity-glow"></div>
-        <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-gradient-to-tr from-indigo-500/25 via-purple-600/15 to-transparent rounded-full blur-2xl pointer-events-none animate-job-opacity-pulse"></div>
+        <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-amber-500/15 via-indigo-600/10 to-transparent rounded-full blur-3xl pointer-events-none animate-job-opacity-glow"></div>
+        <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-gradient-to-tr from-indigo-500/20 via-purple-600/10 to-transparent rounded-full blur-2xl pointer-events-none animate-job-opacity-pulse"></div>
 
-        {/* Ambient Job Interview Video Background: Cycling Interview Feeds (cand_9, cand_4, test_interview_3) at Low Opacity */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25 dark:opacity-30 mix-blend-luminosity">
+        {/* Ambient Job Interview Video Background: Cycling Interview Feeds (cand_9, cand_4, test_interview_3) with Rich Visible Opacity */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40 dark:opacity-35">
           {INTERVIEW_STAGES.map((stg, sIdx) => (
             <img
               key={`bg-${stg.id}`}
               src={stg.src}
               alt={stg.title}
-              className={`absolute inset-0 w-full h-full object-cover filter contrast-125 brightness-95 animate-interview-cam transition-opacity duration-1000 ${
+              className={`absolute inset-0 w-full h-full object-cover filter contrast-120 brightness-100 animate-interview-cam transition-opacity duration-1000 ${
                 sIdx === activeStageIdx ? 'opacity-100' : 'opacity-0'
               }`}
               onError={(e) => {
@@ -289,41 +289,47 @@ export default function JobsView({
           ))}
           {/* Subtle Video Scanline */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/10 to-transparent h-24 animate-interview-scan pointer-events-none"></div>
-          {/* Dark luxury vignette overlay so foreground text is high contrast and ultra readable */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40"></div>
+          {/* Luxury vignette overlay so foreground text is high contrast and ultra readable while office interview remains clearly visible */}
+          <div className="absolute inset-0 bg-gradient-to-t from-white/85 via-white/55 to-white/20 dark:from-slate-950/90 dark:via-slate-950/65 dark:to-slate-950/35"></div>
         </div>
 
         <div className="relative z-10">
           {/* Header Badges */}
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center space-x-2">
-              <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center space-x-1.5 backdrop-blur-xs">
-                <Sparkles className="w-3 h-3 text-amber-400 fill-amber-400/20" />
+              <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-amber-500/15 dark:bg-amber-400/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 dark:border-amber-400/30 flex items-center space-x-1.5 backdrop-blur-xs">
+                <span className="w-3.5 h-3.5 rounded-full overflow-hidden inline-flex items-center justify-center shrink-0 shadow-xs border border-sky-400/30 bg-sky-500/10">
+                  <img
+                    src="/career-growth-icon.png"
+                    alt="Career Progression"
+                    className="w-[118%] h-[118%] object-cover object-center max-w-none"
+                  />
+                </span>
                 <span>Executive Career Sanctuary</span>
               </span>
-              <span className="text-[10px] font-bold text-slate-400 hidden sm:inline">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 hidden sm:inline">
                 Verified Direct Openings
               </span>
             </div>
           </div>
 
-          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight mb-2">
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-2">
             Executive Vacancies & Scholarship Opportunities
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300/90 leading-relaxed max-w-lg mb-3">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300/90 leading-relaxed max-w-lg mb-3">
             Discover bespoke executive roles, presidential scholarship endowments, and high-yield fellowships with verified global organizations.
           </p>
 
-          {/* Special Slim Embedded Interview Showcase Card (Low Opacity Glassmorphism) */}
-          <div className="relative my-3 rounded-2xl bg-slate-950/40 backdrop-blur-md border border-white/10 overflow-hidden shadow-inner group">
+          {/* Special Slim Embedded Interview Showcase Card (Glassmorphism & Balanced Interview Opacity) */}
+          <div className="relative my-3 rounded-2xl bg-white/70 dark:bg-slate-950/40 backdrop-blur-md border border-slate-200/80 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-inner group">
             {/* Low Opacity Interview Camera Feed Backdrop (Cycling Stages: Handshake -> Tech Review -> Offer) */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30 dark:opacity-30">
               {INTERVIEW_STAGES.map((stg, sIdx) => (
                 <img
                   key={`showcase-${stg.id}`}
                   src={stg.src}
                   alt={stg.title}
-                  className={`absolute inset-0 w-full h-full object-cover filter brightness-90 contrast-125 animate-interview-cam transition-opacity duration-1000 ${
+                  className={`absolute inset-0 w-full h-full object-cover filter brightness-95 contrast-125 animate-interview-cam transition-opacity duration-1000 ${
                     sIdx === activeStageIdx ? 'opacity-100' : 'opacity-0'
                   }`}
                   onError={(e) => {
@@ -331,49 +337,48 @@ export default function JobsView({
                   }}
                 />
               ))}
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/60 to-slate-950/90"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-white/45 to-white/80 dark:from-slate-950/85 dark:via-slate-950/50 dark:to-slate-950/85"></div>
             </div>
 
             {/* Shimmer Light Beam with Opacity Wave */}
             <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute -inset-full bg-gradient-to-r from-transparent via-amber-400/10 to-transparent animate-job-shimmer"></div>
+              <div className="absolute -inset-full bg-gradient-to-r from-transparent via-amber-400/15 to-transparent animate-job-shimmer"></div>
             </div>
 
-            {/* Video Interview HUD & Opacity Animation Content */}
+            {/* Video Interview Content */}
             <div className="relative z-10 p-3 sm:p-3.5">
-
               {/* Interview Role Details & Camera Viewfinder */}
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center space-x-3 min-w-0">
                   {/* Camera Viewfinder Icon with Autofocus Brackets */}
-                  <div className="relative flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/25 via-indigo-600/25 to-purple-600/20 border border-amber-400/40 flex items-center justify-center shadow-lg">
-                    <div className="absolute inset-1 border border-dashed border-amber-400/50 rounded-lg animate-job-opacity-pulse pointer-events-none"></div>
+                  <div className="relative flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 via-indigo-600/20 to-purple-600/15 border border-amber-500/40 dark:border-amber-400/40 flex items-center justify-center shadow-sm">
+                    <div className="absolute inset-1 border border-dashed border-amber-500/50 dark:border-amber-400/50 rounded-lg animate-job-opacity-pulse pointer-events-none"></div>
                     {currentHighlight.isScholarship ? (
-                      <GraduationCap className="w-4 h-4 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
+                      <GraduationCap className="w-4 h-4 text-amber-600 dark:text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
                     ) : (
-                      <Video className="w-4 h-4 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
+                      <Video className="w-4 h-4 text-amber-600 dark:text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
                     )}
                   </div>
 
                   <div className="min-w-0">
                     <div className="flex items-center space-x-2 mb-0.5">
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-300 flex items-center space-x-1.5">
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-700 dark:text-amber-300 flex items-center space-x-1.5">
                         <span className="relative flex h-1.5 w-1.5">
-                          <span className="animate-job-beacon absolute inline-flex h-full w-full rounded-full bg-amber-400"></span>
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-400"></span>
+                          <span className="animate-job-beacon absolute inline-flex h-full w-full rounded-full bg-amber-500 dark:bg-amber-400"></span>
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500 dark:bg-amber-400"></span>
                         </span>
                         <span>{currentHighlight.badge}</span>
                       </span>
-                      <span className="text-[9px] text-slate-400 font-medium hidden xs:inline">• Direct Screening Active</span>
+                      <span className="text-[9px] text-slate-500 dark:text-slate-400 font-medium hidden xs:inline">• Direct Screening Active</span>
                     </div>
                     <div
-                      className={`text-xs sm:text-sm font-black text-white truncate transition-opacity duration-300 ${
+                      className={`text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate transition-opacity duration-300 ${
                         highlightVisible ? 'opacity-100' : 'opacity-20'
                       }`}
                     >
                       {currentHighlight.title}
                     </div>
-                    <div className="text-[10px] text-slate-300/80 truncate">
+                    <div className="text-[10px] text-slate-600 dark:text-slate-300/80 truncate">
                       {currentHighlight.subtitle}
                     </div>
                   </div>
@@ -381,148 +386,52 @@ export default function JobsView({
 
                 {/* Endowment / Compensation Pill with Breathing Opacity */}
                 <div className="flex-shrink-0 text-right">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
                     Endowment / Grant
                   </span>
-                  <span className="text-xs sm:text-sm font-black text-amber-300 animate-job-opacity-pulse block">
+                  <span className="text-xs sm:text-sm font-black text-amber-600 dark:text-amber-300 animate-job-opacity-pulse block">
                     {currentHighlight.value}
                   </span>
                 </div>
-              </div>
-
-              {/* Slim Interactive Camera Angle Switcher */}
-              <div className="flex items-center justify-between gap-1.5 mt-2.5 pt-2 border-t border-white/10">
-                <div className="flex items-center space-x-1">
-                  <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold mr-1 hidden xs:inline">Feed:</span>
-                  {INTERVIEW_STAGES.map((stg, sIdx) => (
-                    <button
-                      key={stg.id}
-                      type="button"
-                      onClick={() => setActiveStageIdx(sIdx)}
-                      className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all flex items-center space-x-1 ${
-                        sIdx === activeStageIdx
-                          ? 'bg-amber-400 text-slate-950 shadow-xs'
-                          : 'bg-white/10 text-slate-300 hover:bg-white/20'
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${sIdx === activeStageIdx ? 'bg-slate-950 animate-ping' : 'bg-slate-400'}`}></span>
-                      <span>{stg.shortLabel}</span>
-                    </button>
-                  ))}
-                </div>
-                <span className="text-[9px] font-medium text-amber-300/90 truncate hidden xs:inline">
-                  {currentStage.badge}
-                </span>
               </div>
             </div>
           </div>
 
           {/* Quick Stats Grid with Scholarships Prominently Displayed */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-3 border-t border-white/10">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-3 border-t border-slate-200/80 dark:border-white/10">
             <div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block">
                 Open Vacancies
               </span>
-              <span className="text-base sm:text-lg font-black text-white">
+              <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
                 {activeCount} Roles
               </span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+              <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase tracking-wider block">
                 Scholarships
               </span>
-              <span className="text-base sm:text-lg font-black text-amber-300">
+              <span className="text-base sm:text-lg font-black text-amber-600 dark:text-amber-300">
                 {scholarshipCount > 0 ? scholarshipCount : 2} Grants
               </span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider block">
                 Remote & Global
               </span>
-              <span className="text-base sm:text-lg font-black text-emerald-300">
+              <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-300">
                 {remoteCount} Positions
               </span>
             </div>
             <div className="hidden sm:block">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+              <span className="text-[10px] text-indigo-700 dark:text-indigo-400 font-bold uppercase tracking-wider block">
                 Saved Roles
               </span>
-              <span className="text-base sm:text-lg font-black text-indigo-300">
+              <span className="text-base sm:text-lg font-black text-indigo-600 dark:text-indigo-300">
                 {savedJobIds.length} Saved
               </span>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Executive In-Person Interview Stages (cand 9, cand 4, and test interview 3) */}
-      <div className="mb-6 p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            </div>
-            <div>
-              <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white tracking-tight">
-                Executive In-Person Interview Protocol
-              </h3>
-              <p className="text-[10px] text-slate-400">
-                Transparent 3-stage office evaluation with hiring partners
-              </p>
-            </div>
-          </div>
-          <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-200/60 dark:border-indigo-800/50">
-            Office Protocol
-          </span>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
-          {INTERVIEW_STAGES.map((stg, sIdx) => {
-            const isSelected = sIdx === activeStageIdx;
-            return (
-              <div
-                key={stg.id}
-                onClick={() => setActiveStageIdx(sIdx)}
-                className={`group/stage relative rounded-2xl overflow-hidden border cursor-pointer transition-all duration-200 ${
-                  isSelected
-                    ? 'border-amber-400 ring-2 ring-amber-400/40 shadow-md shadow-amber-500/10'
-                    : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
-                }`}
-              >
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-950">
-                  <img
-                    src={stg.src}
-                    alt={stg.title}
-                    className="w-full h-full object-cover group-hover/stage:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      e.currentTarget.src = stg.fallback;
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent"></div>
-                  <div className="absolute top-1.5 left-1.5 flex items-center space-x-1">
-                    <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider backdrop-blur-xs ${
-                      isSelected
-                        ? 'bg-amber-400 text-slate-950'
-                        : 'bg-slate-900/80 text-amber-300 border border-white/10'
-                    }`}>
-                      Step {stg.stageNumber}
-                    </span>
-                  </div>
-                  <span className="absolute bottom-1.5 left-1.5 right-1.5 text-[10px] font-extrabold text-white truncate drop-shadow-xs">
-                    {stg.tag}
-                  </span>
-                </div>
-                <div className="p-2 bg-slate-50 dark:bg-slate-800/70 border-t border-slate-100 dark:border-slate-800">
-                  <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 block truncate">
-                    {stg.title}
-                  </span>
-                  <span className="text-[9px] text-slate-400 truncate block mt-0.5">
-                    {stg.description}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
         </div>
       </div>
 
