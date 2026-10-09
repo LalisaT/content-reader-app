@@ -22,7 +22,8 @@ import {
   Globe,
   Flame,
   ChevronRight,
-  Video
+  Video,
+  Copy
 } from 'lucide-react';
 import { Share as CapacitorShare } from '@capacitor/share';
 
@@ -43,12 +44,26 @@ export default function JobDetailModal({
   const [applicantNote, setApplicantNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedDeepLink, setCopiedDeepLink] = useState(false);
 
   if (!isOpen || !job) return null;
 
+  const deepLinkSlug = job.slug || (String(job.id) === 'job-synapse-neuro-ux' ? 'somethinglead' : String(job.id));
+  const deepLinkUrl = `https://tippulse.web.app/careers/${deepLinkSlug}`;
+
+  const handleCopyDeepLink = async () => {
+    try {
+      await navigator.clipboard.writeText(deepLinkUrl);
+      setCopiedDeepLink(true);
+      setTimeout(() => setCopiedDeepLink(false), 2500);
+    } catch {
+      // fallback
+    }
+  };
+
   const handleShare = async () => {
     const shareText = `Explore "${job.title}" at ${job.company} (${job.salaryRange || 'Competitive'}) - Discovered on TipPulse Careers.`;
-    const shareUrl = job.applyUrl || window.location.href;
+    const shareUrl = deepLinkUrl;
     try {
       if (navigator.share) {
         await navigator.share({
@@ -315,92 +330,130 @@ export default function JobDetailModal({
                 </div>
               )}
 
-              {/* Skills & Tech Stack Chips */}
-              {job.skills && job.skills.length > 0 && (
-                <div className="space-y-2.5 pt-2">
-                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">
-                    Core Competencies & Technologies
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {job.skills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold border border-slate-200/80 dark:border-slate-700/80"
-                      >
-                        {skill}
+              {/* Official "How to Apply for this Vacancy" Section */}
+              <div className="rounded-3xl bg-gradient-to-br from-indigo-950/80 via-slate-900 to-slate-950 border border-indigo-500/30 p-5 sm:p-6 text-white shadow-xl space-y-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">
+                        How to Apply for this Vacancy
+                      </h4>
+                      <span className="text-[10px] text-slate-300">
+                        Official recruitment & submission protocol
                       </span>
-                    ))}
+                    </div>
                   </div>
-                </div>
-              )}
-
-              {/* Executive In-Person Interview Process with Real Photos (cand 9, cand 4, test interview 3) */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Video className="w-4 h-4 text-indigo-500" />
-                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
-                      In-Person Executive Interview Protocol
-                    </h4>
-                  </div>
-                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                    Verified 3 Stages
+                  <span className="text-[10px] font-bold text-amber-300 bg-amber-400/15 border border-amber-400/30 px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0">
+                    {job.salaryRange || 'Competitive Package'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  Qualified candidates are invited to an in-office executive screening session with the appointment board:
-                </p>
 
-                <div className="grid grid-cols-3 gap-2 pt-1">
-                  <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-                    <div className="aspect-[4/3] relative">
-                      <img
-                        src="/interview-handshake.jpg"
-                        alt="Executive Handshake"
-                        className="w-full h-full object-cover"
-                      />
-                      <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-slate-950/80 text-[8px] font-black text-amber-300">
-                        Step 1
-                      </span>
+                {/* Step-by-Step Application Guide */}
+                <div className="space-y-2.5 text-xs text-slate-300">
+                  <div className="flex items-start space-x-3 p-3.5 rounded-2xl bg-white/[0.04] border border-white/10">
+                    <div className="w-5 h-5 rounded-full bg-indigo-500/30 border border-indigo-400/40 text-indigo-300 font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      1
                     </div>
-                    <div className="p-1.5 text-center">
-                      <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 block truncate">Welcome Handshake</span>
-                      <span className="text-[8px] text-slate-400 block truncate">Partner Greeting</span>
+                    <div>
+                      <span className="font-bold text-white block">Prepare Candidate Portfolio</span>
+                      <span className="text-slate-300/90 text-[11px] leading-relaxed">
+                        {job.applyInstructions || 'Prepare your updated CV, executive portfolio, and a brief statement of interest highlighting relevant accomplishments.'}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-                    <div className="aspect-[4/3] relative">
-                      <img
-                        src="/interview-tech-review.jpg"
-                        alt="Technical Review"
-                        className="w-full h-full object-cover"
-                      />
-                      <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-slate-950/80 text-[8px] font-black text-amber-300">
-                        Step 2
-                      </span>
+                  <div className="flex items-start space-x-3 p-3.5 rounded-2xl bg-white/[0.04] border border-white/10">
+                    <div className="w-5 h-5 rounded-full bg-indigo-500/30 border border-indigo-400/40 text-indigo-300 font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      2
                     </div>
-                    <div className="p-1.5 text-center">
-                      <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 block truncate">In-Office Review</span>
-                      <span className="text-[8px] text-slate-400 block truncate">System Deep Dive</span>
+                    <div className="w-full">
+                      <span className="font-bold text-white block">Submit Direct Application</span>
+                      <span className="text-slate-300/90 text-[11px] leading-relaxed block mb-2.5">
+                        {job.applyUrl ? 'Apply directly via the organization’s verified application portal or candidate inbox.' : 'Apply directly via the official recruiter inbox.'}
+                      </span>
+
+                      {/* Primary Application Action Buttons */}
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        {job.applyUrl && (
+                          <a
+                            href={job.applyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => {
+                              if (onApplySuccess) onApplySuccess(job.id);
+                            }}
+                            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-extrabold text-xs shadow-md shadow-indigo-500/25 flex items-center space-x-1.5 transition-all active:scale-95"
+                          >
+                            <span>Apply via Official Portal</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+
+                        {job.applyEmail && (
+                          <a
+                            href={`mailto:${job.applyEmail}?subject=${encodeURIComponent(`Application: ${job.title}`)}`}
+                            className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 flex items-center space-x-1.5 transition-all"
+                          >
+                            <Mail className="w-3.5 h-3.5 text-amber-300" />
+                            <span>{job.applyEmail}</span>
+                          </a>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => setIsApplying(true)}
+                          className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-md shadow-amber-400/25 flex items-center space-x-1.5 transition-all active:scale-95"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Express In-App Application</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-                    <div className="aspect-[4/3] relative">
-                      <img
-                        src="/interview-celebrate.jpg"
-                        alt="Offer Celebration"
-                        className="w-full h-full object-cover"
-                      />
-                      <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-slate-950/80 text-[8px] font-black text-amber-300">
-                        Step 3
+                  <div className="flex items-start space-x-3 p-3.5 rounded-2xl bg-white/[0.04] border border-white/10">
+                    <div className="w-5 h-5 rounded-full bg-indigo-500/30 border border-indigo-400/40 text-indigo-300 font-black text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                      3
+                    </div>
+                    <div>
+                      <span className="font-bold text-white block">Review Timeline & Status</span>
+                      <span className="text-slate-300/90 text-[11px] leading-relaxed">
+                        Deadline: <strong className="text-amber-300 font-semibold">{job.deadline || 'Open until filled'}</strong>. Talent committee reviews submissions on a rolling basis.
                       </span>
                     </div>
-                    <div className="p-1.5 text-center">
-                      <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 block truncate">Offer Celebration</span>
-                      <span className="text-[8px] text-slate-400 block truncate">High-Five Agreement</span>
-                    </div>
+                  </div>
+                </div>
+
+                {/* Official Shareable Deep Link Box */}
+                <div className="mt-3 p-3.5 rounded-2xl bg-slate-950/80 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">
+                      🔗 Official Shareable Deep Link
+                    </span>
+                    <span className="text-xs font-mono text-amber-300 truncate block select-all">
+                      {deepLinkUrl}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={handleCopyDeepLink}
+                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/15 flex items-center space-x-1 transition-all active:scale-95"
+                    >
+                      <Copy className="w-3 h-3 text-amber-300" />
+                      <span>{copiedDeepLink ? 'Copied! ✓' : 'Copy Link'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleShare}
+                      className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center space-x-1 transition-all active:scale-95"
+                    >
+                      <Share2 className="w-3 h-3" />
+                      <span>Share</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -628,37 +681,6 @@ export default function JobDetailModal({
             </div>
           </div>
         )}
-
-        {/* Persistent Bottom Action Bar */}
-        <div className="sticky bottom-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800 p-4 flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <span className="text-[10px] text-slate-500 uppercase font-bold block">Annual Package</span>
-            <span className="text-sm font-black text-slate-900 dark:text-white truncate block">
-              {job.salaryRange || 'Competitive Tier'}
-            </span>
-          </div>
-
-          <div className="flex items-center space-x-2 shrink-0">
-            {hasApplied ? (
-              <div className="px-5 py-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center space-x-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span>Candidacy Submitted ✓</span>
-              </div>
-            ) : job.status === 'closed' ? (
-              <div className="px-5 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold">
-                Position Filled
-              </div>
-            ) : (
-              <button
-                onClick={handleDirectLaunch}
-                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-700 hover:from-indigo-500 hover:to-violet-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/30 flex items-center space-x-2 active:scale-95 transition-all"
-              >
-                <span>Apply for Role</span>
-                <ArrowUpRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );

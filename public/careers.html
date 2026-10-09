@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title id="meta-title">Executive Vacancy — TipPulse Careers</title>
+  
+  <!-- Open Graph / WhatsApp / Telegram / Social Preview -->
+  <meta property="og:title" id="og-title" content="Executive Career Vacancy on TipPulse">
+  <meta property="og:description" id="og-desc" content="Discover verified executive vacancies, presidential scholarships, and bespoke career opportunities on TipPulse.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="TipPulse Careers">
+  <meta property="og:image" content="https://tippulse.web.app/feature-graphic.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" id="tw-title" content="Executive Career Vacancy on TipPulse">
+  <meta name="twitter:description" id="tw-desc" content="Discover verified executive vacancies, presidential scholarships, and bespoke career opportunities on TipPulse.">
+  <meta name="twitter:image" content="https://tippulse.web.app/feature-graphic.png">
+  
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #080c16;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient background glows */
+    .glow-top {
+      position: absolute;
+      top: -140px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.22) 0%, rgba(245, 158, 11, 0.12) 40%, transparent 70%);
+      pointer-events: none;
+      filter: blur(50px);
+    }
+    .glow-bottom {
+      position: absolute;
+      bottom: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 70%);
+      pointer-events: none;
+      filter: blur(50px);
+    }
+
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 28px;
+      padding: 2.2rem 1.8rem;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 40px -5px rgba(99, 102, 241, 0.2);
+      backdrop-filter: blur(20px);
+      text-align: left;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Pulse logo badge */
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      object-fit: cover;
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+    }
+    .brand-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+    .brand-sub {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: #fbbf24;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .role-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.3;
+      margin-bottom: 0.35rem;
+    }
+    .company-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #f59e0b;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .company-name span.dept {
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    /* Key Specs Pills */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+    .spec-item {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 8px 12px;
+      border-radius: 14px;
+    }
+    .spec-label {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 2px;
+      letter-spacing: 0.03em;
+    }
+    .spec-val {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .spec-val.salary {
+      color: #34d399;
+      font-weight: 800;
+    }
+
+    .role-overview {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      border-radius: 16px;
+      padding: 1rem;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: #cbd5e1;
+      margin-bottom: 1.4rem;
+    }
+
+    .btn-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 0.95rem 1.25rem;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: #ffffff;
+      font-size: 0.92rem;
+      font-weight: 800;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-portal {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 0.9rem 1.25rem;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #0f172a;
+      font-size: 0.9rem;
+      font-weight: 800;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.4);
+      transition: all 0.2s ease;
+    }
+    .btn-portal:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .copy-box {
+      margin-top: 1rem;
+      padding: 10px 14px;
+      background: rgba(11, 15, 25, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .copy-url {
+      font-family: monospace;
+      font-size: 0.72rem;
+      color: #94a3b8;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .btn-copy {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      shrink: 0;
+    }
+
+    .footer-note {
+      margin-top: 1.4rem;
+      text-align: center;
+      font-size: 0.72rem;
+      color: #64748b;
+      letter-spacing: 0.02em;
+    }
+
+    .play-icon {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-top"></div>
+  <div class="glow-bottom"></div>
+
+  <div class="card">
+    <div class="header-row">
+      <div class="brand-wrap">
+        <img src="/app-icon.png" alt="TipPulse Logo" class="logo-img" onerror="this.src='/favicon.png'">
+        <div>
+          <div class="brand-title">TipPulse</div>
+          <div class="brand-sub">Executive Careers</div>
+        </div>
+      </div>
+
+      <div class="badge-pill" id="badge-pill">
+        <span>Verified Role</span>
+      </div>
+    </div>
+
+    <h1 class="role-title" id="role-title">Lead Cognitive UX & Neuroscience Interface Researcher</h1>
+    <div class="company-name" id="role-company">
+      <span>Synapse Health Innovations</span>
+      <span class="dept" id="role-dept">• Neuro-Design</span>
+    </div>
+
+    <!-- Key Specs -->
+    <div class="specs-grid">
+      <div class="spec-item">
+        <div class="spec-label">Compensation</div>
+        <div class="spec-val salary" id="spec-salary">$135,000 - $170,000 / yr</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">Location / Mode</div>
+        <div class="spec-val" id="spec-loc">Remote / Boston & Zurich</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">Seniority</div>
+        <div class="spec-val" id="spec-seniority">Senior (5+ Years)</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">Deadline</div>
+        <div class="spec-val" id="spec-deadline">November 20, 2026</div>
+      </div>
+    </div>
+
+    <!-- Executive Overview -->
+    <div class="role-overview" id="role-overview">
+      Pioneer calm-technology interfaces, circadian health protocols, and neuro-adaptive sensory feedback in mobile software.
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="btn-stack">
+      <!-- 1. Open directly in installed app via Universal/App Link -->
+      <a id="btn-open-app" href="#" class="btn-primary">
+        <span>🚀 Open Role in TipPulse App</span>
+      </a>
+
+      <!-- 2. Apply via Official Portal Link -->
+      <a id="btn-portal" href="#" target="_blank" rel="noopener noreferrer" class="btn-portal">
+        <span>Apply via Official Portal ↗</span>
+      </a>
+
+      <!-- 3. Direct Email Recruiter -->
+      <a id="btn-email" href="#" class="btn-secondary">
+        <span>✉️ Email Talent Recruiter</span>
+      </a>
+
+      <!-- 4. Install from Google Play -->
+      <a id="btn-play-store" href="https://play.google.com/store/apps/details?id=com.tippulse.app" class="btn-secondary">
+        <svg class="play-icon" viewBox="0 0 24 24" fill="none">
+          <path d="M3.6 1.7L13.8 12 3.6 22.3C3.2 21.9 3 21.3 3 20.6V3.4C3 2.7 3.2 2.1 3.6 1.7Z" fill="#2196F3"/>
+          <path d="M17.2 8.6L13.8 12L3.6 1.7C4 1.3 4.7 1.2 5.3 1.5L17.2 8.6Z" fill="#4CAF50"/>
+          <path d="M17.2 15.4L5.3 22.5C4.7 22.8 4 22.7 3.6 22.3L13.8 12L17.2 15.4Z" fill="#F44336"/>
+          <path d="M21.4 11L17.2 8.6L13.8 12L17.2 15.4L21.4 13C22.2 12.5 22.2 11.5 21.4 11Z" fill="#FFC107"/>
+        </svg>
+        <span>Get TipPulse on Google Play</span>
+      </a>
+    </div>
+
+    <!-- Shareable Deep Link Box -->
+    <div class="copy-box">
+      <div class="copy-url" id="copy-url">https://tippulse.web.app/careers/somethinglead</div>
+      <button class="btn-copy" id="btn-copy">Copy</button>
+    </div>
+
+    <div class="footer-note">
+      TipPulse • Verified Career Vacancies & Scholarships
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Known preset repository data for instant instant rendering without latency
+      var PRESET_JOBS = {
+        'somethinglead': {
+          title: 'Lead Cognitive UX & Neuroscience Interface Researcher',
+          company: 'Synapse Health Innovations',
+          department: 'Behavioral Health & Neuro-Design',
+          salary: '$135,000 - $170,000 / yr',
+          location: 'Remote / Boston & Zurich Labs',
+          seniority: 'Senior (5+ Years)',
+          deadline: 'November 20, 2026',
+          overview: 'Pioneer calm-technology interfaces, circadian health protocols, and neuro-adaptive sensory feedback in mobile software.',
+          applyUrl: 'https://synapse-health.example.com/apply',
+          applyEmail: 'talent@synapse-health.example.com',
+          badge: '✨ Innovative Track'
+        },
+        'job-synapse-neuro-ux': {
+          title: 'Lead Cognitive UX & Neuroscience Interface Researcher',
+          company: 'Synapse Health Innovations',
+          department: 'Behavioral Health & Neuro-Design',
+          salary: '$135,000 - $170,000 / yr',
+          location: 'Remote / Boston & Zurich Labs',
+          seniority: 'Senior (5+ Years)',
+          deadline: 'November 20, 2026',
+          overview: 'Pioneer calm-technology interfaces, circadian health protocols, and neuro-adaptive sensory feedback in mobile software.',
+          applyUrl: 'https://synapse-health.example.com/apply',
+          applyEmail: 'talent@synapse-health.example.com',
+          badge: '✨ Innovative Track'
+        },
+        'principal-ai-systems-architect': {
+          title: 'Principal AI & Systems Architect',
+          company: 'Apex Global Labs',
+          department: 'Artificial Intelligence & Cloud',
+          salary: '$175,000 - $225,000 / yr',
+          location: 'Worldwide Remote / London HQ',
+          seniority: 'Principal / Staff (8+ Years)',
+          deadline: 'Open until filled',
+          overview: 'Spearhead next-generation distributed inference engines, sub-millisecond telemetry feeds, and resilient edge architecture.',
+          applyUrl: 'https://apexlabs.example.com/careers/ai-lead',
+          applyEmail: 'careers@apexlabs.com',
+          badge: 'VIP Executive Search'
+        },
+        'job-apex-ai-architect': {
+          title: 'Principal AI & Systems Architect',
+          company: 'Apex Global Labs',
+          department: 'Artificial Intelligence & Cloud',
+          salary: '$175,000 - $225,000 / yr',
+          location: 'Worldwide Remote / London HQ',
+          seniority: 'Principal / Staff (8+ Years)',
+          deadline: 'Open until filled',
+          overview: 'Spearhead next-generation distributed inference engines, sub-millisecond telemetry feeds, and resilient edge architecture.',
+          applyUrl: 'https://apexlabs.example.com/careers/ai-lead',
+          applyEmail: 'careers@apexlabs.com',
+          badge: 'VIP Executive Search'
+        },
+        'presidential-scholarship': {
+          title: 'Presidential Global AI Fellowship & Grant',
+          company: 'Vanguard Academic Foundation',
+          department: 'Human-Centered Computing',
+          salary: '$120,000 Fully Funded Grant',
+          location: 'Global / Oxford & Singapore',
+          seniority: 'Post-Graduate / Doctorate',
+          deadline: 'December 15, 2026',
+          overview: 'Full endowment support, supercomputing cluster access, and mentorship with global luminaries.',
+          applyUrl: 'https://vanguardfoundation.example.org/fellowships',
+          applyEmail: 'admissions@vanguardfoundation.example.org',
+          badge: 'Presidential Scholarship'
+        }
+      };
+
+      // 1. Parse Career Slug from URL
+      function extractCareerSlug() {
+        var params = new URLSearchParams(window.location.search);
+        var q = params.get('job') || params.get('slug') || params.get('career') || params.get('id');
+        if (q) return decodeURIComponent(q).trim().toLowerCase();
+
+        var path = window.location.pathname;
+        var match = path.match(/\/(?:careers|jobs)\/([a-zA-Z0-9_-]+)/i);
+        if (match && match[1]) return decodeURIComponent(match[1]).trim().toLowerCase();
+
+        if (window.location.hash) {
+          var hashMatch = window.location.hash.match(/(?:careers\/|jobs\/|job=)([a-zA-Z0-9_-]+)/i);
+          if (hashMatch && hashMatch[1]) return decodeURIComponent(hashMatch[1]).trim().toLowerCase();
+        }
+        return 'somethinglead';
+      }
+
+      var slug = extractCareerSlug();
+      var jobData = PRESET_JOBS[slug] || PRESET_JOBS['somethinglead'];
+
+      // Populate UI
+      var roleTitleEl = document.getElementById('role-title');
+      var roleCompanyEl = document.getElementById('role-company');
+      var specSalaryEl = document.getElementById('spec-salary');
+      var specLocEl = document.getElementById('spec-loc');
+      var specSeniorityEl = document.getElementById('spec-seniority');
+      var specDeadlineEl = document.getElementById('spec-deadline');
+      var roleOverviewEl = document.getElementById('role-overview');
+      var badgePillEl = document.getElementById('badge-pill');
+      var btnPortal = document.getElementById('btn-portal');
+      var btnEmail = document.getElementById('btn-email');
+      var copyUrlEl = document.getElementById('copy-url');
+      var btnCopy = document.getElementById('btn-copy');
+
+      var fullShareUrl = 'https://tippulse.web.app/careers/' + slug;
+      copyUrlEl.innerText = fullShareUrl;
+
+      btnCopy.addEventListener('click', function() {
+        navigator.clipboard.writeText(fullShareUrl).then(function() {
+          btnCopy.innerText = 'Copied!';
+          setTimeout(function() { btnCopy.innerText = 'Copy'; }, 2000);
+        });
+      });
+
+      if (jobData) {
+        document.title = jobData.title + ' — TipPulse Careers';
+        roleTitleEl.innerText = jobData.title;
+        roleCompanyEl.innerHTML = '<span>' + jobData.company + '</span><span class="dept">• ' + (jobData.department || 'Executive') + '</span>';
+        specSalaryEl.innerText = jobData.salary || 'Competitive Package';
+        specLocEl.innerText = jobData.location || 'Remote';
+        specSeniorityEl.innerText = jobData.seniority || 'Executive';
+        specDeadlineEl.innerText = jobData.deadline || 'Open until filled';
+        roleOverviewEl.innerText = jobData.overview || '';
+        if (badgePillEl && jobData.badge) badgePillEl.innerText = jobData.badge;
+
+        if (jobData.applyUrl) {
+          btnPortal.href = jobData.applyUrl;
+          btnPortal.style.display = 'flex';
+        } else {
+          btnPortal.style.display = 'none';
+        }
+
+        if (jobData.applyEmail) {
+          btnEmail.href = 'mailto:' + jobData.applyEmail + '?subject=' + encodeURIComponent('Application for ' + jobData.title);
+          btnEmail.style.display = 'flex';
+        } else {
+          btnEmail.style.display = 'none';
+        }
+      }
+
+      // Deep Linking & Intent
+      var packageName = 'com.tippulse.app';
+      var referrerPart = encodeURIComponent('utm_source=career_share&job=' + slug);
+      var playStoreUrl = 'https://play.google.com/store/apps/details?id=' + packageName + '&referrer=' + referrerPart;
+      document.getElementById('btn-play-store').href = playStoreUrl;
+
+      var customSchemeUrl = 'tippulse://careers/' + encodeURIComponent(slug);
+      var androidIntentUrl = 'intent://careers/' + encodeURIComponent(slug) +
+        '#Intent;scheme=tippulse;package=' + packageName +
+        ';S.browser_fallback_url=' + encodeURIComponent(playStoreUrl) + ';end';
+
+      var btnOpenApp = document.getElementById('btn-open-app');
+      var isAndroid = /Android/i.test(navigator.userAgent);
+      var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      var targetAppUrl = isAndroid ? androidIntentUrl : customSchemeUrl;
+      btnOpenApp.href = targetAppUrl;
+
+      // On Android mobile, attempt auto-launch
+      if (isAndroid) {
+        try {
+          window.location.href = androidIntentUrl;
+        } catch(e) {
+          window.location.href = customSchemeUrl;
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

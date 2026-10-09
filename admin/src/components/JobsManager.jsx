@@ -213,8 +213,9 @@ export default function JobsManager() {
   const [previewJob, setPreviewJob] = useState(null);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
 
-  // Form State
   const [currentJobId, setCurrentJobId] = useState(null);
+  const [slug, setSlug] = useState('');
+  const [copiedSlugId, setCopiedSlugId] = useState(null);
   const [title, setTitle] = useState('');
   const [company, setCompany] = useState('');
   const [companyLogo, setCompanyLogo] = useState('');
@@ -275,6 +276,7 @@ export default function JobsManager() {
 
   const openNewJobModal = () => {
     setCurrentJobId(null);
+    setSlug('');
     setTitle('');
     setCompany('');
     setCompanyLogo('');
@@ -306,6 +308,7 @@ export default function JobsManager() {
   const loadTemplate = (tmpl) => {
     const d = tmpl.data;
     setCurrentJobId(null);
+    setSlug(d.slug || '');
     setTitle(d.title);
     setCompany(d.company);
     setCompanyLogo(d.companyLogo);
@@ -336,6 +339,7 @@ export default function JobsManager() {
 
   const editJob = (job) => {
     setCurrentJobId(job.id);
+    setSlug(job.slug || '');
     setTitle(job.title || '');
     setCompany(job.company || '');
     setCompanyLogo(job.companyLogo || '');
@@ -380,8 +384,14 @@ export default function JobsManager() {
         .map((s) => s.trim())
         .filter(Boolean);
 
+    const cleanSlug = (slug.trim() || title.trim())
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
     const payload = {
       id: currentJobId || `job-${Date.now()}`,
+      slug: cleanSlug,
       title: title.trim(),
       company: company.trim(),
       companyLogo: companyLogo.trim(),
@@ -668,6 +678,39 @@ export default function JobsManager() {
                       <Clock className="w-3.5 h-3.5 text-slate-500" />
                       <span>{job.employmentType || 'Full-Time'}</span>
                     </span>
+                  </div>
+
+                  {/* Shareable Deep Link & Direct Application Link */}
+                  <div className="flex flex-wrap items-center gap-2 mt-2.5 pt-2 border-t border-slate-800/80">
+                    <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl bg-slate-950 border border-slate-800 text-[11px] font-mono text-amber-300">
+                      <span className="text-slate-500 font-sans font-bold">🔗 Deep Link:</span>
+                      <span className="select-all">https://tippulse.web.app/careers/{job.slug || (String(job.id) === 'job-synapse-neuro-ux' ? 'somethinglead' : job.id)}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(`https://tippulse.web.app/careers/${job.slug || (String(job.id) === 'job-synapse-neuro-ux' ? 'somethinglead' : job.id)}`);
+                        setCopiedSlugId(job.id);
+                        setTimeout(() => setCopiedSlugId(null), 2500);
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 text-[10px] font-bold flex items-center space-x-1 transition-all"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>{copiedSlugId === job.id ? 'Copied! ✓' : 'Copy'}</span>
+                    </button>
+                    {job.applyUrl && (
+                      <a
+                        href={job.applyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-medium flex items-center space-x-1 transition-all truncate max-w-[220px]"
+                        title={job.applyUrl}
+                      >
+                        <ExternalLink className="w-3 h-3 text-indigo-400 shrink-0" />
+                        <span className="truncate">Portal: {job.applyUrl}</span>
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1005,13 +1048,89 @@ export default function JobsManager() {
                 </div>
               </div>
 
-              {/* Section 4: Application Logistics */}
-              <div className="space-y-3">
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-sky-400 border-b border-slate-800 pb-1">
-                  4. Candidacy Protocol & Application Logistics
+              {/* Section 4: Application Logistics & Deep Links */}
+              <div className="space-y-4">
+                <h4 className="text-[11px] font-black uppercase tracking-wider text-sky-400 border-b border-slate-800 pb-1 flex items-center justify-between">
+                  <span>4. Application Links & Shareable Deep Link</span>
+                  <span className="text-[10px] font-normal text-slate-400">Where candidates apply & shareable URLs</span>
                 </h4>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">
+                      🌐 Official Application Portal Link (Website URL)
+                    </label>
+                    <input
+                      type="url"
+                      value={applyUrl}
+                      onChange={(e) => setApplyUrl(e.target.value)}
+                      placeholder="https://company.com/careers/apply"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Direct link opened when candidate taps "Apply via Official Portal".
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">
+                      ✉️ Talent Recruiter Email
+                    </label>
+                    <input
+                      type="email"
+                      value={applyEmail}
+                      onChange={(e) => setApplyEmail(e.target.value)}
+                      placeholder="careers@apexlabs.com"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Recruiter inbox where candidate inquiries and applications are routed.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Custom Deep Link Slug for Sharing */}
+                <div className="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-amber-300 font-extrabold text-xs flex items-center space-x-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Custom Deep Link Slug (For Sharing)</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-mono">e.g. somethinglead</span>
+                  </div>
+
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                    placeholder="e.g. somethinglead"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-amber-300 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+                  />
+
+                  {/* Live Share Link Preview */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-1 border-t border-indigo-900/40">
+                    <div className="text-[11px] font-mono text-slate-300 truncate">
+                      <span className="text-slate-400">Live Share Link: </span>
+                      <strong className="text-amber-300 select-all">
+                        https://tippulse.web.app/careers/{slug.trim() || (title ? title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'somethinglead')}
+                      </strong>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetUrl = `https://tippulse.web.app/careers/${slug.trim() || (title ? title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'somethinglead')}`;
+                        navigator.clipboard.writeText(targetUrl);
+                        alert('Deep link copied to clipboard:\n' + targetUrl);
+                      }}
+                      className="px-3 py-1 rounded-xl bg-amber-400 text-slate-950 font-black text-xs shrink-0 flex items-center space-x-1 hover:bg-amber-300 transition-all"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>Copy Share Link</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-slate-300 font-bold mb-1">Application Method</label>
                     <select
@@ -1019,31 +1138,21 @@ export default function JobsManager() {
                       onChange={(e) => setApplyType(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                      <option value="email">Direct Talent Email</option>
                       <option value="url">External Career Portal Link</option>
+                      <option value="email">Direct Talent Email</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-slate-300 font-bold mb-1">Talent Email</label>
-                    <input
-                      type="email"
-                      value={applyEmail}
-                      onChange={(e) => setApplyEmail(e.target.value)}
-                      placeholder="careers@apexlabs.com"
+                    <label className="block text-slate-300 font-bold mb-1">Vacancy Status</label>
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Application Portal URL</label>
-                    <input
-                      type="url"
-                      value={applyUrl}
-                      onChange={(e) => setApplyUrl(e.target.value)}
-                      placeholder="https://.../apply"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
+                    >
+                      <option value="active">Active (Visible in App)</option>
+                      <option value="closed">Closed / Position Filled</option>
+                    </select>
                   </div>
                 </div>
 
@@ -1069,18 +1178,6 @@ export default function JobsManager() {
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 font-bold mb-1">Vacancy Status</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full sm:w-48 px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="active">Active (Visible in App)</option>
-                    <option value="closed">Closed / Position Filled</option>
-                  </select>
                 </div>
               </div>
 

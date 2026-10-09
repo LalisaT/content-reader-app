@@ -37,9 +37,17 @@ import { Sparkles, X, BookOpen, Loader2, WifiOff, LogOut } from 'lucide-react';
 export default function App() {
   const [activeTab, setActiveTab] = useState(() => {
     try {
-      const searchTab = new URLSearchParams(window.location.search).get('tab');
+      const pathname = window.location.pathname || '';
+      if (pathname.includes('/careers') || pathname.includes('/jobs')) return 'jobs';
+      const searchParams = new URLSearchParams(window.location.search);
+      const searchTab = searchParams.get('tab');
       if (searchTab) return searchTab;
-      if (window.location.hash) return window.location.hash.replace('#', '');
+      if (searchParams.has('job') || searchParams.has('career') || searchParams.has('slug')) return 'jobs';
+      if (window.location.hash) {
+        const hash = window.location.hash.replace('#', '');
+        if (hash.includes('careers') || hash.includes('jobs')) return 'jobs';
+        return hash;
+      }
     } catch {
       // fallback
     }

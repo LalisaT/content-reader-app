@@ -257,7 +257,15 @@ export const storageService = {
       const data = localStorage.getItem(STORAGE_KEYS.CACHED_JOBS);
       if (data) {
         const parsed = JSON.parse(data);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((j) => {
+            const seed = initialJobsData.find((ij) => ij.id === j.id);
+            return {
+              ...j,
+              slug: j.slug || seed?.slug || String(j.id).replace(/^job-/, '')
+            };
+          });
+        }
       }
       return Array.isArray(initialJobsData) ? initialJobsData : [];
     } catch {

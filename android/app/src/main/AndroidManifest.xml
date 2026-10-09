@@ -34,6 +34,8 @@
                 <data android:scheme="https" android:host="tippulse.web.app" android:pathPrefix="/tip" />
                 <data android:scheme="https" android:host="tippulse.web.app" android:pathPrefix="/article" />
                 <data android:scheme="https" android:host="tippulse.web.app" android:pathPrefix="/share" />
+                <data android:scheme="https" android:host="tippulse.web.app" android:pathPrefix="/careers" />
+                <data android:scheme="https" android:host="tippulse.web.app" android:pathPrefix="/jobs" />
                 <data android:scheme="https" android:host="tippulse.app" android:pathPrefix="/article" />
             </intent-filter>
 

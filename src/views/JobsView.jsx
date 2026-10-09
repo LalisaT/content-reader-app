@@ -85,6 +85,40 @@ export default function JobsView({
   const [selectedJob, setSelectedJob] = useState(null);
   const [appliedJobsMap, setAppliedJobsMap] = useState(() => storageService.getAppliedJobIds());
 
+  // Automatic Deep Link Resolver (e.g. /careers/somethinglead or ?job=somethinglead)
+  useEffect(() => {
+    try {
+      const pathname = window.location.pathname || '';
+      let targetSlug = null;
+      if (pathname.includes('/careers/')) {
+        targetSlug = decodeURIComponent(pathname.split('/careers/')[1] || '').replace(/\/$/, '').trim();
+      }
+      if (!targetSlug) {
+        const params = new URLSearchParams(window.location.search);
+        targetSlug = params.get('job') || params.get('career') || params.get('slug');
+      }
+      if (!targetSlug && window.location.hash) {
+        const hash = window.location.hash.replace('#', '');
+        if (hash.includes('careers/')) {
+          targetSlug = hash.split('careers/')[1]?.trim();
+        }
+      }
+      if (targetSlug && jobs.length > 0) {
+        const lower = targetSlug.toLowerCase();
+        const found = jobs.find((j) =>
+          String(j.id).toLowerCase() === lower ||
+          (j.slug && j.slug.toLowerCase() === lower) ||
+          (lower === 'somethinglead' && (j.id === 'job-synapse-neuro-ux' || j.title?.toLowerCase().includes('lead cognitive')))
+        );
+        if (found) {
+          setSelectedJob(found);
+        }
+      }
+    } catch (e) {
+      console.warn('Deep link resolution error:', e);
+    }
+  }, [jobs]);
+
   // Active camera interview feed stage (cycles or user switchable)
   const [activeStageIdx, setActiveStageIdx] = useState(0);
 
@@ -271,14 +305,6 @@ export default function JobsView({
                 Verified Direct Openings
               </span>
             </div>
-
-            {/* Virtual Interview Atelier Tag */}
-            <div className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-400/25 text-indigo-300 backdrop-blur-xs">
-              <Video className="w-3 h-3 text-indigo-400" />
-              <span className="text-[9px] font-bold tracking-wider uppercase">
-                Office Interview Feed
-              </span>
-            </div>
           </div>
 
           <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight mb-2">
@@ -315,34 +341,6 @@ export default function JobsView({
 
             {/* Video Interview HUD & Opacity Animation Content */}
             <div className="relative z-10 p-3 sm:p-3.5">
-              {/* Top Video HUD Bar */}
-              <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">
-                <div className="flex items-center space-x-2">
-                  {/* Blinking REC Indicator */}
-                  <div className="flex items-center space-x-1 px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-interview-rec"></span>
-                    <span className="text-[9px] font-black tracking-widest uppercase text-rose-300">REC</span>
-                  </div>
-                  <span className="text-[10px] font-mono font-bold text-slate-300 tracking-wider">
-                    {currentStage.recTime}
-                  </span>
-                  <span className="text-[9px] text-slate-400 font-semibold hidden xs:inline">• {currentStage.camLabel}</span>
-                </div>
-
-                {/* Live Speech Waveform Equalizer & 1080p Badge */}
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-end space-x-0.5 h-3 px-1 py-0.5 rounded bg-white/5 border border-white/10">
-                    <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-1"></span>
-                    <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-2"></span>
-                    <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-3"></span>
-                    <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-4"></span>
-                    <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-2"></span>
-                  </div>
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-amber-300 px-1.5 py-0.5 rounded bg-amber-400/10 border border-amber-400/20">
-                    1080p HD
-                  </span>
-                </div>
-              </div>
 
               {/* Interview Role Details & Camera Viewfinder */}
               <div className="flex items-center justify-between gap-3">

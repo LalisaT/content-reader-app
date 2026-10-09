@@ -8,6 +8,22 @@
     ],
     "rewrites": [
       {
+        "source": "/careers",
+        "destination": "/careers.html"
+      },
+      {
+        "source": "/careers/**",
+        "destination": "/careers.html"
+      },
+      {
+        "source": "/jobs",
+        "destination": "/careers.html"
+      },
+      {
+        "source": "/jobs/**",
+        "destination": "/careers.html"
+      },
+      {
         "source": "/tip",
         "destination": "/tip.html"
       },
