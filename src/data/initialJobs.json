@@ -1,0 +1,251 @@
+[
+  {
+    "id": "job-apex-ai-arch",
+    "title": "Principal AI & Systems Architect",
+    "company": "Apex Global Labs",
+    "companyLogo": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80",
+    "department": "Artificial Intelligence & Cloud",
+    "employmentType": "Full-Time",
+    "workplaceType": "Remote",
+    "location": "Worldwide Remote / London HQ",
+    "salaryRange": "$175,000 - $225,000 / yr",
+    "experienceLevel": "Principal / Lead (8+ Years)",
+    "summary": "Architect the next generation of real-time autonomous reasoning systems and high-throughput LLM serving pipelines for Fortune 500 partners.",
+    "description": "Apex Global Labs is pioneering enterprise-grade neural architectures and low-latency inference pipelines. We are seeking a world-class Principal AI & Systems Architect to steer our technical vision, spearhead core distributed computing engines, and partner with executive leadership on global AI initiatives.",
+    "responsibilities": [
+      "Design high-throughput, sub-50ms latency LLM and multimodal inference infrastructure.",
+      "Architect distributed vector indexing pipelines capable of billion-scale embedding searches.",
+      "Direct technical strategy across cloud environments (AWS, GCP, and specialized bare-metal GPU clusters).",
+      "Mentor senior engineering staff and define robust reliability, benchmarking, and SLA standards.",
+      "Collaborate directly with product and research executives on multi-year strategic roadmaps."
+    ],
+    "requirements": [
+      "8+ years of production experience architecting distributed software systems and cloud-native backends.",
+      "Deep mastery of systems languages (Go, Rust, Python, or high-performance C++).",
+      "Demonstrated track record deploying real-world neural networks or transformer models at high scale.",
+      "Exemplary understanding of Kubernetes, GPU scheduling, Redis, and high-performance serialization.",
+      "Proven ability to articulate complex technical architectures to executive stakeholders."
+    ],
+    "niceToHave": [
+      "Hands-on expertise with Triton Inference Server, vLLM, TensorRT-LLM, or Ray internals.",
+      "Authorship or key contributions to recognized open-source machine learning frameworks."
+    ],
+    "benefits": [
+      "Top-tier compensation package with meaningful executive equity ownership",
+      "Comprehensive global private healthcare, dental, and executive wellness coverage",
+      "Unlimited flexible paid time off with mandatory minimum recharge breaks",
+      "Annual $6,000 workstation hardware & luxury ergonomic home setup stipend",
+      "Fully covered attendance at global tier-1 AI conferences and bi-annual leadership retreats"
+    ],
+    "skills": ["AI Systems", "Distributed Computing", "Rust/Python", "vLLM & Triton", "Kubernetes", "Vector DBs"],
+    "applyType": "email",
+    "applyEmail": "careers@apexlabs.example.com",
+    "applyUrl": "https://apexlabs.example.com/careers/principal-ai",
+    "applyInstructions": "Submit your CV, GitHub/technical portfolio, and a brief overview of the most complex distributed system you have architected.",
+    "deadline": "November 30, 2026",
+    "isFeatured": true,
+    "isUrgent": false,
+    "badgeText": "VIP Executive Search",
+    "status": "active",
+    "createdAt": 1728475200000,
+    "updatedAt": 1728475200000
+  },
+  {
+    "id": "job-maison-creative-dir",
+    "title": "Executive Creative Director & Luxury Brand Lead",
+    "company": "Maison Lalisa Studio",
+    "companyLogo": "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=150&auto=format&fit=crop&q=80",
+    "department": "Brand Strategy & Creative Direction",
+    "employmentType": "Full-Time",
+    "workplaceType": "Hybrid",
+    "location": "Dubai, UAE / Paris / Hybrid",
+    "salaryRange": "$145,000 - $190,000 / yr",
+    "experienceLevel": "Director / Executive (7+ Years)",
+    "summary": "Oversee global luxury brand identities, bespoke multimedia storytelling, and prestigious digital experiences for elite clientele.",
+    "description": "Maison Lalisa Studio curates prestigious visual narratives and bespoke brand identities for international haute couture, luxury hospitality, and high-end tech ventures. We are seeking an Executive Creative Director to lead our multi-disciplinary creative atelier.",
+    "responsibilities": [
+      "Set the holistic artistic vision, editorial direction, and visual standards for all brand touchpoints.",
+      "Lead cross-disciplinary ateliers spanning typography, 3D motion design, architectural aesthetics, and editorial digital media.",
+      "Guide high-profile client presentations and consult closely with founders and venture partners.",
+      "Champion innovative creative workflows incorporating generative multimedia and cinematic rendering.",
+      "Curate bespoke physical and digital brand launches across Paris, Milan, and Dubai."
+    ],
+    "requirements": [
+      "7+ years of experience leading creative direction within luxury goods, high-fashion, or premium design agencies.",
+      "Flawless portfolio showcasing visionary brand identity, editorial craftsmanship, and art direction.",
+      "Exceptional command of visual hierarchy, typographic elegance, and motion direction.",
+      "Proven leadership skills with experience managing and inspiring senior designers and art directors."
+    ],
+    "niceToHave": [
+      "Familiarity with luxury hospitality or bespoke architectural brand environments.",
+      "Fluency in French, English, or Arabic."
+    ],
+    "benefits": [
+      "Bespoke executive remuneration with quarterly studio performance bonuses",
+      "Luxury travel allowance and 5-star accommodations during international shoots and launches",
+      "State-of-the-art studio suite in Dubai Design District with full hybrid flexibility",
+      "Executive health concierge and private wellness membership",
+      "Annual personal creative exploration sabbatical grant ($8,000)"
+    ],
+    "skills": ["Creative Direction", "Luxury Branding", "Editorial Design", "Haute Typography", "Art Direction"],
+    "applyType": "email",
+    "applyEmail": "talent@maisonlalisa.example.com",
+    "applyUrl": "https://maisonlalisa.example.com/join",
+    "applyInstructions": "Submit your curated portfolio or deck highlighting luxury brand campaigns, along with your visionary statement.",
+    "deadline": "Open until filled",
+    "isFeatured": true,
+    "isUrgent": false,
+    "badgeText": "Featured Role",
+    "status": "active",
+    "createdAt": 1728388800000,
+    "updatedAt": 1728388800000
+  },
+  {
+    "id": "job-tippulse-mobile-eng",
+    "title": "Head of Mobile Product & Engineering",
+    "company": "TipPulse Technologies",
+    "companyLogo": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=150&auto=format&fit=crop&q=80",
+    "department": "Product & Mobile Engineering",
+    "employmentType": "Full-Time",
+    "workplaceType": "Remote",
+    "location": "San Francisco, CA / Remote Worldwide",
+    "salaryRange": "$150,000 - $195,000 / yr",
+    "experienceLevel": "Lead / Head of Dept (6+ Years)",
+    "summary": "Drive mobile engineering architecture, offline-first resilience, and fluid 120 FPS reader interactions for millions of global active readers.",
+    "description": "TipPulse is accelerating into a premier digital reading sanctuary. We are searching for an exceptional Head of Mobile Product & Engineering to architect our next era of high-performance mobile apps, offline-first synchronization, and delightful micro-interactions.",
+    "responsibilities": [
+      "Lead cross-platform mobile architecture across React, Capacitor Android/iOS, and native bindings.",
+      "Optimize bundle delivery, instant cold-boot start times, and zero-jank 120 FPS reader rendering.",
+      "Architect offline-first data replication layers bridging Firestore and SQLite/IndexedDB.",
+      "Oversee AdMob hybrid monetization and in-app purchase systems with strict compliance.",
+      "Define release pipelines, automated UI testing, and continuous deployment workflows."
+    ],
+    "requirements": [
+      "6+ years building and deploying top-ranking consumer mobile applications at scale.",
+      "Mastery of modern JavaScript/TypeScript, React ecosystems, and Capacitor/Cordova native plugins.",
+      "Deep understanding of Android SDK, Gradle build optimizations, and App Bundle deployment.",
+      "Obsession with interface performance, Core Web Vitals, and responsive tactile polish."
+    ],
+    "niceToHave": [
+      "Experience optimizing Google AdMob revenue streams and mediation waterfalls.",
+      "Background with SQLite sync and progressive offline web technology."
+    ],
+    "benefits": [
+      "Competitive salary + early-stage tech equity grants",
+      "100% remote flexibility across any timezone",
+      "Comprehensive medical, dental, and vision insurance",
+      "Newest M-series Apple MacBook Pro and 4K display setup provided",
+      "Unlimited books, courses, and digital subscription budget"
+    ],
+    "skills": ["Mobile Architecture", "React & Capacitor", "Android SDK", "Offline Sync", "AdMob SDK"],
+    "applyType": "email",
+    "applyEmail": "qaroo24@gmail.com",
+    "applyUrl": "https://tippulse.web.app/careers",
+    "applyInstructions": "Send your resume and links to apps you have published or helped architect on Google Play / App Store.",
+    "deadline": "November 15, 2026",
+    "isFeatured": true,
+    "isUrgent": true,
+    "badgeText": "Immediate Hiring",
+    "status": "active",
+    "createdAt": 1728302400000,
+    "updatedAt": 1728302400000
+  },
+  {
+    "id": "job-aura-quant-strat",
+    "title": "Senior Quant & Wealth Strategist",
+    "company": "Aura Wealth Capital",
+    "companyLogo": "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=150&auto=format&fit=crop&q=80",
+    "department": "Quantitative Finance & Strategy",
+    "employmentType": "Full-Time",
+    "workplaceType": "Hybrid",
+    "location": "New York, NY / Zurich / Hybrid",
+    "salaryRange": "$180,000 - $240,000 / yr + Bonus",
+    "experienceLevel": "Senior / Lead (5+ Years)",
+    "summary": "Develop algorithmic compounding models, behavioral asset allocation algorithms, and premium family-office analytics engines.",
+    "description": "Aura Wealth Capital manages proprietary high-net-worth liquidity strategies and algorithmic capital allocation. We are looking for an experienced Quantitative Strategist to design resilient models and quantitative advisory frameworks.",
+    "responsibilities": [
+      "Formulate, backtest, and deploy systematic asset management and risk mitigation strategies.",
+      "Build probabilistic forecasting pipelines analyzing macroeconomic trends and liquidity indicators.",
+      "Translate quantitative financial methodologies into intuitive digital decision models for private clients.",
+      "Work alongside portfolio managers to stress-test volatility distributions during market regime shifts."
+    ],
+    "requirements": [
+      "5+ years in quantitative finance, hedge fund analytics, or algorithmic trading environments.",
+      "Advanced degree (M.S./Ph.D.) in Financial Engineering, Mathematics, Physics, or Statistics.",
+      "Extensive proficiency with Python (NumPy, SciPy, pandas) and statistical modeling.",
+      "Rigorous understanding of portfolio theory, factor investing, and risk parity."
+    ],
+    "niceToHave": [
+      "CFA or FRM charterholder certification.",
+      "Experience with high-frequency time series databases."
+    ],
+    "benefits": [
+      "Competitive base salary + uncapped annual fund performance bonus",
+      "Executive suite in Manhattan with optional European exchange in Zurich",
+      "Premium tier comprehensive medical and life coverage",
+      "Private pension scheme with matching contributions",
+      "Access to internal proprietary co-investment opportunities"
+    ],
+    "skills": ["Quantitative Modeling", "Python Analytics", "Portfolio Optimization", "Risk Parity", "Time Series"],
+    "applyType": "url",
+    "applyUrl": "https://aurawealth.example.com/apply/quant-strat",
+    "applyEmail": "careers@aurawealth.example.com",
+    "applyInstructions": "Apply via our secure talent portal with your analytical background and research publications.",
+    "deadline": "December 1, 2026",
+    "isFeatured": false,
+    "isUrgent": false,
+    "badgeText": "High Yield Role",
+    "status": "active",
+    "createdAt": 1728216000000,
+    "updatedAt": 1728216000000
+  },
+  {
+    "id": "job-synapse-neuro-ux",
+    "title": "Lead Cognitive UX & Neuroscience Interface Researcher",
+    "company": "Synapse Health Innovations",
+    "companyLogo": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=150&auto=format&fit=crop&q=80",
+    "department": "Behavioral Health & Neuro-Design",
+    "employmentType": "Full-Time",
+    "workplaceType": "Remote",
+    "location": "Remote / Zurich & Boston Labs",
+    "salaryRange": "$135,000 - $170,000 / yr",
+    "experienceLevel": "Senior (5+ Years)",
+    "summary": "Pioneer calm-technology interfaces, circadian health protocols, and neuro-adaptive sensory feedback in mobile software.",
+    "description": "Synapse Health Innovations fuses neuroscience, circadian biology, and digital interfaces. We are hiring a Lead Cognitive UX Researcher to invent restorative digital spaces that reduce cognitive load and enhance mental focus.",
+    "responsibilities": [
+      "Direct user study protocols measuring biometric signals, attention span, and stress reduction across digital workflows.",
+      "Design interface patterns that respect human circadian biology and minimize blue-light neural disruption.",
+      "Translate neuroscientific findings into concrete design guidelines for software developers.",
+      "Publish peer-reviewed findings in human-computer interaction and digital therapeutics symposia."
+    ],
+    "requirements": [
+      "5+ years conducting empirical UX research or human factors design in health-tech or biotech.",
+      "M.S. or Ph.D. in Cognitive Science, Human-Computer Interaction, Neuroscience, or related discipline.",
+      "Demonstrated ability to convert complex neurological research into practical, delightful product designs.",
+      "Proficiency with mixed-methods research (biometric telemetry, usability testing, qualitative interviews)."
+    ],
+    "niceToHave": [
+      "Experience with wearable health sensors (Oura, Apple HealthKit, EEG devices).",
+      "Familiarity with Non-Sleep Deep Rest (NSDR) or mindfulness interaction protocols."
+    ],
+    "benefits": [
+      "Lucrative salary with venture incentive bonuses",
+      "Complete remote work setup with annual retreat in the Swiss Alps",
+      "Comprehensive global healthcare and mental wellness stipends",
+      "Annual $5,000 research conference and continuing education budget",
+      "Flexible schedule designed around your peak circadian flow hours"
+    ],
+    "skills": ["Cognitive UX", "Neuroscience Research", "Calm Technology", "Biometric Analytics", "HCI"],
+    "applyType": "email",
+    "applyEmail": "talent@synapse-health.example.com",
+    "applyUrl": "https://synapse-health.example.com/careers",
+    "applyInstructions": "Send your research portfolio, publications, and a brief note on how software can protect human cognitive attention.",
+    "deadline": "November 20, 2026",
+    "isFeatured": false,
+    "isUrgent": false,
+    "badgeText": "Innovative Track",
+    "status": "active",
+    "createdAt": 1728129600000,
+    "updatedAt": 1728129600000
+  }
+]

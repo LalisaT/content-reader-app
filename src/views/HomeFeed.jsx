@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import CategoryChips from '../components/CategoryChips';
 import ArticleCard from '../components/ArticleCard';
 import CommunityPollCard from '../components/CommunityPollCard';
-import { Sparkles, TrendingUp, Compass, ArrowRight, Music, Headphones, ShieldCheck } from 'lucide-react';
+import { Sparkles, TrendingUp, Compass, ArrowRight, Music, Headphones, ShieldCheck, Briefcase } from 'lucide-react';
 
 export default function HomeFeed({
   articles,
@@ -15,6 +15,7 @@ export default function HomeFeed({
   onExploreCategory,
   polls = [],
   onVotePoll,
+  onNavigateToJobs,
 }) {
   const [localCategory, setLocalCategory] = useState('All');
   const currentCategory = onSelectCategory ? selectedCategory : localCategory;
@@ -118,6 +119,41 @@ export default function HomeFeed({
                 <span className="text-white font-semibold flex items-center group-hover:translate-x-1 transition-transform">
                   Read Full Tip <ArrowRight className="w-3.5 h-3.5 ml-1" />
                 </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Luxury VIP Career Vacancies Spotlight */}
+      {selectedCategory === 'All' && onNavigateToJobs && (
+        <div className="px-4 mb-4">
+          <div
+            onClick={onNavigateToJobs}
+            className="group relative rounded-3xl p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-amber-500/30 text-white shadow-xl cursor-pointer hover:border-amber-400/50 transition-all overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3.5 min-w-0">
+                <div className="w-11 h-11 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 flex items-center justify-center shrink-0 shadow-md">
+                  <Briefcase className="w-5 h-5 text-amber-400" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center space-x-1 mb-0.5">
+                    <Sparkles className="w-3 h-3 text-amber-400 fill-amber-400/20" />
+                    <span>Executive Careers Atelier</span>
+                  </span>
+                  <h4 className="text-sm font-black text-white truncate group-hover:text-amber-200 transition-colors">
+                    Executive Vacancies & Leadership Roles
+                  </h4>
+                  <p className="text-[11px] text-slate-300 truncate">
+                    Browse verified remote & global roles ($150k - $225k/yr)
+                  </p>
+                </div>
+              </div>
+              <div className="px-3 py-1.5 rounded-xl bg-white/10 text-white text-xs font-bold shrink-0 flex items-center space-x-1 group-hover:bg-amber-400 group-hover:text-slate-950 transition-all ml-2">
+                <span>View</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </div>
             </div>
           </div>

@@ -26,6 +26,7 @@ const SettingsView = lazy(() => import('./views/SettingsView'));
 const PolicyView = lazy(() => import('./views/PolicyView'));
 const TermsView = lazy(() => import('./views/TermsView'));
 const DisclaimerView = lazy(() => import('./views/DisclaimerView'));
+const JobsView = lazy(() => import('./views/JobsView'));
 
 const InterstitialModal = lazy(() => import('./components/InterstitialModal'));
 const RewardedModal = lazy(() => import('./components/RewardedModal'));
@@ -67,6 +68,13 @@ export default function App() {
   const [luxuryNotification, setLuxuryNotification] = useState(null);
   const [updateInfo, setUpdateInfo] = useState(null);
   const [polls, setPolls] = useState([]);
+  const [jobs, setJobs] = useState(() => storageService.getCachedJobs());
+  const [savedJobIds, setSavedJobIds] = useState(() => storageService.getSavedJobIds());
+
+  const handleToggleSaveJob = (jobId) => {
+    const updated = storageService.toggleSaveJob(jobId);
+    setSavedJobIds(updated);
+  };
 
   // Navigate seamlessly to a specific article from notification or deep link
   const navigateToArticle = (articleId, articleData = null) => {
@@ -118,6 +126,7 @@ export default function App() {
     let unsubConfig = () => {};
     let unsubCategories = () => {};
     let unsubPolls = () => {};
+    let unsubJobs = () => {};
 
     const timer = setTimeout(() => {
       // Notification Service Init & Deep Linking Handler
@@ -182,6 +191,12 @@ export default function App() {
           setPolls(cloudPolls);
         }
       });
+
+      unsubJobs = firestoreSyncService.subscribeJobs((cloudJobs) => {
+        if (cloudJobs) {
+          setJobs(cloudJobs);
+        }
+      });
     }, 100);
 
     const handleNotifUpdate = (e) => {
@@ -204,6 +219,7 @@ export default function App() {
       unsubConfig();
       unsubCategories();
       unsubPolls();
+      unsubJobs();
     };
   }, []);
 
@@ -533,6 +549,10 @@ export default function App() {
                 onExploreCategory={handleSelectCategoryFromExplore}
                 polls={polls}
                 onVotePoll={(pollId, optionId) => firestoreSyncService.votePoll(pollId, optionId)}
+                onNavigateToJobs={() => {
+                  setActiveTab('jobs');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
               />
             )}
 
@@ -545,6 +565,18 @@ export default function App() {
                   onToggleBookmark={handleToggleBookmark}
                   onOpenArticle={handleOpenArticle}
                   onSelectCategory={handleSelectCategoryFromExplore}
+                  onNavigateToJobs={() => {
+                    setActiveTab('jobs');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                />
+              )}
+
+              {activeTab === 'jobs' && (
+                <JobsView
+                  jobs={jobs}
+                  savedJobIds={savedJobIds}
+                  onToggleSaveJob={handleToggleSaveJob}
                 />
               )}
 

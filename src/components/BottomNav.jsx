@@ -1,10 +1,11 @@
 import React from 'react';
-import { Newspaper, Compass, Bookmark, Settings } from 'lucide-react';
+import { Newspaper, Compass, Bookmark, Settings, Briefcase } from 'lucide-react';
 
-export default function BottomNav({ activeTab, onTabChange, bookmarkCount }) {
+export default function BottomNav({ activeTab, onTabChange, bookmarkCount, jobsBadgeCount = 0 }) {
   const navItems = [
     { id: 'feed', label: 'Feed', icon: Newspaper },
     { id: 'explore', label: 'Explore', icon: Compass },
+    { id: 'jobs', label: 'Careers', icon: Briefcase },
     { id: 'bookmarks', label: 'Saved', icon: Bookmark, badge: bookmarkCount },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];

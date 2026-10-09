@@ -15,10 +15,12 @@ import {
 import { db } from './firebase';
 import { storageService } from './storageService';
 import initialArticlesData from '../data/articles.json';
+import initialJobsData from '../data/initialJobs.json';
 
 const ARTICLES_COLLECTION = 'articles';
 const NOTIFICATIONS_COLLECTION = 'notifications';
 const POLLS_COLLECTION = 'polls';
+const JOBS_COLLECTION = 'job_vacancies';
 const CONFIG_DOC = 'app_config';
 const CATEGORIES_DOC = 'app_categories';
 
@@ -343,6 +345,137 @@ export const firestoreSyncService = {
       return true;
     } catch (err) {
       console.warn('Failed to delete poll from Firestore:', err);
+      return false;
+    }
+  },
+
+  // -------------------------------------------------------------
+  // Job Vacancies & Executive Careers Real-Time Synchronization
+  // -------------------------------------------------------------
+  subscribeJobs: (onJobsUpdate, onError) => {
+    try {
+      const jobsRef = collection(db, JOBS_COLLECTION);
+      const unsubscribe = onSnapshot(
+        jobsRef,
+        async (snapshot) => {
+          if (snapshot.empty) {
+            console.log('Firestore jobs collection is empty. Seeding curated initial luxury vacancies...');
+            try {
+              const batch = writeBatch(db);
+              initialJobsData.forEach((job) => {
+                const docRef = doc(db, JOBS_COLLECTION, String(job.id));
+                batch.set(docRef, {
+                  ...job,
+                  createdAt: job.createdAt || Date.now(),
+                  updatedAt: Date.now()
+                });
+              });
+              await batch.commit();
+              storageService.setCachedJobs(initialJobsData);
+              onJobsUpdate(initialJobsData);
+            } catch (seedErr) {
+              console.warn('Could not auto-seed jobs in Firestore (using offline cache):', seedErr);
+              const fallback = storageService.getCachedJobs().length > 0
+                ? storageService.getCachedJobs()
+                : initialJobsData;
+              onJobsUpdate(fallback);
+            }
+          } else {
+            const jobs = snapshot.docs.map((docSnap) => ({
+              id: docSnap.id,
+              ...docSnap.data()
+            }));
+            // Sort: Featured VIP roles first, then newest posted
+            jobs.sort((a, b) => {
+              if (a.isFeatured && !b.isFeatured) return -1;
+              if (!a.isFeatured && b.isFeatured) return 1;
+              return (b.createdAt || 0) - (a.createdAt || 0);
+            });
+            storageService.setCachedJobs(jobs);
+            onJobsUpdate(jobs);
+          }
+        },
+        (err) => {
+          console.warn('Firestore jobs listener error (using local cache):', err);
+          const cached = storageService.getCachedJobs();
+          if (cached && cached.length > 0) {
+            onJobsUpdate(cached);
+          } else {
+            onJobsUpdate(initialJobsData);
+          }
+          if (onError) onError(err);
+        }
+      );
+      return unsubscribe;
+    } catch (err) {
+      console.warn('Failed to listen to jobs:', err);
+      const cached = storageService.getCachedJobs();
+      onJobsUpdate(cached.length > 0 ? cached : initialJobsData);
+      return () => {};
+    }
+  },
+
+  saveJob: async (jobData) => {
+    try {
+      const jobId = String(jobData.id || `job-${Date.now()}`);
+      const docRef = doc(db, JOBS_COLLECTION, jobId);
+      const payload = {
+        ...jobData,
+        id: jobId,
+        status: jobData.status || 'active',
+        isFeatured: Boolean(jobData.isFeatured),
+        isUrgent: Boolean(jobData.isUrgent),
+        responsibilities: Array.isArray(jobData.responsibilities) ? jobData.responsibilities : [],
+        requirements: Array.isArray(jobData.requirements) ? jobData.requirements : [],
+        niceToHave: Array.isArray(jobData.niceToHave) ? jobData.niceToHave : [],
+        benefits: Array.isArray(jobData.benefits) ? jobData.benefits : [],
+        skills: Array.isArray(jobData.skills) ? jobData.skills : [],
+        createdAt: jobData.createdAt || Date.now(),
+        updatedAt: Date.now()
+      };
+      await setDoc(docRef, payload, { merge: true });
+      return payload;
+    } catch (err) {
+      console.warn('Failed to save job in Firestore:', err);
+      return null;
+    }
+  },
+
+  deleteJob: async (jobId) => {
+    try {
+      const docRef = doc(db, JOBS_COLLECTION, String(jobId));
+      await deleteDoc(docRef);
+      return true;
+    } catch (err) {
+      console.warn('Failed to delete job from Firestore:', err);
+      return false;
+    }
+  },
+
+  toggleJobStatus: async (jobId, newStatus) => {
+    try {
+      const docRef = doc(db, JOBS_COLLECTION, String(jobId));
+      await setDoc(docRef, { status: newStatus, updatedAt: Date.now() }, { merge: true });
+      return true;
+    } catch (err) {
+      console.warn('Failed to toggle job status:', err);
+      return false;
+    }
+  },
+
+  incrementJobInquiry: async (jobId) => {
+    try {
+      const docRef = doc(db, JOBS_COLLECTION, String(jobId));
+      await runTransaction(db, async (transaction) => {
+        const snap = await transaction.get(docRef);
+        if (snap.exists()) {
+          const current = Number(snap.data().applicationsCount || 0);
+          transaction.update(docRef, { applicationsCount: current + 1 });
+        }
+      });
+      return true;
+    } catch (err) {
+      console.warn('Could not increment job inquiry:', err);
       return false;
     }
   }

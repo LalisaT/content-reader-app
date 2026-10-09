@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck, Lock, LogOut, FileText,
   FolderOpen, Sparkles, Bell, ArrowRight, CheckCircle2, KeyRound, Wifi,
-  Vote, Tag
+  Vote, Tag, Briefcase
 } from 'lucide-react';
 import ArticleEditor from './components/ArticleEditor';
 import ArticlesTable from './components/ArticlesTable';
@@ -10,6 +10,7 @@ import BrandingSettings from './components/BrandingSettings';
 import NotificationSender from './components/NotificationSender';
 import PollsManager from './components/PollsManager';
 import CategoriesManager from './components/CategoriesManager';
+import JobsManager from './components/JobsManager';
 
 // One-way SHA-256 cryptographic hash (Cannot be reversed or decoded back to plain text)
 const MASTER_KEY_HASH = 'f7760d6b76aa1ad0f33caf137d2777730cf57d2e9c8b5e8c9663c574a5fcaf2e';
@@ -237,6 +238,18 @@ export default function App() {
               <Tag className="w-3.5 h-3.5 text-emerald-400" />
               <span className="hidden sm:inline">Categories</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('jobs')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors ${
+                activeTab === 'jobs'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <Briefcase className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Careers & Jobs</span>
+            </button>
           </nav>
 
           {/* Status badge & Lock */}
@@ -287,6 +300,8 @@ export default function App() {
         {activeTab === 'polls' && <PollsManager />}
 
         {activeTab === 'categories' && <CategoriesManager />}
+
+        {activeTab === 'jobs' && <JobsManager />}
       </main>
     </div>
   );

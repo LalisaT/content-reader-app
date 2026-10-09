@@ -12,6 +12,9 @@ const STORAGE_KEYS = {
   CACHED_ARTICLES: 'tippulse_cached_all_articles',
   DELETED_ARTICLES: 'tippulse_deleted_articles',
   VOTED_POLLS: 'tippulse_voted_polls',
+  CACHED_JOBS: 'tippulse_cached_jobs',
+  SAVED_JOBS: 'tippulse_saved_jobs',
+  APPLIED_JOBS: 'tippulse_applied_jobs',
 };
 
 export const storageService = {
@@ -242,5 +245,87 @@ export const storageService = {
   getUserVotedOption: (pollId) => {
     const voted = storageService.getVotedPolls();
     return voted[String(pollId)] || null;
+  },
+
+  // -------------------------------------------------------------
+  // Job Vacancies Offline Cache, Bookmarks, and Applications
+  // -------------------------------------------------------------
+  getCachedJobs: () => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.CACHED_JOBS);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  setCachedJobs: (jobs) => {
+    try {
+      if (Array.isArray(jobs) && jobs.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.CACHED_JOBS, JSON.stringify(jobs));
+      }
+    } catch (e) {
+      console.warn('Could not cache jobs locally:', e);
+    }
+  },
+
+  getSavedJobIds: () => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.SAVED_JOBS);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  toggleSaveJob: (jobId) => {
+    try {
+      const saved = storageService.getSavedJobIds();
+      const strId = String(jobId);
+      const isAlready = saved.includes(strId);
+      const updated = isAlready ? saved.filter((id) => id !== strId) : [...saved, strId];
+      localStorage.setItem(STORAGE_KEYS.SAVED_JOBS, JSON.stringify(updated));
+      return updated;
+    } catch (e) {
+      console.warn('Could not toggle saved job:', e);
+      return [];
+    }
+  },
+
+  isJobSaved: (jobId) => {
+    const saved = storageService.getSavedJobIds();
+    return saved.includes(String(jobId));
+  },
+
+  getAppliedJobIds: () => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.APPLIED_JOBS);
+      return data ? JSON.parse(data) : {};
+    } catch {
+      return {};
+    }
+  },
+
+  recordJobApplication: (jobId, metadata = {}) => {
+    try {
+      const applied = storageService.getAppliedJobIds();
+      const updated = {
+        ...applied,
+        [String(jobId)]: {
+          appliedAt: Date.now(),
+          ...metadata
+        }
+      };
+      localStorage.setItem(STORAGE_KEYS.APPLIED_JOBS, JSON.stringify(updated));
+      return updated;
+    } catch (e) {
+      console.warn('Could not record job application:', e);
+      return {};
+    }
+  },
+
+  hasAppliedToJob: (jobId) => {
+    const applied = storageService.getAppliedJobIds();
+    return Boolean(applied[String(jobId)]);
   },
 };
