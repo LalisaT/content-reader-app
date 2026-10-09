@@ -32,11 +32,19 @@ const InterstitialModal = lazy(() => import('./components/InterstitialModal'));
 const RewardedModal = lazy(() => import('./components/RewardedModal'));
 const NotificationModal = lazy(() => import('./components/NotificationModal'));
 const AppUpdateModal = lazy(() => import('./components/AppUpdateModal'));
-
 import { Sparkles, X, BookOpen, Loader2, WifiOff, LogOut } from 'lucide-react';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('feed');
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const searchTab = new URLSearchParams(window.location.search).get('tab');
+      if (searchTab) return searchTab;
+      if (window.location.hash) return window.location.hash.replace('#', '');
+    } catch {
+      // fallback
+    }
+    return 'feed';
+  });
   const [activeArticle, setActiveArticle] = useState(null);
   const [bookmarks, setBookmarks] = useState(storageService.getBookmarks());
   const [unlockedGuides, setUnlockedGuides] = useState(storageService.getUnlockedPremium());

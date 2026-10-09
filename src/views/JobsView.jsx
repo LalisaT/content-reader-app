@@ -24,6 +24,52 @@ import JobDetailModal from '../components/JobDetailModal';
 import { storageService } from '../services/storageService';
 import { firestoreSyncService } from '../services/firestoreSyncService';
 
+// Executive 3-Stage In-Person Interview Stages (cand 9, cand 4, test interview 3)
+const INTERVIEW_STAGES = [
+  {
+    id: 'handshake',
+    stageNumber: '01',
+    camLabel: 'CAM 01 • WELCOME SUITE',
+    tag: 'Handshake',
+    shortLabel: 'Handshake',
+    title: 'Executive Welcome & Handshake',
+    subtitle: 'Direct In-Person Office Screening • Step 01',
+    badge: 'STAGE 1: GREETING',
+    recTime: '00:04:18',
+    src: '/interview-handshake.jpg', // test_interview_3
+    fallback: 'https://images.unsplash.com/photo-1573497491208-6b1acb260507?auto=format&fit=crop&w=1200&q=80',
+    description: 'Face-to-face executive greeting and introduction in our private boardroom.',
+  },
+  {
+    id: 'tech_review',
+    stageNumber: '02',
+    camLabel: 'CAM 02 • TECH LAB',
+    tag: 'Tech Review',
+    shortLabel: 'Tech Review',
+    title: 'Technical & Case Study Evaluation',
+    subtitle: 'Pair Review & Architecture Deep Dive • Step 02',
+    badge: 'STAGE 2: EVALUATION',
+    recTime: '00:19:42',
+    src: '/interview-tech-review.jpg', // cand_4
+    fallback: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80',
+    description: 'In-office collaborative deep dive reviewing live systems & architecture.',
+  },
+  {
+    id: 'celebrate',
+    stageNumber: '03',
+    camLabel: 'CAM 03 • OFFER SIGNED',
+    tag: 'Celebration',
+    shortLabel: 'Offer Signed',
+    title: 'Offer Acceptance & High-Five',
+    subtitle: 'Partnership Celebration & Onboarding • Step 03',
+    badge: 'STAGE 3: APPOINTMENT',
+    recTime: '00:36:15',
+    src: '/interview-celebrate.jpg', // cand_9
+    fallback: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80',
+    description: 'Formal offer extension and high-five celebration welcoming the selected fellow.',
+  },
+];
+
 export default function JobsView({
   jobs = [],
   savedJobIds = [],
@@ -38,6 +84,18 @@ export default function JobsView({
   const [onlyScholarships, setOnlyScholarships] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [appliedJobsMap, setAppliedJobsMap] = useState(() => storageService.getAppliedJobIds());
+
+  // Active camera interview feed stage (cycles or user switchable)
+  const [activeStageIdx, setActiveStageIdx] = useState(0);
+
+  useEffect(() => {
+    const stageTimer = setInterval(() => {
+      setActiveStageIdx((prev) => (prev + 1) % INTERVIEW_STAGES.length);
+    }, 4500);
+    return () => clearInterval(stageTimer);
+  }, []);
+
+  const currentStage = INTERVIEW_STAGES[activeStageIdx] || INTERVIEW_STAGES[0];
 
   // Embedded opacity animation highlight rotation
   const highlightItems = useMemo(() => [
@@ -180,26 +238,29 @@ export default function JobsView({
         <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-amber-500/20 via-indigo-600/10 to-transparent rounded-full blur-3xl pointer-events-none animate-job-opacity-glow"></div>
         <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-gradient-to-tr from-indigo-500/25 via-purple-600/15 to-transparent rounded-full blur-2xl pointer-events-none animate-job-opacity-pulse"></div>
 
-        {/* Ambient Job Interview Video Background (Low Opacity) */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20 dark:opacity-25 mix-blend-screen">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover filter contrast-125 brightness-90 animate-interview-cam"
-            poster="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1200&q=80"
-          >
-            <source src="https://assets.mixkit.co/videos/preview/mixkit-business-woman-talking-in-a-video-call-42880-large.mp4" type="video/mp4" />
-          </video>
+        {/* Ambient Job Interview Video Background: Cycling Interview Feeds (cand_9, cand_4, test_interview_3) at Low Opacity */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25 dark:opacity-30 mix-blend-luminosity">
+          {INTERVIEW_STAGES.map((stg, sIdx) => (
+            <img
+              key={`bg-${stg.id}`}
+              src={stg.src}
+              alt={stg.title}
+              className={`absolute inset-0 w-full h-full object-cover filter contrast-125 brightness-95 animate-interview-cam transition-opacity duration-1000 ${
+                sIdx === activeStageIdx ? 'opacity-100' : 'opacity-0'
+              }`}
+              onError={(e) => {
+                e.currentTarget.src = stg.fallback;
+              }}
+            />
+          ))}
           {/* Subtle Video Scanline */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/10 to-transparent h-24 animate-interview-scan pointer-events-none"></div>
-          {/* Dark luxury vignette overlay so foreground text is high contrast */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-slate-950/40"></div>
+          {/* Dark luxury vignette overlay so foreground text is high contrast and ultra readable */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40"></div>
         </div>
 
         <div className="relative z-10">
-          {/* Header Badges (Radar Active removed) */}
+          {/* Header Badges */}
           <div className="flex items-center justify-between gap-2 mb-2">
             <div className="flex items-center space-x-2">
               <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center space-x-1.5 backdrop-blur-xs">
@@ -211,11 +272,11 @@ export default function JobsView({
               </span>
             </div>
 
-            {/* Virtual Screening Atelier Tag */}
+            {/* Virtual Interview Atelier Tag */}
             <div className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-400/25 text-indigo-300 backdrop-blur-xs">
               <Video className="w-3 h-3 text-indigo-400" />
               <span className="text-[9px] font-bold tracking-wider uppercase">
-                Virtual Screening
+                Office Interview Feed
               </span>
             </div>
           </div>
@@ -223,20 +284,28 @@ export default function JobsView({
           <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight mb-2">
             Executive Vacancies & Scholarship Opportunities
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300/90 leading-relaxed max-w-lg mb-4">
+          <p className="text-xs sm:text-sm text-slate-300/90 leading-relaxed max-w-lg mb-3">
             Discover bespoke executive roles, presidential scholarship endowments, and high-yield fellowships with verified global organizations.
           </p>
 
-          {/* Embedded Job Interview Video Showcase Card (Low Opacity Styling) */}
-          <div className="relative my-4 rounded-2xl bg-white/[0.04] backdrop-blur-md border border-white/10 overflow-hidden shadow-inner group">
-            {/* Low Opacity Interview Camera Feed Backdrop */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25">
-              <img
-                src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80"
-                alt="Executive Interview"
-                className="w-full h-full object-cover filter brightness-90 contrast-125 animate-interview-cam"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/50 to-slate-950/90"></div>
+          {/* Special Slim Embedded Interview Showcase Card (Low Opacity Glassmorphism) */}
+          <div className="relative my-3 rounded-2xl bg-slate-950/40 backdrop-blur-md border border-white/10 overflow-hidden shadow-inner group">
+            {/* Low Opacity Interview Camera Feed Backdrop (Cycling Stages: Handshake -> Tech Review -> Offer) */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+              {INTERVIEW_STAGES.map((stg, sIdx) => (
+                <img
+                  key={`showcase-${stg.id}`}
+                  src={stg.src}
+                  alt={stg.title}
+                  className={`absolute inset-0 w-full h-full object-cover filter brightness-90 contrast-125 animate-interview-cam transition-opacity duration-1000 ${
+                    sIdx === activeStageIdx ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  onError={(e) => {
+                    e.currentTarget.src = stg.fallback;
+                  }}
+                />
+              ))}
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/60 to-slate-950/90"></div>
             </div>
 
             {/* Shimmer Light Beam with Opacity Wave */}
@@ -245,24 +314,24 @@ export default function JobsView({
             </div>
 
             {/* Video Interview HUD & Opacity Animation Content */}
-            <div className="relative z-10 p-3.5 sm:p-4">
+            <div className="relative z-10 p-3 sm:p-3.5">
               {/* Top Video HUD Bar */}
-              <div className="flex items-center justify-between gap-2 mb-2.5 pb-2 border-b border-white/10">
+              <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">
                 <div className="flex items-center space-x-2">
                   {/* Blinking REC Indicator */}
-                  <div className="flex items-center space-x-1.5 px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30">
+                  <div className="flex items-center space-x-1 px-1.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30">
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-interview-rec"></span>
                     <span className="text-[9px] font-black tracking-widest uppercase text-rose-300">REC</span>
                   </div>
                   <span className="text-[10px] font-mono font-bold text-slate-300 tracking-wider">
-                    00:14:38
+                    {currentStage.recTime}
                   </span>
-                  <span className="text-[9px] text-slate-400 font-semibold hidden xs:inline">• Virtual Interview Stream</span>
+                  <span className="text-[9px] text-slate-400 font-semibold hidden xs:inline">• {currentStage.camLabel}</span>
                 </div>
 
                 {/* Live Speech Waveform Equalizer & 1080p Badge */}
                 <div className="flex items-center space-x-2">
-                  <div className="flex items-end space-x-0.5 h-3.5 px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+                  <div className="flex items-end space-x-0.5 h-3 px-1 py-0.5 rounded bg-white/5 border border-white/10">
                     <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-1"></span>
                     <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-2"></span>
                     <span className="w-0.5 bg-amber-400 rounded-full animate-interview-wave-3"></span>
@@ -279,12 +348,12 @@ export default function JobsView({
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center space-x-3 min-w-0">
                   {/* Camera Viewfinder Icon with Autofocus Brackets */}
-                  <div className="relative flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br from-amber-500/25 via-indigo-600/25 to-purple-600/20 border border-amber-400/40 flex items-center justify-center shadow-lg">
+                  <div className="relative flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/25 via-indigo-600/25 to-purple-600/20 border border-amber-400/40 flex items-center justify-center shadow-lg">
                     <div className="absolute inset-1 border border-dashed border-amber-400/50 rounded-lg animate-job-opacity-pulse pointer-events-none"></div>
                     {currentHighlight.isScholarship ? (
-                      <GraduationCap className="w-5 h-5 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
+                      <GraduationCap className="w-4 h-4 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
                     ) : (
-                      <Video className="w-5 h-5 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
+                      <Video className="w-4 h-4 text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
                     )}
                   </div>
 
@@ -321,6 +390,31 @@ export default function JobsView({
                     {currentHighlight.value}
                   </span>
                 </div>
+              </div>
+
+              {/* Slim Interactive Camera Angle Switcher */}
+              <div className="flex items-center justify-between gap-1.5 mt-2.5 pt-2 border-t border-white/10">
+                <div className="flex items-center space-x-1">
+                  <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold mr-1 hidden xs:inline">Feed:</span>
+                  {INTERVIEW_STAGES.map((stg, sIdx) => (
+                    <button
+                      key={stg.id}
+                      type="button"
+                      onClick={() => setActiveStageIdx(sIdx)}
+                      className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all flex items-center space-x-1 ${
+                        sIdx === activeStageIdx
+                          ? 'bg-amber-400 text-slate-950 shadow-xs'
+                          : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${sIdx === activeStageIdx ? 'bg-slate-950 animate-ping' : 'bg-slate-400'}`}></span>
+                      <span>{stg.shortLabel}</span>
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[9px] font-medium text-amber-300/90 truncate hidden xs:inline">
+                  {currentStage.badge}
+                </span>
               </div>
             </div>
           </div>
@@ -360,6 +454,77 @@ export default function JobsView({
               </span>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Executive In-Person Interview Stages (cand 9, cand 4, and test interview 3) */}
+      <div className="mb-6 p-3.5 sm:p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <div className="w-7 h-7 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            </div>
+            <div>
+              <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white tracking-tight">
+                Executive In-Person Interview Protocol
+              </h3>
+              <p className="text-[10px] text-slate-400">
+                Transparent 3-stage office evaluation with hiring partners
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-200/60 dark:border-indigo-800/50">
+            Office Protocol
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+          {INTERVIEW_STAGES.map((stg, sIdx) => {
+            const isSelected = sIdx === activeStageIdx;
+            return (
+              <div
+                key={stg.id}
+                onClick={() => setActiveStageIdx(sIdx)}
+                className={`group/stage relative rounded-2xl overflow-hidden border cursor-pointer transition-all duration-200 ${
+                  isSelected
+                    ? 'border-amber-400 ring-2 ring-amber-400/40 shadow-md shadow-amber-500/10'
+                    : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                }`}
+              >
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-950">
+                  <img
+                    src={stg.src}
+                    alt={stg.title}
+                    className="w-full h-full object-cover group-hover/stage:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      e.currentTarget.src = stg.fallback;
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent"></div>
+                  <div className="absolute top-1.5 left-1.5 flex items-center space-x-1">
+                    <span className={`px-1.5 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider backdrop-blur-xs ${
+                      isSelected
+                        ? 'bg-amber-400 text-slate-950'
+                        : 'bg-slate-900/80 text-amber-300 border border-white/10'
+                    }`}>
+                      Step {stg.stageNumber}
+                    </span>
+                  </div>
+                  <span className="absolute bottom-1.5 left-1.5 right-1.5 text-[10px] font-extrabold text-white truncate drop-shadow-xs">
+                    {stg.tag}
+                  </span>
+                </div>
+                <div className="p-2 bg-slate-50 dark:bg-slate-800/70 border-t border-slate-100 dark:border-slate-800">
+                  <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 block truncate">
+                    {stg.title}
+                  </span>
+                  <span className="text-[9px] text-slate-400 truncate block mt-0.5">
+                    {stg.description}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

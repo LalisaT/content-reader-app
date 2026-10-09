@@ -21,7 +21,8 @@ import {
   ArrowUpRight,
   Globe,
   Flame,
-  ChevronRight
+  ChevronRight,
+  Video
 } from 'lucide-react';
 import { Share as CapacitorShare } from '@capacitor/share';
 
@@ -332,6 +333,77 @@ export default function JobDetailModal({
                   </div>
                 </div>
               )}
+
+              {/* Executive In-Person Interview Process with Real Photos (cand 9, cand 4, test interview 3) */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Video className="w-4 h-4 text-indigo-500" />
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                      In-Person Executive Interview Protocol
+                    </h4>
+                  </div>
+                  <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                    Verified 3 Stages
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  Qualified candidates are invited to an in-office executive screening session with the appointment board:
+                </p>
+
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+                    <div className="aspect-[4/3] relative">
+                      <img
+                        src="/interview-handshake.jpg"
+                        alt="Executive Handshake"
+                        className="w-full h-full object-cover"
+                      />
+                      <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-slate-950/80 text-[8px] font-black text-amber-300">
+                        Step 1
+                      </span>
+                    </div>
+                    <div className="p-1.5 text-center">
+                      <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 block truncate">Welcome Handshake</span>
+                      <span className="text-[8px] text-slate-400 block truncate">Partner Greeting</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+                    <div className="aspect-[4/3] relative">
+                      <img
+                        src="/interview-tech-review.jpg"
+                        alt="Technical Review"
+                        className="w-full h-full object-cover"
+                      />
+                      <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-slate-950/80 text-[8px] font-black text-amber-300">
+                        Step 2
+                      </span>
+                    </div>
+                    <div className="p-1.5 text-center">
+                      <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 block truncate">In-Office Review</span>
+                      <span className="text-[8px] text-slate-400 block truncate">System Deep Dive</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+                    <div className="aspect-[4/3] relative">
+                      <img
+                        src="/interview-celebrate.jpg"
+                        alt="Offer Celebration"
+                        className="w-full h-full object-cover"
+                      />
+                      <span className="absolute bottom-1 left-1 px-1.5 py-0.2 rounded bg-slate-950/80 text-[8px] font-black text-amber-300">
+                        Step 3
+                      </span>
+                    </div>
+                    <div className="p-1.5 text-center">
+                      <span className="text-[10px] font-bold text-slate-800 dark:text-slate-200 block truncate">Offer Celebration</span>
+                      <span className="text-[8px] text-slate-400 block truncate">High-Five Agreement</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
