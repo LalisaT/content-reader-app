@@ -25,7 +25,10 @@ import {
   Gift,
   ArrowRight,
   Layers,
-  ChevronDown
+  ChevronDown,
+  Upload,
+  Camera,
+  Image as ImageIcon
 } from 'lucide-react';
 import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebaseAdmin';
@@ -227,6 +230,11 @@ export default function JobsManager() {
   const [title, setTitle] = useState('');
   const [company, setCompany] = useState('');
   const [companyLogo, setCompanyLogo] = useState('');
+  const [photos, setPhotos] = useState([]);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const logoInputRef = useRef(null);
+  const photosInputRef = useRef(null);
   const [department, setDepartment] = useState('Engineering & Tech');
   const [employmentType, setEmploymentType] = useState('Full-Time');
   const [workplaceType, setWorkplaceType] = useState('Remote');
@@ -250,6 +258,77 @@ export default function JobsManager() {
   const [badgeText, setBadgeText] = useState('VIP Executive Search');
   const [status, setStatus] = useState('active');
   const modalBodyRef = useRef(null);
+
+  // Client-side canvas image compression to keep Firestore docs ultralight (<50KB)
+  const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.8) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth || height > maxHeight) {
+            if (width / height > maxWidth / maxHeight) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingLogo(true);
+    try {
+      const compressed = await compressImage(file, 400, 400, 0.85);
+      setCompanyLogo(compressed);
+    } catch (err) {
+      console.error('Error processing logo file:', err);
+      alert('Could not process the selected image.');
+    } finally {
+      setIsUploadingLogo(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handlePhotosUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setIsUploadingPhotos(true);
+    try {
+      const compressedList = await Promise.all(
+        files.map((f) => compressImage(f, 900, 600, 0.78))
+      );
+      setPhotos((prev) => [...prev, ...compressedList].slice(0, 6));
+    } catch (err) {
+      console.error('Error uploading photos:', err);
+      alert('Could not process one or more photo files.');
+    } finally {
+      setIsUploadingPhotos(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleRemovePhoto = (idx) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   // Real-time Firestore Subscription
   useEffect(() => {
@@ -289,6 +368,7 @@ export default function JobsManager() {
     setTitle('');
     setCompany('');
     setCompanyLogo('');
+    setPhotos([]);
     setDepartment('Engineering & Artificial Intelligence');
     setEmploymentType('Full-Time');
     setWorkplaceType('Remote');
@@ -324,6 +404,7 @@ export default function JobsManager() {
     setTitle(d.title);
     setCompany(d.company);
     setCompanyLogo(d.companyLogo);
+    setPhotos(d.photos || []);
     setDepartment(d.department);
     setEmploymentType(d.employmentType);
     setWorkplaceType(d.workplaceType);
@@ -358,6 +439,7 @@ export default function JobsManager() {
     setTitle(job.title || '');
     setCompany(job.company || '');
     setCompanyLogo(job.companyLogo || '');
+    setPhotos(Array.isArray(job.photos) ? job.photos : []);
     setDepartment(job.department || 'General');
     setEmploymentType(job.employmentType || 'Full-Time');
     setWorkplaceType(job.workplaceType || 'Remote');
@@ -413,6 +495,7 @@ export default function JobsManager() {
       title: title.trim(),
       company: company.trim(),
       companyLogo: companyLogo.trim(),
+      photos: Array.isArray(photos) ? photos : [],
       department: department.trim(),
       employmentType,
       workplaceType,
@@ -881,27 +964,162 @@ export default function JobsManager() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Company Logo URL (Optional)</label>
-                    <input
-                      type="url"
-                      value={companyLogo}
-                      onChange={(e) => setCompanyLogo(e.target.value)}
-                      placeholder="https://.../logo.png"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">Department / Practice Area</label>
+                  <input
+                    type="text"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    placeholder="e.g. Artificial Intelligence & Cloud"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+
+                {/* Company Logo / Brand Photo Upload Zone */}
+                <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-slate-200 font-bold text-xs flex items-center space-x-1.5">
+                      <Camera className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Company Logo / Brand Photo</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-medium">PNG, JPG, SVG, WebP</span>
                   </div>
 
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Department / Practice Area</label>
-                    <input
-                      type="text"
-                      value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
-                      placeholder="e.g. Artificial Intelligence & Cloud"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5">
+                    {/* Visual Avatar Preview */}
+                    <div className="w-16 h-16 rounded-2xl bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center overflow-hidden shrink-0 relative group shadow-sm">
+                      {companyLogo ? (
+                        <>
+                          <img
+                            src={companyLogo}
+                            alt="Logo preview"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setCompanyLogo('')}
+                            title="Remove Photo"
+                            className="absolute inset-0 bg-slate-950/80 text-rose-400 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-bold"
+                          >
+                            <Trash2 className="w-4 h-4 mb-0.5" />
+                            <span>Remove</span>
+                          </button>
+                        </>
+                      ) : (
+                        <Building2 className="w-7 h-7 text-slate-600" />
+                      )}
+                    </div>
+
+                    {/* Action Buttons & Fallback URL */}
+                    <div className="flex-1 space-y-2 w-full">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          ref={logoInputRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleLogoUpload}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => logoInputRef.current?.click()}
+                          disabled={isUploadingLogo}
+                          className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-xs flex items-center space-x-1.5 transition-all shadow-md shadow-indigo-600/20 cursor-pointer disabled:opacity-50"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>{isUploadingLogo ? 'Processing...' : companyLogo ? 'Change Photo' : 'Upload Logo / Photo'}</span>
+                        </button>
+
+                        {companyLogo && (
+                          <button
+                            type="button"
+                            onClick={() => setCompanyLogo('')}
+                            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-300 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+                          >
+                            Clear Photo
+                          </button>
+                        )}
+                      </div>
+
+                      <div>
+                        <input
+                          type="url"
+                          value={companyLogo.startsWith('data:') ? '' : companyLogo}
+                          onChange={(e) => setCompanyLogo(e.target.value)}
+                          placeholder={companyLogo.startsWith('data:') ? '✓ Photo uploaded directly from device' : 'Or paste direct image URL (https://...)'}
+                          className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 text-[11px] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Workplace & Vacancy Showcase Photos */}
+                <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h5 className="text-xs font-black uppercase tracking-wider text-slate-200 flex items-center space-x-1.5">
+                        <Camera className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Workplace & Vacancy Showcase Photos (Optional)</span>
+                      </h5>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Upload office atmosphere, campus, or vacancy flyer pictures to showcase on the candidate view.
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-bold shrink-0">{photos.length}/6 photos</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {photos.map((photoUrl, idx) => (
+                      <div
+                        key={idx}
+                        className="relative aspect-video rounded-xl overflow-hidden bg-slate-900 border border-slate-700 group shadow-xs"
+                      >
+                        <img
+                          src={photoUrl}
+                          alt={`Showcase ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePhoto(idx)}
+                            className="p-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white transition-colors cursor-pointer"
+                            title="Remove Photo"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-slate-950/80 text-[9px] font-bold text-slate-300 pointer-events-none">
+                          Photo {idx + 1}
+                        </span>
+                      </div>
+                    ))}
+
+                    {photos.length < 6 && (
+                      <>
+                        <input
+                          ref={photosInputRef}
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={handlePhotosUpload}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => photosInputRef.current?.click()}
+                          disabled={isUploadingPhotos}
+                          className="aspect-video rounded-xl border-2 border-dashed border-slate-700 hover:border-indigo-500 hover:bg-indigo-950/20 text-slate-400 hover:text-indigo-300 flex flex-col items-center justify-center transition-all cursor-pointer p-2 disabled:opacity-50"
+                        >
+                          <Upload className="w-5 h-5 mb-1" />
+                          <span className="text-[11px] font-bold">
+                            {isUploadingPhotos ? 'Processing...' : '+ Upload Photos'}
+                          </span>
+                          <span className="text-[9px] text-slate-500">From device</span>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

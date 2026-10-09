@@ -70,6 +70,137 @@ const INTERVIEW_STAGES = [
   },
 ];
 
+// -------------------------------------------------------------
+// Low-Opacity Galaxy Background with Scroll-Responsive Parallax
+// Soft, celestial cosmic motion: deep nebula clouds, rotating star vortex,
+// twinkling constellations, and subtle shooting comet passage.
+// -------------------------------------------------------------
+function GalaxyBackground({ scrollY = 0 }) {
+  // Parallax offsets (silky dampening for buttery smooth 60fps)
+  const nebulaOffset1 = -scrollY * 0.16;
+  const nebulaOffset2 = -scrollY * 0.26;
+  const nebulaOffset3 = -scrollY * 0.12;
+  const starfieldOffset = -scrollY * 0.38;
+  const spiralRotation = scrollY * 0.05;
+
+  // Curated Starfield constellation coordinates (percentages)
+  const STARS = [
+    { top: '5%', left: '12%', size: 2.5, delay: '0s', fast: true },
+    { top: '8%', left: '76%', size: 3, delay: '1.2s', fast: false },
+    { top: '14%', left: '38%', size: 2, delay: '2.4s', fast: true },
+    { top: '19%', left: '88%', size: 2.5, delay: '0.8s', fast: false },
+    { top: '24%', left: '7%', size: 3.5, delay: '1.8s', fast: false },
+    { top: '30%', left: '60%', size: 2, delay: '3.1s', fast: true },
+    { top: '36%', left: '22%', size: 2.5, delay: '0.5s', fast: true },
+    { top: '42%', left: '84%', size: 3, delay: '2.1s', fast: false },
+    { top: '48%', left: '35%', size: 2, delay: '1.5s', fast: true },
+    { top: '54%', left: '92%', size: 2.5, delay: '3.7s', fast: false },
+    { top: '60%', left: '14%', size: 3, delay: '0.3s', fast: true },
+    { top: '66%', left: '50%', size: 2, delay: '2.8s', fast: false },
+    { top: '72%', left: '78%', size: 3.5, delay: '1.1s', fast: true },
+    { top: '78%', left: '25%', size: 2, delay: '2.2s', fast: false },
+    { top: '84%', left: '86%', size: 2.5, delay: '0.9s', fast: true },
+    { top: '90%', left: '18%', size: 3, delay: '1.9s', fast: false },
+    { top: '95%', left: '65%', size: 2, delay: '2.7s', fast: true },
+    { top: '12%', left: '22%', size: 2, delay: '1.9s', fast: false },
+    { top: '33%', left: '95%', size: 2.5, delay: '2.7s', fast: true },
+    { top: '58%', left: '44%', size: 2, delay: '0.6s', fast: true },
+    { top: '75%', left: '8%', size: 2.5, delay: '3.3s', fast: false },
+    { top: '88%', left: '58%', size: 2, delay: '1.4s', fast: true },
+    { top: '45%', left: '6%', size: 2, delay: '2.9s', fast: false },
+    { top: '2%', left: '48%', size: 2.5, delay: '0.7s', fast: true },
+    { top: '22%', left: '50%', size: 2, delay: '3.5s', fast: false },
+  ];
+
+  return (
+    <div
+      aria-hidden="true"
+      className="fixed inset-0 pointer-events-none overflow-hidden z-0 transition-opacity duration-700 opacity-40 dark:opacity-55"
+      style={{ willChange: 'transform' }}
+    >
+      {/* Deep Space Background Aura - Cosmic Gradient Dust */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(99,102,241,0.2),rgba(255,255,255,0))] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.35),rgba(15,23,42,0))]" />
+
+      {/* Layer 1: Parallax Cosmic Nebula 1 (Top-Right Violet / Indigo Swirl) */}
+      <div
+        className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full blur-3xl animate-galaxy-pulse"
+        style={{
+          background: 'radial-gradient(circle, rgba(139, 92, 246, 0.45) 0%, rgba(99, 102, 241, 0.28) 40%, transparent 70%)',
+          transform: `translate3d(0, ${nebulaOffset1}px, 0)`,
+          willChange: 'transform'
+        }}
+      />
+
+      {/* Layer 2: Parallax Cosmic Nebula 2 (Mid-Left Cyan / Deep Sapphire Cloud) */}
+      <div
+        className="absolute top-[35%] -left-44 w-[540px] h-[540px] rounded-full blur-3xl animate-galaxy-pulse"
+        style={{
+          background: 'radial-gradient(circle, rgba(6, 182, 212, 0.35) 0%, rgba(59, 130, 246, 0.24) 45%, transparent 75%)',
+          transform: `translate3d(0, ${nebulaOffset2}px, 0)`,
+          animationDelay: '-6s',
+          willChange: 'transform'
+        }}
+      />
+
+      {/* Layer 3: Parallax Golden Starlight / Warm Amber Endowments Aurora */}
+      <div
+        className="absolute top-[65%] -right-24 w-[520px] h-[520px] rounded-full blur-3xl animate-galaxy-pulse"
+        style={{
+          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, rgba(244, 63, 94, 0.2) 50%, transparent 75%)',
+          transform: `translate3d(0, ${nebulaOffset3}px, 0)`,
+          animationDelay: '-10s',
+          willChange: 'transform'
+        }}
+      />
+
+      {/* Layer 4: Rotating Spiral Galaxy Core (Slow Ambient Celestial Spin + Scroll Shift) */}
+      <div
+        className="absolute top-20 left-1/2 -translate-x-1/2 w-[720px] h-[720px] rounded-full opacity-50 dark:opacity-75 animate-galaxy-spin pointer-events-none"
+        style={{
+          background: 'conic-gradient(from 0deg, rgba(99, 102, 241, 0.22), rgba(168, 85, 247, 0.28), rgba(6, 182, 212, 0.2), rgba(245, 158, 11, 0.18), rgba(99, 102, 241, 0.22))',
+          filter: 'blur(60px)',
+          transform: `translate3d(-50%, ${nebulaOffset1 * 0.75}px, 0) rotate(${spiralRotation}deg)`,
+          willChange: 'transform'
+        }}
+      />
+
+      {/* Layer 5: Parallax Starfield Constellations with Soft Twinkling */}
+      <div
+        className="absolute inset-0"
+        style={{
+          transform: `translate3d(0, ${starfieldOffset}px, 0)`,
+          willChange: 'transform'
+        }}
+      >
+        {STARS.map((star, idx) => (
+          <div
+            key={`star-${idx}`}
+            className={`absolute rounded-full bg-indigo-500/80 dark:bg-amber-100 ${
+              star.fast ? 'animate-star-twinkle-fast' : 'animate-star-twinkle-slow'
+            }`}
+            style={{
+              top: star.top,
+              left: star.left,
+              width: `${star.size}px`,
+              height: `${star.size}px`,
+              animationDelay: star.delay,
+              boxShadow: `0 0 ${star.size * 2}px rgba(99, 102, 241, 0.7), 0 0 ${star.size * 4}px rgba(168, 85, 247, 0.5)`
+            }}
+          />
+        ))}
+
+        {/* Ambient Comet Passage (Subtle Shooting Star) */}
+        <div
+          className="absolute top-10 left-12 w-32 h-[2px] bg-gradient-to-r from-transparent via-indigo-400 dark:via-white to-transparent rounded-full animate-comet pointer-events-none"
+          style={{
+            boxShadow: '0 0 6px rgba(99,102,241,0.9), 0 0 12px rgba(168,85,247,0.7)'
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function JobsView({
   jobs = [],
   savedJobIds = [],
@@ -84,6 +215,27 @@ export default function JobsView({
   const [onlyScholarships, setOnlyScholarships] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [appliedJobsMap, setAppliedJobsMap] = useState(() => storageService.getAppliedJobIds());
+
+  // Parallax Scroll Tracker for Silky Smooth Galaxy Animation
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    let rafId = null;
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(() => {
+        setScrollY(window.scrollY || document.documentElement.scrollTop || 0);
+        rafId = null;
+      });
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   // Automatic Deep Link Resolver (e.g. /careers/somethinglead or ?job=somethinglead)
   useEffect(() => {
@@ -265,8 +417,12 @@ export default function JobsView({
   ).length;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4 pb-safe-nav animate-in fade-in duration-200">
-      {/* Luxury Careers & Scholarships Hero Banner with Embedded Interview Video Opacity Animation */}
+    <div className="relative min-h-screen">
+      {/* Low-Opacity Galaxy Animation Background (Moves When Scrolled) */}
+      <GalaxyBackground scrollY={scrollY} />
+
+      <div className="relative z-10 max-w-2xl mx-auto px-4 py-4 pb-safe-nav animate-in fade-in duration-200">
+        {/* Luxury Careers & Scholarships Hero Banner with Embedded Interview Video Opacity Animation */}
       <div className="relative rounded-3xl bg-gradient-to-br from-indigo-50/90 via-slate-50 to-amber-50/40 text-slate-900 dark:from-slate-950 dark:via-indigo-950 dark:to-slate-900 dark:text-white p-6 sm:p-7 shadow-xl dark:shadow-2xl border border-slate-200/90 dark:border-indigo-900/40 mb-6 overflow-hidden">
         {/* Ambient Hardware-Accelerated Opacity Breathing Orbs */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-amber-500/15 via-indigo-600/10 to-transparent rounded-full blur-3xl pointer-events-none animate-job-opacity-glow"></div>
@@ -305,7 +461,7 @@ export default function JobsView({
                     className="w-[118%] h-[118%] object-cover object-center max-w-none"
                   />
                 </span>
-                <span>Executive Career Sanctuary</span>
+                <span>Job Vacancy</span>
               </span>
               <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 hidden sm:inline">
                 Verified Direct Openings
@@ -459,10 +615,10 @@ export default function JobsView({
       <div className="flex items-center space-x-2 overflow-x-auto scrollbar-none pb-2 mb-4 text-xs font-bold">
         <button
           onClick={() => setOnlyFeatured(!onlyFeatured)}
-          className={`px-3 py-1.5 rounded-xl border transition-all flex items-center space-x-1 whitespace-nowrap ${
+          className={`px-3 py-1.5 rounded-xl border transition-all duration-200 active:scale-95 ease-out flex items-center space-x-1 whitespace-nowrap ${
             onlyFeatured
               ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm'
-              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+              : 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-xs text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300'
           }`}
         >
           <Sparkles className="w-3 h-3 text-amber-400" />
@@ -471,10 +627,10 @@ export default function JobsView({
 
         <button
           onClick={() => setOnlyRemote(!onlyRemote)}
-          className={`px-3 py-1.5 rounded-xl border transition-all flex items-center space-x-1 whitespace-nowrap ${
+          className={`px-3 py-1.5 rounded-xl border transition-all duration-200 active:scale-95 ease-out flex items-center space-x-1 whitespace-nowrap ${
             onlyRemote
               ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm'
-              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+              : 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-xs text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300'
           }`}
         >
           <Globe className="w-3 h-3 text-indigo-400" />
@@ -483,10 +639,10 @@ export default function JobsView({
 
         <button
           onClick={() => setOnlySaved(!onlySaved)}
-          className={`px-3 py-1.5 rounded-xl border transition-all flex items-center space-x-1 whitespace-nowrap ${
+          className={`px-3 py-1.5 rounded-xl border transition-all duration-200 active:scale-95 ease-out flex items-center space-x-1 whitespace-nowrap ${
             onlySaved
               ? 'bg-emerald-600 text-white border-emerald-500 shadow-sm'
-              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+              : 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-xs text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300'
           }`}
         >
           <Bookmark className="w-3 h-3 text-emerald-400" />
@@ -495,10 +651,10 @@ export default function JobsView({
 
         <button
           onClick={() => setOnlyScholarships(!onlyScholarships)}
-          className={`px-3 py-1.5 rounded-xl border transition-all flex items-center space-x-1 whitespace-nowrap ${
+          className={`px-3 py-1.5 rounded-xl border transition-all duration-200 active:scale-95 ease-out flex items-center space-x-1 whitespace-nowrap ${
             onlyScholarships
               ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm font-black'
-              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
+              : 'bg-white/90 dark:bg-slate-800/90 backdrop-blur-xs text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300'
           }`}
         >
           <GraduationCap className="w-3.5 h-3.5 text-amber-500" />
@@ -515,7 +671,7 @@ export default function JobsView({
               setSelectedDept('All');
               setSearchQuery('');
             }}
-            className="px-2.5 py-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-semibold whitespace-nowrap"
+            className="px-2.5 py-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-semibold whitespace-nowrap active:scale-95 transition-all"
           >
             Reset Filters
           </button>
@@ -529,9 +685,9 @@ export default function JobsView({
             <button
               key={dept}
               onClick={() => setSelectedDept(dept)}
-              className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 active:scale-95 ${
                 selectedDept === dept
-                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800/60'
               }`}
             >
@@ -552,9 +708,9 @@ export default function JobsView({
               <div
                 key={job.id}
                 onClick={() => setSelectedJob(job)}
-                className={`group relative bg-white dark:bg-slate-800/90 rounded-3xl p-5 border transition-all duration-200 hover:shadow-xl cursor-pointer ${
+                className={`group relative bg-white/95 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl p-5 border soft-card cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-[0.99] ${
                   job.isFeatured
-                    ? 'border-amber-400/40 dark:border-amber-500/30 ring-1 ring-amber-400/20 shadow-md shadow-amber-500/5'
+                    ? 'border-amber-400/50 dark:border-amber-500/30 ring-1 ring-amber-400/20 shadow-md shadow-amber-500/5'
                     : 'border-slate-200/90 dark:border-slate-700/80 shadow-xs'
                 }`}
               >
@@ -712,6 +868,7 @@ export default function JobsView({
           onApplySuccess={handleApplySuccess}
         />
       )}
+      </div>
     </div>
   );
 }

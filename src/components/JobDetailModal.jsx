@@ -23,7 +23,8 @@ import {
   Flame,
   ChevronRight,
   Video,
-  Copy
+  Copy,
+  Camera
 } from 'lucide-react';
 import { Share as CapacitorShare } from '@capacitor/share';
 
@@ -326,6 +327,34 @@ export default function JobDetailModal({
                   </h4>
                   <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
                     {job.description}
+                  </div>
+                </div>
+              )}
+
+              {/* Workplace & Vacancy Showcase Photos Gallery */}
+              {Array.isArray(job.photos) && job.photos.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+                      <Camera className="w-3.5 h-3.5" />
+                    </div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      Workplace & Environment Gallery ({job.photos.length})
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    {job.photos.map((photoUrl, pIdx) => (
+                      <div
+                        key={pIdx}
+                        className="relative aspect-video rounded-2xl overflow-hidden border border-slate-200/80 dark:border-slate-800 bg-slate-900 shadow-xs group"
+                      >
+                        <img
+                          src={photoUrl}
+                          alt={`${job.company} photo ${pIdx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

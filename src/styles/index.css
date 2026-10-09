@@ -44,6 +44,17 @@
   color: #382c1d !important;
 }
 
+/* Base & Dark Theme Backgrounds for Seamless Edge-to-Edge Experience */
+html, body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+html.dark, html.dark body {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
 /* Theme: Dark */
 .theme-dark {
   background-color: #0f172a !important;
@@ -611,5 +622,124 @@ html.palette-slate .shadow-indigo-500\/30 {
 
 .animate-interview-scan {
   animation: interviewScanline 5s linear infinite;
+}
+
+/* ==========================================================
+   ULTRA-SMOOTH & SOFT LUXURY APP SCROLLING & TRANSITIONS
+   Silky touch physics, soft momentum, zero-jank hardware acceleration
+   ========================================================== */
+
+html {
+  scroll-behavior: smooth !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Soft ease curve for all cards and interactive elements */
+.soft-card {
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              background-color 0.2s ease;
+  will-change: transform;
+}
+
+.soft-card:hover {
+  transform: translateY(-2px);
+}
+
+.soft-card:active {
+  transform: scale(0.99) translateY(0);
+}
+
+/* ==========================================================
+   LOW-OPACITY GALAXY ANIMATION (SCROLL-RESPONSIVE AMBIENT COSMOS)
+   ========================================================== */
+
+@keyframes galaxySpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes galaxyReverseSpin {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes galaxyPulse {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes cometPassage {
+  0% {
+    transform: translate(-100px, -100px) rotate(-45deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+  }
+  35% {
+    transform: translate(650px, 650px) rotate(-45deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(650px, 650px) rotate(-45deg);
+    opacity: 0;
+  }
+}
+
+.animate-galaxy-spin {
+  animation: galaxySpin 140s linear infinite;
+}
+
+.animate-galaxy-reverse-spin {
+  animation: galaxyReverseSpin 180s linear infinite;
+}
+
+.animate-galaxy-pulse {
+  animation: galaxyPulse 14s ease-in-out infinite;
+}
+
+.animate-star-twinkle-fast {
+  animation: starTwinkle 3s ease-in-out infinite;
+}
+
+.animate-star-twinkle-slow {
+  animation: starTwinkle 5.5s ease-in-out infinite;
+}
+
+.animate-comet {
+  animation: cometPassage 18s ease-in-out infinite;
 }
 
