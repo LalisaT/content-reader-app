@@ -1,9 +1,10 @@
 /**
  * Patches @capacitor-community/admob Android BannerExecutor.java so that:
- * 1. The AdMob Banner is NEVER removed or destroyed on onAdFailedToLoad (e.g. during auto-refresh or temporary no-fill).
- * 2. Instead, it stays mounted 24/7 and automatically retries loading after 10 seconds.
- * 3. Calling showBanner when mAdView already exists dynamically updates the bottom margin (e.g. 0px in reader vs 56px above BottomNav)
- *    and resolves the Capacitor call cleanly without reloading or interrupting the live ad.
+ * 1. The AdMob Banner is NEVER removed or destroyed on onAdFailedToLoad (stays mounted 24/7 and retries in 10s).
+ * 2. Calling showBanner when mAdView != null dynamically updates the bottom margin + safe system navigation bar inset
+ *    without reloading or interrupting the live ad.
+ * 3. Fixes the Android 15+ DecorView OnApplyWindowInsetsListener bug in @capacitor-community/admob so the Android
+ *    3-button navigation bar (||| O <) NEVER overlaps the AdMob Banner Ad.
  */
 const fs = require('fs');
 const path = require('path');
@@ -20,34 +21,57 @@ try {
   }
 
   let content = fs.readFileSync(targetFile, 'utf8');
-  let modified = false;
 
-  // 1. Update showBanner when mAdView != null so it adjusts margin dynamically without reloading the ad
-  const oldExistingCheck1 = `        if (mAdView != null) {
-            updateExistingAdView(adOptions);
-            return;
-        }`;
+  // Ensure currentDensityMargin field and computeSafeBottomMargin helper exist on BannerExecutor
+  if (!content.includes('private int currentDensityMargin = 0;')) {
+    content = content.replace(
+      '    private ViewGroup mViewGroup;',
+      `    private ViewGroup mViewGroup;
+    private int currentDensityMargin = 0;
 
-  const oldExistingCheck2 = `        if (mAdView != null) {
-            activitySupplier.get().runOnUiThread(() -> {
-                if (mAdViewLayout != null) {
-                    mAdViewLayout.setVisibility(View.VISIBLE);
+    private int computeSafeBottomMargin(int baseMarginPx) {
+        int unconsumedBottomInset = 0;
+        try {
+            Activity activity = activitySupplier.get();
+            if (activity != null && activity.getWindow() != null) {
+                View decorView = activity.getWindow().getDecorView();
+                View contentView = activity.findViewById(android.R.id.content);
+                int rawBottom = 0;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && decorView.getRootWindowInsets() != null) {
+                    rawBottom = decorView.getRootWindowInsets().getInsetsIgnoringVisibility(
+                        android.view.WindowInsets.Type.systemBars() | android.view.WindowInsets.Type.navigationBars()
+                    ).bottom;
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && decorView.getRootWindowInsets() != null) {
+                    rawBottom = decorView.getRootWindowInsets().getSystemWindowInsetBottom();
                 }
-                if (mAdView != null) {
-                    mAdView.resume();
+                int paddedBottom = 0;
+                if (mViewGroup != null) paddedBottom += mViewGroup.getPaddingBottom();
+                if (contentView != null) paddedBottom += contentView.getPaddingBottom();
+                if (mViewGroup != null && decorView.getHeight() > 0 && mViewGroup.getBottom() > 0) {
+                    int gapFromDecorBottom = decorView.getHeight() - mViewGroup.getBottom();
+                    if (gapFromDecorBottom > 0) {
+                        paddedBottom = Math.max(paddedBottom, gapFromDecorBottom);
+                    }
                 }
-            });
-            call.resolve();
-            return;
-        }`;
+                unconsumedBottomInset = Math.max(0, rawBottom - paddedBottom);
+            }
+        } catch (Exception ignored) {}
+        return baseMarginPx + unconsumedBottomInset;
+    }`
+    );
+  }
 
-  const newExistingCheck = `        if (mAdView != null) {
+  // Replace any existing `if (mAdView != null)` block in showBanner
+  const mAdViewBlockRegex = /if\s*\(\s*mAdView\s*!=\s*null\s*\)\s*\{[\s\S]*?return;\s*\}/;
+  const newExistingBlock = `if (mAdView != null) {
             final int updatedDensityMargin = (int) (adOptions.margin * density);
+            currentDensityMargin = updatedDensityMargin;
             activitySupplier.get().runOnUiThread(() -> {
                 if (mAdViewLayout != null) {
                     if (mAdViewLayout.getLayoutParams() instanceof CoordinatorLayout.LayoutParams) {
                         CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) mAdViewLayout.getLayoutParams();
-                        params.setMargins(params.leftMargin, updatedDensityMargin, params.rightMargin, updatedDensityMargin);
+                        int safeBottom = computeSafeBottomMargin(updatedDensityMargin);
+                        params.setMargins(params.leftMargin, updatedDensityMargin, params.rightMargin, safeBottom);
                         mAdViewLayout.setLayoutParams(params);
                     }
                     mAdViewLayout.setVisibility(View.VISIBLE);
@@ -60,15 +84,45 @@ try {
             return;
         }`;
 
-  if (content.includes(oldExistingCheck1)) {
-    content = content.replace(oldExistingCheck1, newExistingCheck);
-    modified = true;
-  } else if (content.includes(oldExistingCheck2)) {
-    content = content.replace(oldExistingCheck2, newExistingCheck);
-    modified = true;
-  }
+  content = content.replace(mAdViewBlockRegex, newExistingBlock);
 
-  // 2. Fix onAdFailedToLoad removing & destroying the banner view
+  // Update initial densityMargin assignment to also set currentDensityMargin and use computeSafeBottomMargin
+  content = content.replace(
+    'int densityMargin = (int) (adOptions.margin * density);',
+    'int densityMargin = (int) (adOptions.margin * density);\n            currentDensityMargin = densityMargin;'
+  );
+
+  content = content.replace(
+    'mAdViewLayoutParams.setMargins(margin, densityMargin, margin, densityMargin);',
+    'mAdViewLayoutParams.setMargins(margin, densityMargin, margin, computeSafeBottomMargin(densityMargin));'
+  );
+
+  content = content.replace(
+    'mAdViewLayoutParams.setMargins(sideMargin, densityMargin, sideMargin, densityMargin);',
+    'mAdViewLayoutParams.setMargins(sideMargin, densityMargin, sideMargin, computeSafeBottomMargin(densityMargin));'
+  );
+
+  // Fix the Android 15+ WindowInsets listener so it NEVER swallows DecorView.onApplyWindowInsets(insets)
+  // and always uses currentDensityMargin + unconsumedBottomInset
+  const windowInsetsRegex = /\/\/\s*set Safe Area only for Android 15\+[\s\S]*?createNewAdView\(adOptions\);/;
+  const newWindowInsetsBlock = `// Keep Banner above Android system navigation bar across all inset updates without breaking DecorView
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && mAdViewLayout != null) {
+                mAdViewLayout.post(() -> {
+                    try {
+                        if (mAdViewLayout != null && mAdViewLayout.getLayoutParams() instanceof CoordinatorLayout.LayoutParams) {
+                            CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) mAdViewLayout.getLayoutParams();
+                            params.setMargins(params.leftMargin, currentDensityMargin, params.rightMargin, computeSafeBottomMargin(currentDensityMargin));
+                            mAdViewLayout.setLayoutParams(params);
+                        }
+                    } catch (Exception ignored) {}
+                });
+            }
+
+            createNewAdView(adOptions);`;
+
+  content = content.replace(windowInsetsRegex, newWindowInsetsBlock);
+
+  // Fix onAdFailedToLoad removing & destroying the banner view
   const oldFailedBlock = `                            mViewGroup.removeView(mAdViewLayout);
                             mAdViewLayout.removeView(adView);
                             adView.destroy();
@@ -85,15 +139,10 @@ try {
 
   if (content.includes(oldFailedBlock)) {
     content = content.replace(oldFailedBlock, newFailedBlock);
-    modified = true;
   }
 
-  if (modified) {
-    fs.writeFileSync(targetFile, content, 'utf8');
-    console.log('[patch-admob-banner] Successfully patched BannerExecutor.java for 24/7 non-removable AdMob banner with dynamic margin.');
-  } else {
-    console.log('[patch-admob-banner] BannerExecutor.java already up to date.');
-  }
+  fs.writeFileSync(targetFile, content, 'utf8');
+  console.log('[patch-admob-banner] Successfully patched BannerExecutor.java for 24/7 non-removable AdMob banner with safe navigation bar inset.');
 } catch (err) {
   console.warn('[patch-admob-banner] Warning:', err.message);
 }

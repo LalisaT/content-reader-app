@@ -18,15 +18,16 @@ import BannerAd from './components/BannerAd';
 import HomeFeed from './views/HomeFeed';
 import LuxuryNotificationBanner from './components/LuxuryNotificationBanner';
 
-// High-Performance Code-Splitting: Lazy load secondary views & modals off initial boot thread
-const ArticleDetail = lazy(() => import('./views/ArticleDetail'));
-const ExploreView = lazy(() => import('./views/ExploreView'));
-const BookmarksView = lazy(() => import('./views/BookmarksView'));
-const SettingsView = lazy(() => import('./views/SettingsView'));
+import ArticleDetail from './views/ArticleDetail';
+import ExploreView from './views/ExploreView';
+import BookmarksView from './views/BookmarksView';
+import SettingsView from './views/SettingsView';
+import JobsView from './views/JobsView';
+
+// Lazy load secondary legal views & modals
 const PolicyView = lazy(() => import('./views/PolicyView'));
 const TermsView = lazy(() => import('./views/TermsView'));
 const DisclaimerView = lazy(() => import('./views/DisclaimerView'));
-const JobsView = lazy(() => import('./views/JobsView'));
 
 const InterstitialModal = lazy(() => import('./components/InterstitialModal'));
 const RewardedModal = lazy(() => import('./components/RewardedModal'));
@@ -128,7 +129,7 @@ export default function App() {
     if (articleData) {
       setActiveArticle(articleData);
       setActiveTab('feed');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo(0, 0);
     } else if (articleId) {
       const allArticlesList = cloudArticles && cloudArticles.length > 0 ? cloudArticles : initialArticlesData;
       const target = allArticlesList.find((a) => String(a.id) === String(articleId));
@@ -136,7 +137,7 @@ export default function App() {
         setActiveArticle(target);
         setPendingArticleId(null);
         setActiveTab('feed');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo(0, 0);
       } else {
         // Wait for live Firestore stream to populate cloudArticles
         setPendingArticleId(String(articleId));
@@ -152,7 +153,7 @@ export default function App() {
     if (careerSlug) {
       setPendingCareerSlug(String(careerSlug));
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
   };
 
   // Resolve pending deep-linked article as soon as cloudArticles stream arrives
@@ -469,7 +470,7 @@ export default function App() {
           // 5. If in another tab (Explore, Bookmarks, Settings), navigate back to Home Feed
           if (state.activeTab !== 'feed') {
             setActiveTab('feed');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo(0, 0);
             return;
           }
 
@@ -558,7 +559,7 @@ export default function App() {
   const handleSelectCategoryFromExplore = (categoryLabel) => {
     setSelectedCategory(categoryLabel || 'All');
     setActiveTab('feed');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
   };
 
   const fontClass = appConfig.fontFamily === 'serif' ? 'font-serif' : 'font-sans';
@@ -616,7 +617,7 @@ export default function App() {
             activeTab={activeTab}
             onTabChange={(tab) => {
               setActiveTab(tab);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo(0, 0);
             }}
             bookmarkCount={bookmarks.length}
             onOpenDailyTip={() => setIsDailyTipOpen(true)}
@@ -651,7 +652,7 @@ export default function App() {
                 onVotePoll={(pollId, optionId) => firestoreSyncService.votePoll(pollId, optionId)}
                 onNavigateToJobs={() => {
                   setActiveTab('jobs');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  window.scrollTo(0, 0);
                 }}
                 isLoading={isLoadingArticles}
                 error={articlesError}
@@ -681,7 +682,7 @@ export default function App() {
                   onSelectCategory={handleSelectCategoryFromExplore}
                   onNavigateToJobs={() => {
                     setActiveTab('jobs');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    window.scrollTo(0, 0);
                   }}
                 />
               )}
@@ -760,7 +761,7 @@ export default function App() {
             activeTab={activeTab}
             onTabChange={(tab) => {
               setActiveTab(tab);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.scrollTo(0, 0);
             }}
             bookmarkCount={bookmarks.length}
           />

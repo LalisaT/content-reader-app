@@ -78,166 +78,206 @@ const INTERVIEW_STAGES = [
   },
 ];
 
-// -------------------------------------------------------------
-// Low-Opacity Galaxy Background with Scroll-Responsive Parallax
-// Soft, celestial cosmic motion: deep nebula clouds, rotating star vortex,
-// twinkling constellations, and subtle shooting comet passage.
-// -------------------------------------------------------------
-// Curated Starfield constellation coordinates (percentages)
-const GALAXY_STARS = [
-  { top: '5%', left: '12%', size: 2.5, delay: '0s', fast: true },
-  { top: '8%', left: '76%', size: 3, delay: '1.2s', fast: false },
-  { top: '14%', left: '38%', size: 2, delay: '2.4s', fast: true },
-  { top: '19%', left: '88%', size: 2.5, delay: '0.8s', fast: false },
-  { top: '24%', left: '7%', size: 3.5, delay: '1.8s', fast: false },
-  { top: '30%', left: '60%', size: 2, delay: '3.1s', fast: true },
-  { top: '36%', left: '22%', size: 2.5, delay: '0.5s', fast: true },
-  { top: '42%', left: '84%', size: 3, delay: '2.1s', fast: false },
-  { top: '48%', left: '35%', size: 2, delay: '1.5s', fast: true },
-  { top: '54%', left: '92%', size: 2.5, delay: '3.7s', fast: false },
-  { top: '60%', left: '14%', size: 3, delay: '0.3s', fast: true },
-  { top: '66%', left: '50%', size: 2, delay: '2.8s', fast: false },
-  { top: '72%', left: '78%', size: 3.5, delay: '1.1s', fast: true },
-  { top: '78%', left: '25%', size: 2, delay: '2.2s', fast: false },
-  { top: '84%', left: '86%', size: 2.5, delay: '0.9s', fast: true },
-  { top: '90%', left: '18%', size: 3, delay: '1.9s', fast: false },
-  { top: '95%', left: '65%', size: 2, delay: '2.7s', fast: true },
-  { top: '12%', left: '22%', size: 2, delay: '1.9s', fast: false },
-  { top: '33%', left: '95%', size: 2.5, delay: '2.7s', fast: true },
-  { top: '58%', left: '44%', size: 2, delay: '0.6s', fast: true },
-  { top: '75%', left: '8%', size: 2.5, delay: '3.3s', fast: false },
-  { top: '88%', left: '58%', size: 2, delay: '1.4s', fast: true },
-  { top: '45%', left: '6%', size: 2, delay: '2.9s', fast: false },
-  { top: '2%', left: '48%', size: 2.5, delay: '0.7s', fast: true },
-  { top: '22%', left: '50%', size: 2, delay: '3.5s', fast: false },
+const HIGHLIGHT_ITEMS = [
+  {
+    badge: 'Presidential Scholarship',
+    title: 'Global AI & Technology Fellowship 2026',
+    subtitle: 'Vanguard Academic Foundation • Fully Funded Endowment',
+    value: '$120k Grant',
+    isScholarship: true
+  },
+  {
+    badge: 'VIP Executive Search',
+    title: 'Principal AI & Systems Architect',
+    subtitle: 'Apex Global Labs • London HQ & Worldwide Remote',
+    value: '$225k / yr',
+    isScholarship: false
+  },
+  {
+    badge: 'Creative Fellowship',
+    title: 'Executive Creative Director & Luxury Brand Lead',
+    subtitle: 'Maison Lalisa Studio • Paris & Hybrid',
+    value: '$190k / yr',
+    isScholarship: false
+  },
+  {
+    badge: 'Endowed Research Chair',
+    title: 'Cognitive UX & Spatial Systems Fellow',
+    subtitle: 'Cerebral Dynamics • Worldwide Remote',
+    value: '$175k Grant',
+    isScholarship: true
+  }
 ];
 
 const GalaxyBackground = React.memo(function GalaxyBackground() {
-  const layer1Ref = React.useRef(null);
-  const layer2Ref = React.useRef(null);
-  const layer3Ref = React.useRef(null);
-  const layer4Ref = React.useRef(null);
-  const layer5Ref = React.useRef(null);
-
-  useEffect(() => {
-    let rafId = null;
-    const updateParallax = () => {
-      const y = window.scrollY || document.documentElement.scrollTop || 0;
-      if (layer1Ref.current) {
-        layer1Ref.current.style.transform = `translate3d(0, ${-y * 0.16}px, 0)`;
-      }
-      if (layer2Ref.current) {
-        layer2Ref.current.style.transform = `translate3d(0, ${-y * 0.26}px, 0)`;
-      }
-      if (layer3Ref.current) {
-        layer3Ref.current.style.transform = `translate3d(0, ${-y * 0.12}px, 0)`;
-      }
-      if (layer4Ref.current) {
-        layer4Ref.current.style.transform = `translate3d(-50%, ${-y * 0.12}px, 0) rotate(${y * 0.05}deg)`;
-      }
-      if (layer5Ref.current) {
-        layer5Ref.current.style.transform = `translate3d(0, ${-y * 0.38}px, 0)`;
-      }
-      rafId = null;
-    };
-
-    const handleScroll = () => {
-      if (rafId) return;
-      rafId = window.requestAnimationFrame(updateParallax);
-    };
-
-    updateParallax();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (rafId) window.cancelAnimationFrame(rafId);
-    };
-  }, []);
-
   return (
     <div
       aria-hidden="true"
-      className="fixed inset-0 pointer-events-none overflow-hidden z-0 transition-opacity duration-700 opacity-40 dark:opacity-55"
-      style={{ willChange: 'transform' }}
+      className="fixed inset-0 pointer-events-none overflow-hidden z-0 opacity-40 dark:opacity-50"
     >
-      {/* Deep Space Background Aura - Cosmic Gradient Dust */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(99,102,241,0.2),rgba(255,255,255,0))] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.35),rgba(15,23,42,0))]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,rgba(99,102,241,0.18),rgba(255,255,255,0))] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,rgba(120,119,198,0.28),rgba(15,23,42,0))]" />
+    </div>
+  );
+});
 
-      {/* Layer 1: Parallax Cosmic Nebula 1 (Top-Right Violet / Indigo Swirl) */}
-      <div
-        ref={layer1Ref}
-        className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full blur-3xl animate-galaxy-pulse"
-        style={{
-          background: 'radial-gradient(circle, rgba(139, 92, 246, 0.45) 0%, rgba(99, 102, 241, 0.28) 40%, transparent 70%)',
-          willChange: 'transform'
-        }}
-      />
+const JobsHeroBanner = React.memo(function JobsHeroBanner({
+  activeCount,
+  scholarshipCount,
+  remoteCount,
+  savedCount
+}) {
+  const [activeStageIdx, setActiveStageIdx] = useState(0);
+  const [highlightIdx, setHighlightIdx] = useState(0);
+  const [highlightVisible, setHighlightVisible] = useState(true);
 
-      {/* Layer 2: Parallax Cosmic Nebula 2 (Mid-Left Cyan / Deep Sapphire Cloud) */}
-      <div
-        ref={layer2Ref}
-        className="absolute top-[35%] -left-44 w-[540px] h-[540px] rounded-full blur-3xl animate-galaxy-pulse"
-        style={{
-          background: 'radial-gradient(circle, rgba(6, 182, 212, 0.35) 0%, rgba(59, 130, 246, 0.24) 45%, transparent 75%)',
-          animationDelay: '-6s',
-          willChange: 'transform'
-        }}
-      />
+  useEffect(() => {
+    const stageTimer = setInterval(() => {
+      setActiveStageIdx((prev) => (prev + 1) % INTERVIEW_STAGES.length);
+    }, 5000);
+    return () => clearInterval(stageTimer);
+  }, []);
 
-      {/* Layer 3: Parallax Golden Starlight / Warm Amber Endowments Aurora */}
-      <div
-        ref={layer3Ref}
-        className="absolute top-[65%] -right-24 w-[520px] h-[520px] rounded-full blur-3xl animate-galaxy-pulse"
-        style={{
-          background: 'radial-gradient(circle, rgba(245, 158, 11, 0.3) 0%, rgba(244, 63, 94, 0.2) 50%, transparent 75%)',
-          animationDelay: '-10s',
-          willChange: 'transform'
-        }}
-      />
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHighlightVisible(false);
+      setTimeout(() => {
+        setHighlightIdx((prev) => (prev + 1) % HIGHLIGHT_ITEMS.length);
+        setHighlightVisible(true);
+      }, 280);
+    }, 4200);
+    return () => clearInterval(timer);
+  }, []);
 
-      {/* Layer 4: Rotating Spiral Galaxy Core (Slow Ambient Celestial Spin + Scroll Shift) */}
-      <div
-        ref={layer4Ref}
-        className="absolute top-20 left-1/2 -translate-x-1/2 w-[720px] h-[720px] rounded-full opacity-50 dark:opacity-75 animate-galaxy-spin pointer-events-none"
-        style={{
-          background: 'conic-gradient(from 0deg, rgba(99, 102, 241, 0.22), rgba(168, 85, 247, 0.28), rgba(6, 182, 212, 0.2), rgba(245, 158, 11, 0.18), rgba(99, 102, 241, 0.22))',
-          filter: 'blur(60px)',
-          willChange: 'transform'
-        }}
-      />
+  const currentHighlight = HIGHLIGHT_ITEMS[highlightIdx] || HIGHLIGHT_ITEMS[0];
 
-      {/* Layer 5: Parallax Starfield Constellations with Soft Twinkling */}
-      <div
-        ref={layer5Ref}
-        className="absolute inset-0"
-        style={{
-          willChange: 'transform'
-        }}
-      >
-        {GALAXY_STARS.map((star, idx) => (
-          <div
-            key={`star-${idx}`}
-            className={`absolute rounded-full bg-indigo-500/80 dark:bg-amber-100 ${
-              star.fast ? 'animate-star-twinkle-fast' : 'animate-star-twinkle-slow'
+  return (
+    <div className="relative rounded-3xl bg-gradient-to-br from-indigo-50/90 via-slate-50 to-amber-50/40 text-slate-900 dark:from-slate-950 dark:via-indigo-950 dark:to-slate-900 dark:text-white p-5 sm:p-7 shadow-lg border border-slate-200/90 dark:border-indigo-900/40 mb-6 overflow-hidden min-w-0">
+      {/* Ambient Job Interview Video Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-35 dark:opacity-30">
+        {INTERVIEW_STAGES.map((stg, sIdx) => (
+          <img
+            key={`bg-${stg.id}`}
+            src={stg.src}
+            alt={stg.title}
+            decoding="async"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+              sIdx === activeStageIdx ? 'opacity-100' : 'opacity-0'
             }`}
-            style={{
-              top: star.top,
-              left: star.left,
-              width: `${star.size}px`,
-              height: `${star.size}px`,
-              animationDelay: star.delay,
-              boxShadow: `0 0 ${star.size * 2}px rgba(99, 102, 241, 0.7), 0 0 ${star.size * 4}px rgba(168, 85, 247, 0.5)`
+            onError={(e) => {
+              e.currentTarget.src = stg.fallback;
             }}
           />
         ))}
+        <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/60 to-white/25 dark:from-slate-950/90 dark:via-slate-950/65 dark:to-slate-950/35"></div>
+      </div>
 
-        {/* Ambient Comet Passage (Subtle Shooting Star) */}
-        <div
-          className="absolute top-10 left-12 w-32 h-[2px] bg-gradient-to-r from-transparent via-indigo-400 dark:via-white to-transparent rounded-full animate-comet pointer-events-none"
-          style={{
-            boxShadow: '0 0 6px rgba(99,102,241,0.9), 0 0 12px rgba(168,85,247,0.7)'
-          }}
-        />
+      <div className="relative z-10">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center space-x-2">
+            <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-amber-500/15 dark:bg-amber-400/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 dark:border-amber-400/30 flex items-center space-x-1.5">
+              <span className="w-3.5 h-3.5 rounded-full overflow-hidden inline-flex items-center justify-center shrink-0 shadow-xs border border-amber-400/60 bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500">
+                <img
+                  src="/career-growth-icon-gold.png"
+                  alt="Career Progression"
+                  className="w-full h-full object-cover object-center"
+                />
+              </span>
+              <span>Job Vacancy</span>
+            </span>
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 hidden sm:inline">
+              Verified Direct Openings
+            </span>
+          </div>
+        </div>
+
+        <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-2">
+          Executive Vacancies & Scholarship Opportunities
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300/90 leading-relaxed max-w-lg mb-3">
+          Discover bespoke executive roles, presidential scholarship endowments, and high-yield fellowships with verified global organizations.
+        </p>
+
+        {/* Special Slim Embedded Interview Showcase Card */}
+        <div className="relative my-3 rounded-2xl bg-white/80 dark:bg-slate-950/55 border border-slate-200/80 dark:border-white/10 overflow-hidden shadow-xs group">
+          <div className="relative z-10 p-3 sm:p-3.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center space-x-3 min-w-0">
+                <div className="relative flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 via-indigo-600/20 to-purple-600/15 border border-amber-500/40 dark:border-amber-400/40 flex items-center justify-center shadow-xs">
+                  {currentHighlight.isScholarship ? (
+                    <GraduationCap className="w-4 h-4 text-amber-600 dark:text-amber-300 relative z-10" />
+                  ) : (
+                    <Video className="w-4 h-4 text-amber-600 dark:text-amber-300 relative z-10" />
+                  )}
+                </div>
+
+                <div className="min-w-0">
+                  <div className="flex items-center space-x-2 mb-0.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-700 dark:text-amber-300 flex items-center space-x-1.5">
+                      <span className="inline-flex rounded-full h-1.5 w-1.5 bg-amber-500 dark:bg-amber-400"></span>
+                      <span>{currentHighlight.badge}</span>
+                    </span>
+                    <span className="text-[9px] text-slate-500 dark:text-slate-400 font-medium hidden xs:inline">• Direct Screening Active</span>
+                  </div>
+                  <div
+                    className={`text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate transition-opacity duration-200 ${
+                      highlightVisible ? 'opacity-100' : 'opacity-20'
+                    }`}
+                  >
+                    {currentHighlight.title}
+                  </div>
+                  <div className="text-[10px] text-slate-600 dark:text-slate-300/80 truncate">
+                    {currentHighlight.subtitle}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-shrink-0 text-right">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                  Endowment / Grant
+                </span>
+                <span className="text-xs sm:text-sm font-black text-amber-600 dark:text-amber-300 block">
+                  {currentHighlight.value}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Stats Grid */}
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-3 border-t border-slate-200/80 dark:border-white/10">
+          <div>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block">
+              Open Vacancies
+            </span>
+            <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+              {activeCount} Roles
+            </span>
+          </div>
+          <div>
+            <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase tracking-wider block">
+              Scholarships
+            </span>
+            <span className="text-base sm:text-lg font-black text-amber-600 dark:text-amber-300">
+              {scholarshipCount > 0 ? scholarshipCount : 2} Grants
+            </span>
+          </div>
+          <div>
+            <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider block">
+              Remote & Global
+            </span>
+            <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-300">
+              {remoteCount} Positions
+            </span>
+          </div>
+          <div className="hidden sm:block">
+            <span className="text-[10px] text-indigo-700 dark:text-indigo-400 font-bold uppercase tracking-wider block">
+              Saved Roles
+            </span>
+            <span className="text-base sm:text-lg font-black text-indigo-600 dark:text-indigo-300">
+              {savedCount} Saved
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -322,66 +362,6 @@ export default function JobsView({
       console.warn('Deep link resolution error:', e);
     }
   }, [jobs, targetCareerSlug]);
-
-  // Active camera interview feed stage (cycles or user switchable)
-  const [activeStageIdx, setActiveStageIdx] = useState(0);
-
-  useEffect(() => {
-    const stageTimer = setInterval(() => {
-      setActiveStageIdx((prev) => (prev + 1) % INTERVIEW_STAGES.length);
-    }, 4500);
-    return () => clearInterval(stageTimer);
-  }, []);
-
-  const currentStage = INTERVIEW_STAGES[activeStageIdx] || INTERVIEW_STAGES[0];
-
-  // Embedded opacity animation highlight rotation
-  const highlightItems = useMemo(() => [
-    {
-      badge: 'Presidential Scholarship',
-      title: 'Global AI & Technology Fellowship 2026',
-      subtitle: 'Vanguard Academic Foundation • Fully Funded Endowment',
-      value: '$120k Grant',
-      isScholarship: true
-    },
-    {
-      badge: 'VIP Executive Search',
-      title: 'Principal AI & Systems Architect',
-      subtitle: 'Apex Global Labs • London HQ & Worldwide Remote',
-      value: '$225k / yr',
-      isScholarship: false
-    },
-    {
-      badge: 'Creative Fellowship',
-      title: 'Executive Creative Director & Luxury Brand Lead',
-      subtitle: 'Maison Lalisa Studio • Paris & Hybrid',
-      value: '$190k / yr',
-      isScholarship: false
-    },
-    {
-      badge: 'Endowed Research Chair',
-      title: 'Cognitive UX & Spatial Systems Fellow',
-      subtitle: 'Cerebral Dynamics • Worldwide Remote',
-      value: '$175k Grant',
-      isScholarship: true
-    }
-  ], []);
-
-  const [highlightIdx, setHighlightIdx] = useState(0);
-  const [highlightVisible, setHighlightVisible] = useState(true);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setHighlightVisible(false);
-      setTimeout(() => {
-        setHighlightIdx((prev) => (prev + 1) % highlightItems.length);
-        setHighlightVisible(true);
-      }, 350);
-    }, 3800);
-    return () => clearInterval(timer);
-  }, [highlightItems.length]);
-
-  const currentHighlight = highlightItems[highlightIdx] || highlightItems[0];
 
   // Derive unique departments from existing jobs
   const departments = useMemo(() => {
@@ -473,175 +453,13 @@ export default function JobsView({
       {/* Low-Opacity Galaxy Animation Background (Moves When Scrolled) */}
       <GalaxyBackground />
 
-      <div className="relative z-10 max-w-2xl mx-auto px-3.5 sm:px-4 py-4 pb-safe-nav w-full min-w-0 animate-in fade-in duration-200">
-        {/* Luxury Careers & Scholarships Hero Banner with Embedded Interview Video Opacity Animation */}
-      <div className="relative rounded-3xl bg-gradient-to-br from-indigo-50/90 via-slate-50 to-amber-50/40 text-slate-900 dark:from-slate-950 dark:via-indigo-950 dark:to-slate-900 dark:text-white p-5 sm:p-7 shadow-xl dark:shadow-2xl border border-slate-200/90 dark:border-indigo-900/40 mb-6 overflow-hidden min-w-0">
-        {/* Ambient Hardware-Accelerated Opacity Breathing Orbs */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-bl from-amber-500/15 via-indigo-600/10 to-transparent rounded-full blur-3xl pointer-events-none animate-job-opacity-glow"></div>
-        <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-gradient-to-tr from-indigo-500/20 via-purple-600/10 to-transparent rounded-full blur-2xl pointer-events-none animate-job-opacity-pulse"></div>
-
-        {/* Ambient Job Interview Video Background: Cycling Interview Feeds (cand_9, cand_4, test_interview_3) with Rich Visible Opacity */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40 dark:opacity-35">
-          {INTERVIEW_STAGES.map((stg, sIdx) => (
-            <img
-              key={`bg-${stg.id}`}
-              src={stg.src}
-              alt={stg.title}
-              className={`absolute inset-0 w-full h-full object-cover filter contrast-120 brightness-100 animate-interview-cam transition-opacity duration-1000 ${
-                sIdx === activeStageIdx ? 'opacity-100' : 'opacity-0'
-              }`}
-              onError={(e) => {
-                e.currentTarget.src = stg.fallback;
-              }}
-            />
-          ))}
-          {/* Subtle Video Scanline */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-indigo-500/10 to-transparent h-24 animate-interview-scan pointer-events-none"></div>
-          {/* Luxury vignette overlay so foreground text is high contrast and ultra readable while office interview remains clearly visible */}
-          <div className="absolute inset-0 bg-gradient-to-t from-white/85 via-white/55 to-white/20 dark:from-slate-950/90 dark:via-slate-950/65 dark:to-slate-950/35"></div>
-        </div>
-
-        <div className="relative z-10">
-          {/* Header Badges */}
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <div className="flex items-center space-x-2">
-              <span className="text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-amber-500/15 dark:bg-amber-400/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 dark:border-amber-400/30 flex items-center space-x-1.5 backdrop-blur-xs">
-                <span className="w-3.5 h-3.5 rounded-full overflow-hidden inline-flex items-center justify-center shrink-0 shadow-xs border border-amber-400/60 bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500">
-                  <img
-                    src="/career-growth-icon-gold.png"
-                    alt="Career Progression"
-                    className="w-full h-full object-cover object-center"
-                  />
-                </span>
-                <span>Job Vacancy</span>
-              </span>
-              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 hidden sm:inline">
-                Verified Direct Openings
-              </span>
-            </div>
-          </div>
-
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight mb-2">
-            Executive Vacancies & Scholarship Opportunities
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300/90 leading-relaxed max-w-lg mb-3">
-            Discover bespoke executive roles, presidential scholarship endowments, and high-yield fellowships with verified global organizations.
-          </p>
-
-          {/* Special Slim Embedded Interview Showcase Card (Glassmorphism & Balanced Interview Opacity) */}
-          <div className="relative my-3 rounded-2xl bg-white/70 dark:bg-slate-950/40 backdrop-blur-md border border-slate-200/80 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-inner group">
-            {/* Low Opacity Interview Camera Feed Backdrop (Cycling Stages: Handshake -> Tech Review -> Offer) */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30 dark:opacity-30">
-              {INTERVIEW_STAGES.map((stg, sIdx) => (
-                <img
-                  key={`showcase-${stg.id}`}
-                  src={stg.src}
-                  alt={stg.title}
-                  className={`absolute inset-0 w-full h-full object-cover filter brightness-95 contrast-125 animate-interview-cam transition-opacity duration-1000 ${
-                    sIdx === activeStageIdx ? 'opacity-100' : 'opacity-0'
-                  }`}
-                  onError={(e) => {
-                    e.currentTarget.src = stg.fallback;
-                  }}
-                />
-              ))}
-              <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-white/45 to-white/80 dark:from-slate-950/85 dark:via-slate-950/50 dark:to-slate-950/85"></div>
-            </div>
-
-            {/* Shimmer Light Beam with Opacity Wave */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute -inset-full bg-gradient-to-r from-transparent via-amber-400/15 to-transparent animate-job-shimmer"></div>
-            </div>
-
-            {/* Video Interview Content */}
-            <div className="relative z-10 p-3 sm:p-3.5">
-              {/* Interview Role Details & Camera Viewfinder */}
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center space-x-3 min-w-0">
-                  {/* Camera Viewfinder Icon with Autofocus Brackets */}
-                  <div className="relative flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 via-indigo-600/20 to-purple-600/15 border border-amber-500/40 dark:border-amber-400/40 flex items-center justify-center shadow-sm">
-                    <div className="absolute inset-1 border border-dashed border-amber-500/50 dark:border-amber-400/50 rounded-lg animate-job-opacity-pulse pointer-events-none"></div>
-                    {currentHighlight.isScholarship ? (
-                      <GraduationCap className="w-4 h-4 text-amber-600 dark:text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
-                    ) : (
-                      <Video className="w-4 h-4 text-amber-600 dark:text-amber-300 relative z-10 transition-transform duration-300 group-hover:scale-110" />
-                    )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="flex items-center space-x-2 mb-0.5">
-                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-700 dark:text-amber-300 flex items-center space-x-1.5">
-                        <span className="relative flex h-1.5 w-1.5">
-                          <span className="animate-job-beacon absolute inline-flex h-full w-full rounded-full bg-amber-500 dark:bg-amber-400"></span>
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500 dark:bg-amber-400"></span>
-                        </span>
-                        <span>{currentHighlight.badge}</span>
-                      </span>
-                      <span className="text-[9px] text-slate-500 dark:text-slate-400 font-medium hidden xs:inline">• Direct Screening Active</span>
-                    </div>
-                    <div
-                      className={`text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate transition-opacity duration-300 ${
-                        highlightVisible ? 'opacity-100' : 'opacity-20'
-                      }`}
-                    >
-                      {currentHighlight.title}
-                    </div>
-                    <div className="text-[10px] text-slate-600 dark:text-slate-300/80 truncate">
-                      {currentHighlight.subtitle}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Endowment / Compensation Pill with Breathing Opacity */}
-                <div className="flex-shrink-0 text-right">
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
-                    Endowment / Grant
-                  </span>
-                  <span className="text-xs sm:text-sm font-black text-amber-600 dark:text-amber-300 animate-job-opacity-pulse block">
-                    {currentHighlight.value}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Stats Grid with Scholarships Prominently Displayed */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-3 border-t border-slate-200/80 dark:border-white/10">
-            <div>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block">
-                Open Vacancies
-              </span>
-              <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                {activeCount} Roles
-              </span>
-            </div>
-            <div>
-              <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase tracking-wider block">
-                Scholarships
-              </span>
-              <span className="text-base sm:text-lg font-black text-amber-600 dark:text-amber-300">
-                {scholarshipCount > 0 ? scholarshipCount : 2} Grants
-              </span>
-            </div>
-            <div>
-              <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider block">
-                Remote & Global
-              </span>
-              <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-300">
-                {remoteCount} Positions
-              </span>
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-[10px] text-indigo-700 dark:text-indigo-400 font-bold uppercase tracking-wider block">
-                Saved Roles
-              </span>
-              <span className="text-base sm:text-lg font-black text-indigo-600 dark:text-indigo-300">
-                {savedJobIds.length} Saved
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div className="relative z-10 max-w-2xl mx-auto px-3.5 sm:px-4 py-4 pb-safe-nav w-full min-w-0">
+        <JobsHeroBanner
+          activeCount={activeCount}
+          scholarshipCount={scholarshipCount}
+          remoteCount={remoteCount}
+          savedCount={savedJobIds.length}
+        />
 
       {/* Search Input Bar */}
       <div className="relative mb-4">
@@ -803,7 +621,7 @@ export default function JobsView({
               <div
                 key={job.id}
                 onClick={() => handleOpenJob(job)}
-                className={`group relative bg-white/95 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl p-4 sm:p-5 border soft-card cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-[0.99] w-full min-w-0 overflow-hidden ${
+                className={`group relative bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-5 border soft-card cv-auto cursor-pointer w-full min-w-0 overflow-hidden ${
                   job.isFeatured
                     ? 'border-amber-400/50 dark:border-amber-500/30 ring-1 ring-amber-400/20 shadow-md shadow-amber-500/5'
                     : 'border-slate-200/90 dark:border-slate-700/80 shadow-xs'

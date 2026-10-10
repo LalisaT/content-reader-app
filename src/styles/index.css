@@ -17,7 +17,7 @@
 
 /* Safe Area Inset Helpers for Android Edge-to-Edge & System Bars */
 .pb-safe-nav {
-  padding-bottom: calc(5.5rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))) !important;
+  padding-bottom: calc(7.5rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))) !important;
 }
 
 .pt-safe-header {
@@ -641,31 +641,35 @@ html.palette-slate .shadow-indigo-500\/30 {
    ========================================================== */
 
 html {
-  scroll-behavior: smooth !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
 }
 
 body {
-  scroll-behavior: smooth !important;
   -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+  overscroll-behavior-y: contain;
 }
 
-/* Soft ease curve for all cards and interactive elements */
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* Offscreen rendering optimization (Modern Web Guidance) */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 180px;
+}
+
+/* Crisp, zero-jank card transitions without excessive GPU memory layers */
 .soft-card {
-  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.2s ease,
-              background-color 0.2s ease;
-  will-change: transform;
-}
-
-.soft-card:hover {
-  transform: translateY(-2px);
+  transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.15s ease;
 }
 
 .soft-card:active {
-  transform: scale(0.99) translateY(0);
+  transform: scale(0.985);
 }
 
 /* ==========================================================

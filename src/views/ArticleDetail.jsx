@@ -176,26 +176,24 @@ export default function ArticleDetail({
 
       {/* Reader Navigation & Customization Toolbar */}
       <header 
-        className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-3 sm:px-4 h-14 flex items-center justify-between"
+        className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-3 sm:px-4 h-14 flex items-center justify-between gap-2 min-w-0"
         style={{ paddingTop: 'var(--safe-area-inset-top, env(safe-area-inset-top, 0px))' }}
       >
         <button
           onClick={onBack}
-          className="flex items-center space-x-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          className="flex items-center space-x-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span className="text-xs font-semibold hidden xs:inline">Back</span>
+          <span className="text-xs font-semibold">Back</span>
         </button>
 
         {/* Reader Customization Controls */}
-        <div className="flex items-center space-x-1 sm:space-x-2">
-
-
+        <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
           {/* Font Size Toggle */}
           <button
             onClick={cycleFontSize}
             title="Adjust text size"
-            className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-xs font-bold font-mono transition-colors flex items-center space-x-0.5"
+            className="p-1.5 sm:p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-xs font-bold font-mono transition-colors flex items-center space-x-0.5"
           >
             <Type className="w-4 h-4" />
             <span className="uppercase text-[10px]">{fontSize}</span>
@@ -573,6 +571,9 @@ export default function ArticleDetail({
           </button>
         </div>
       </article>
+
+      {/* Permanent 24/7 Docked Bottom Banner Ad Backdrop inside Article Reader */}
+      <BannerAd position="reader-bottom" />
 
       {/* Interactive Share Modal (Telegram, Facebook, WhatsApp, Twitter, Copy, Native Share) */}
       <ShareModal

@@ -11,14 +11,14 @@ const ICON_MAP = {
   Headphones,
 };
 
-export default function ArticleCard({ article, isBookmarked, onToggleBookmark, onOpenArticle }) {
+const ArticleCard = React.memo(function ArticleCard({ article, isBookmarked, onToggleBookmark, onOpenArticle }) {
   const isMusic = article.category === 'Music' || Boolean(article.youtubeId);
   const IconComponent = isMusic ? Music : (ICON_MAP[article.categoryIcon] || Zap);
 
   return (
     <div 
       onClick={() => onOpenArticle(article)}
-      className="group relative bg-white dark:bg-slate-850 dark:bg-slate-800 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700/80 transition-all duration-200 cursor-pointer flex flex-col justify-between"
+      className="group relative bg-white dark:bg-slate-850 dark:bg-slate-800 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700/80 soft-card cv-auto cursor-pointer flex flex-col justify-between"
     >
       {/* Top Media & Category */}
       <div className="flex gap-4">
@@ -28,6 +28,7 @@ export default function ArticleCard({ article, isBookmarked, onToggleBookmark, o
             src={article.image || article.imageUrl}
             alt={article.title}
             loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
           {isMusic && (
@@ -104,4 +105,6 @@ export default function ArticleCard({ article, isBookmarked, onToggleBookmark, o
       </div>
     </div>
   );
-}
+});
+
+export default ArticleCard;
