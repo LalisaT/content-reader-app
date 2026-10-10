@@ -205,14 +205,6 @@ export default function JobDetailModal({
           >
             <Share2 className="w-4 h-4" />
           </button>
-
-          <button
-            onClick={() => setIsApplying(true)}
-            className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-all active:scale-95 flex items-center space-x-1"
-          >
-            <Send className="w-3.5 h-3.5" />
-            <span>Apply Now</span>
-          </button>
         </div>
       </header>
 
@@ -462,40 +454,45 @@ export default function JobDetailModal({
               </p>
 
               {/* Primary Application Buttons */}
-              <div className="flex flex-wrap items-center gap-2.5">
-                {job.applyUrl && (
-                  <a
-                    href={job.applyUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => {
-                      if (onApplySuccess) onApplySuccess(job.id);
-                    }}
-                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm flex items-center space-x-1.5 transition-all active:scale-95 no-underline"
-                  >
-                    <span>Apply via Official Portal</span>
-                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                  </a>
-                )}
-
+              <div className="space-y-2.5">
                 {job.applyEmail && (
-                  <a
-                    href={`mailto:${job.applyEmail}?subject=${encodeURIComponent(`Application: ${job.title}`)}`}
-                    className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-xs border border-slate-300 dark:border-slate-700 flex items-center space-x-1.5 transition-all no-underline"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <span className="truncate">{job.applyEmail}</span>
-                  </a>
+                  <div>
+                    <a
+                      href={`mailto:${job.applyEmail}?subject=${encodeURIComponent(`Application: ${job.title}`)}`}
+                      className="inline-flex px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-xs border border-slate-300 dark:border-slate-700 items-center space-x-1.5 transition-all no-underline max-w-full"
+                    >
+                      <Mail className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      <span className="truncate">{job.applyEmail}</span>
+                    </a>
+                  </div>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => setIsApplying(true)}
-                  className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-sm flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer"
-                >
-                  <Send className="w-3.5 h-3.5 shrink-0" />
-                  <span>{hasApplied ? 'Update Application' : 'Express In-App Application'}</span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setIsApplying(true)}
+                    className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-sm flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5 shrink-0" />
+                    <span>{hasApplied ? 'Update Application' : 'Express In-App Application'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (job.applyUrl) {
+                        window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
+                        if (onApplySuccess) onApplySuccess(job.id);
+                      } else {
+                        setIsApplying(true);
+                      }
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5 shrink-0" />
+                    <span>Apply Now</span>
+                  </button>
+                </div>
               </div>
 
               {/* Official Shareable Deep Link Box */}
