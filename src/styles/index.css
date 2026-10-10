@@ -49,12 +49,11 @@ html, body {
   background-color: #f8fafc;
   color: #0f172a;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 #root {
   max-width: 100%;
-  overflow-x: hidden;
 }
 
 img, video, canvas, svg, iframe {
@@ -643,13 +642,10 @@ html.palette-slate .shadow-indigo-500\/30 {
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeSpeed;
 }
 
 body {
   -webkit-overflow-scrolling: touch;
-  touch-action: manipulation;
-  overscroll-behavior-y: contain;
 }
 
 button, a, [role="button"] {
