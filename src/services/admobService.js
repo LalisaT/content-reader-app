@@ -27,10 +27,10 @@ export const ADMOB_CONFIG = {
   },
   isTesting: false,
   isTestMode: false,
-  // Show interstitial once every 2-3 article reads with 45s cooldown
-  INTERSTITIAL_FREQUENCY_ARTICLES: 3,
-  INTERSTITIAL_FREQUENCY_PAGES: 3,
-  INTERSTITIAL_COOLDOWN_MS: 45 * 1000,
+  // Show interstitial every 2 article/job reads with 20s cooldown
+  INTERSTITIAL_FREQUENCY_ARTICLES: 2,
+  INTERSTITIAL_FREQUENCY_PAGES: 2,
+  INTERSTITIAL_COOLDOWN_MS: 20 * 1000,
 };
 
 // Curated high-CTR sponsored partner cards for smooth in-writing placements & web fallbacks
@@ -218,7 +218,10 @@ class AdMobManager {
 
   async showBanner(margin = 56) {
     if (!Capacitor.isNativePlatform()) return;
-    if (this.isBannerActive) {
+    const prevMargin = this.currentBannerMargin;
+    this.currentBannerMargin = margin;
+
+    if (this.isBannerActive && prevMargin === margin) {
       try {
         await AdMob.resumeBanner();
       } catch (e) {}
@@ -227,7 +230,6 @@ class AdMobManager {
 
     try {
       this.isBannerLoading = true;
-      this.currentBannerMargin = margin;
       await AdMob.showBanner({
         adId: ADMOB_CONFIG.UNITS.BANNER_ANDROID,
         adSize: BannerAdSize.ADAPTIVE_BANNER,
@@ -262,10 +264,11 @@ class AdMobManager {
     } catch (e) {}
   }
 
-  // Keep banner alive 24/7 without resetting or destroying the active AdView
-  async setBannerReadingMode() {
+  // Dock banner to bottom (margin: 0) in full-screen Article/Job readers, or above BottomNav (margin: 56) on main tabs
+  async setBannerReadingMode(isReading = false) {
     if (!Capacitor.isNativePlatform()) return;
-    await this.ensureBannerAlive();
+    const targetMargin = isReading ? 0 : 56;
+    await this.showBanner(targetMargin);
   }
 
   // 3. Interstitial Ad Management (Preload + Natural Break Trigger)

@@ -24,9 +24,14 @@ import {
   Flame,
   Copy,
   Camera,
-  ThumbsUp
+  ThumbsUp,
+  Lock,
+  Play,
+  WifiOff,
+  RotateCcw
 } from 'lucide-react';
 import { Share as CapacitorShare } from '@capacitor/share';
+import { Network } from '@capacitor/network';
 import RichMarkdownRenderer from './RichMarkdownRenderer';
 import BannerAd from './BannerAd';
 
@@ -37,7 +42,10 @@ export default function JobDetailModal({
   isSaved,
   onToggleSave,
   hasApplied,
-  onApplySuccess
+  onApplySuccess,
+  isUnlocked = true,
+  onUnlockPremium = null,
+  isOnline: propIsOnline = true
 }) {
   const scrollContainerRef = useRef(null);
   const progressBarRef = useRef(null);
@@ -51,6 +59,11 @@ export default function JobDetailModal({
   const [copiedDeepLink, setCopiedDeepLink] = useState(false);
   const [isHelpful, setIsHelpful] = useState(false);
   const [heroImageError, setHeroImageError] = useState(false);
+  const [isOnline, setIsOnline] = useState(propIsOnline);
+
+  useEffect(() => {
+    setIsOnline(propIsOnline);
+  }, [propIsOnline]);
 
   useEffect(() => {
     setHeroImageError(false);
@@ -63,16 +76,40 @@ export default function JobDetailModal({
   }, [isOpen, job?.id]);
 
   useEffect(() => {
-    if (isOpen) {
-      const prevOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = prevOverflow;
-      };
-    }
-  }, [isOpen]);
+    if (!isOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleHardwareBack = (e) => {
+      e.preventDefault();
+      if (isApplying) {
+        setIsApplying(false);
+      } else if (onClose) {
+        onClose();
+      }
+    };
+
+    const handlePopState = () => {
+      if (isApplying) {
+        setIsApplying(false);
+      } else if (onClose) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('tippulse_hardware_back', handleHardwareBack);
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('tippulse_hardware_back', handleHardwareBack);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isOpen, isApplying, onClose]);
 
   if (!isOpen || !job) return null;
+
+  const isLocked = Boolean(job.isPremium) && !isUnlocked;
+  const isDataBlocked = Boolean(job.needsData || job.requiresOnline) && !isOnline;
 
   const deepLinkSlug = job.slug || (String(job.id) === 'job-synapse-neuro-ux' ? 'somethinglead' : String(job.id));
   const deepLinkUrl = `https://tippulse.web.app/careers/${deepLinkSlug}`;
@@ -207,6 +244,20 @@ export default function JobDetailModal({
               <span>Urgent</span>
             </span>
           )}
+
+          {job.isPremium && (
+            isLocked ? (
+              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 flex items-center space-x-1 shrink-0 shadow-xs">
+                <Lock className="w-2.5 h-2.5" />
+                <span>Video Ad</span>
+              </span>
+            ) : (
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 flex items-center space-x-1 shrink-0">
+                <Sparkles className="w-2.5 h-2.5" />
+                <span>Unlocked</span>
+              </span>
+            )
+          )}
         </div>
 
         <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
@@ -334,7 +385,126 @@ export default function JobDetailModal({
           </blockquote>
         )}
 
-        {/* Continuous Editorial Body Content with Vertical Indigo Bar Headings */}
+        {/* Unified Two-Step Unlock Experience (Just Like Feed Page ArticleDetail): Step 1 (Internet) -> Step 2 (Video Ad) -> Full Vacancy */}
+        {isLocked ? (
+          <div className="my-8 p-6 rounded-3xl bg-gradient-to-b from-amber-500/10 via-slate-900/5 to-amber-500/10 dark:from-amber-950/40 dark:to-slate-900 border border-amber-300/80 dark:border-amber-700/60 text-center shadow-lg animate-in fade-in duration-200">
+            {!isOnline ? (
+              /* Step 1: Offline - Internet Connection Required */
+              <div>
+                <div className="w-14 h-14 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center mx-auto mb-3 shadow-md">
+                  <WifiOff className="w-7 h-7" />
+                </div>
+
+                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 font-extrabold text-[11px] mb-2 uppercase tracking-wide border border-amber-300/40 dark:border-amber-700/50">
+                  <WifiOff className="w-3.5 h-3.5" />
+                  <span>Step 1 of 2: Internet Connection Required</span>
+                </div>
+
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+                  Connect to Internet to Unlock Vacancy
+                </h3>
+
+                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto mt-2 leading-relaxed">
+                  This exclusive career opportunity requires an active internet connection to load and stream the short sponsor unlock video. Please turn on Mobile Data or connect to Wi-Fi to proceed.
+                </p>
+
+                <button
+                  onClick={async () => {
+                    try {
+                      const status = await Network.getStatus();
+                      if (status.connected) {
+                        setIsOnline(true);
+                      } else {
+                        alert('Device is still offline. Please turn on Mobile Data or Wi-Fi to load the video ad.');
+                      }
+                    } catch {
+                      if (navigator.onLine) {
+                        setIsOnline(true);
+                      } else {
+                        alert('Device is still offline. Please turn on Mobile Data or Wi-Fi to load the video ad.');
+                      }
+                    }
+                  }}
+                  className="mt-5 inline-flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-xs px-6 py-3 rounded-xl shadow-md transition-transform active:scale-98 cursor-pointer"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Check Connection & Proceed to Video</span>
+                </button>
+              </div>
+            ) : (
+              /* Step 2: Online - Watch Video to Unlock */
+              <div>
+                <div className="w-14 h-14 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center mx-auto mb-3 shadow-md">
+                  <Play className="w-7 h-7 fill-slate-950" />
+                </div>
+
+                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-extrabold text-[11px] mb-2 uppercase tracking-wide border border-emerald-300/40 dark:border-emerald-700/50">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Step 2 of 2: Internet Connected</span>
+                </div>
+
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+                  Watch Short Video to Unlock (5s)
+                </h3>
+
+                <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto mt-2 leading-relaxed">
+                  Internet is connected! Watch a quick 5-second sponsor video to unlock full access to this career brief, requirements, and direct application links.
+                </p>
+
+                <button
+                  onClick={() => onUnlockPremium && onUnlockPremium(job)}
+                  className="mt-5 inline-flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-sm px-6 py-3 rounded-xl shadow-lg shadow-amber-500/30 transition-transform active:scale-98 cursor-pointer"
+                >
+                  <Play className="w-4 h-4 fill-slate-950" />
+                  <span>Watch Video & Unlock Vacancy (5s)</span>
+                </button>
+              </div>
+            )}
+          </div>
+        ) : isDataBlocked ? (
+          /* Free Vacancy that requires Online Data */
+          <div className="my-8 p-6 rounded-3xl bg-gradient-to-b from-blue-500/10 via-slate-900/5 to-blue-500/10 dark:from-blue-950/40 dark:to-slate-900 border border-blue-200 dark:border-blue-800/60 text-center shadow-lg animate-in fade-in">
+            <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto mb-3 shadow-md">
+              <WifiOff className="w-7 h-7" />
+            </div>
+
+            <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full bg-blue-600 text-white mb-2 inline-block">
+              Internet Data Required
+            </span>
+
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+              Mobile Data / Wi-Fi Needed to View Vacancy
+            </h3>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 max-w-md mx-auto mt-2 leading-relaxed">
+              This career vacancy requires an active internet connection to view and apply. Please turn on Mobile Data or connect to Wi-Fi.
+            </p>
+
+            <button
+              onClick={async () => {
+                try {
+                  const status = await Network.getStatus();
+                  if (status.connected) {
+                    setIsOnline(true);
+                  } else {
+                    alert('Device is still offline. Please turn on Mobile Data or Wi-Fi to view this vacancy.');
+                  }
+                } catch {
+                  if (navigator.onLine) {
+                    setIsOnline(true);
+                  } else {
+                    alert('Device is still offline. Please turn on Mobile Data or Wi-Fi to view this vacancy.');
+                  }
+                }
+              }}
+              className="mt-5 inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-transform active:scale-98 cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Check Connection & Open Vacancy</span>
+            </button>
+          </div>
+        ) : (
+        /* Continuous Editorial Body Content with Vertical Indigo Bar Headings */
         <div className="reader-text space-y-6 font-serif text-base leading-relaxed text-slate-800 dark:text-slate-200">
           {/* Section 1: Role Overview & Mission */}
           {job.description && (
@@ -534,6 +704,7 @@ export default function JobDetailModal({
             </div>
           </section>
         </div>
+        )}
 
         {/* 24/7 Inline Sponsored Banner Ad */}
         <BannerAd position="inline" />

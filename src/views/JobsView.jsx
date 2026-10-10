@@ -30,6 +30,7 @@ import JobDetailModal from '../components/JobDetailModal';
 import BannerAd from '../components/BannerAd';
 import { storageService } from '../services/storageService';
 import { firestoreSyncService } from '../services/firestoreSyncService';
+import { admobService } from '../services/admobService';
 
 // Executive 3-Stage In-Person Interview Stages (cand 9, cand 4, test interview 3)
 const INTERVIEW_STAGES = [
@@ -254,6 +255,7 @@ export default function JobsView({
   onRetry = null,
   unlockedGuides = [],
   onUnlockPremium = null,
+  onTriggerInterstitial = null,
   isOnline = true
 }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -267,18 +269,19 @@ export default function JobsView({
 
   const handleOpenJob = (job) => {
     if (!job) return;
-    if ((job.needsData || job.requiresOnline) && !isOnline) {
-      alert('⚠️ Internet Connection Required\n\nPlease turn on Mobile Data or Wi-Fi to view this online career vacancy.');
-      return;
-    }
-    const isLocked = Boolean(job.isPremium) && !unlockedGuides.includes(String(job.id));
-    if (isLocked && typeof onUnlockPremium === 'function') {
-      onUnlockPremium(job, () => {
-        setSelectedJob(job);
-      });
-      return;
-    }
     setSelectedJob(job);
+    admobService.setBannerReadingMode(true);
+    try {
+      window.history.pushState({ view: 'job', id: job.id }, '');
+    } catch {}
+  };
+
+  const handleCloseJob = () => {
+    setSelectedJob(null);
+    admobService.setBannerReadingMode(false);
+    if (typeof onTriggerInterstitial === 'function') {
+      onTriggerInterstitial();
+    }
   };
 
   // Automatic Deep Link Resolver (e.g. /careers/principal-ai-systems-architect, tippulse://careers/..., or ?job=...)
@@ -974,11 +977,14 @@ export default function JobsView({
         <JobDetailModal
           job={selectedJob}
           isOpen={Boolean(selectedJob)}
-          onClose={() => setSelectedJob(null)}
+          onClose={handleCloseJob}
           isSaved={savedJobIds.includes(String(selectedJob.id))}
           onToggleSave={onToggleSaveJob}
           hasApplied={Boolean(appliedJobsMap[String(selectedJob.id)])}
           onApplySuccess={handleApplySuccess}
+          isUnlocked={unlockedGuides.includes(String(selectedJob.id))}
+          onUnlockPremium={onUnlockPremium}
+          isOnline={isOnline}
         />
       )}
       </div>

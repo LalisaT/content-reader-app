@@ -697,6 +697,11 @@ export default function App() {
                   error={jobsError}
                   unlockedGuides={unlockedGuides}
                   onUnlockPremium={handleUnlockPremium}
+                  onTriggerInterstitial={() => {
+                    admobService.showInterstitialIfEligible(() => {
+                      setIsInterstitialOpen(true);
+                    });
+                  }}
                   isOnline={isOnline}
                   onRetry={() => {
                     setIsLoadingJobs(true);
