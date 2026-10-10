@@ -74,6 +74,7 @@ class AdMobManager {
   constructor() {
     this.isInitialized = false;
     this.isBannerActive = false;
+    this.isBannerLoading = false;
     this.isInterstitialLoaded = false;
     this.isRewardedLoaded = false;
     this.articleReadCount = 0;
@@ -85,7 +86,6 @@ class AdMobManager {
   // 1. Initialize Google Mobile Ads SDK on native platform
   async initialize() {
     if (!Capacitor.isNativePlatform()) {
-      console.log('AdMob: Running on Web/Browser. Web fallbacks active.');
       this.isInitialized = true;
       return;
     }
@@ -110,16 +110,10 @@ class AdMobManager {
         this.showBanner(56);
       }, 300);
 
-      // 24/7 Non-Stop Continuous Banner Keep-Alive Heartbeat (Every 10s)
+      // 24/7 Non-Stop Continuous Banner Keep-Alive Heartbeat (Every 12s)
       setInterval(() => {
-        if (Capacitor.isNativePlatform() && this.isInitialized) {
-          if (!this.isBannerActive) {
-            this.showBanner(this.currentBannerMargin);
-          } else {
-            this.resumeBanner();
-          }
-        }
-      }, 10000);
+        this.ensureBannerAlive();
+      }, 12000);
     } catch (err) {
       console.warn('AdMob initialization error:', err);
     }
@@ -133,6 +127,7 @@ class AdMobManager {
       // Banner events
       AdMob.addListener(BannerAdPluginEvents.Loaded, () => {
         this.isBannerActive = true;
+        this.isBannerLoading = false;
         if (this.bannerRetryTimeout) {
           clearTimeout(this.bannerRetryTimeout);
           this.bannerRetryTimeout = null;
@@ -143,6 +138,7 @@ class AdMobManager {
       AdMob.addListener(BannerAdPluginEvents.FailedToLoad, (err) => {
         console.warn('AdMob: Banner failed to load, retrying in 8s:', err);
         this.isBannerActive = false;
+        this.isBannerLoading = false;
         if (this.bannerRetryTimeout) clearTimeout(this.bannerRetryTimeout);
         this.bannerRetryTimeout = setTimeout(() => {
           this.showBanner(this.currentBannerMargin);
@@ -152,14 +148,14 @@ class AdMobManager {
       // Window focus, network reconnect, and foreground recovery to keep banner running 24/7
       if (typeof window !== 'undefined') {
         window.addEventListener('focus', () => {
-          this.resumeBanner();
+          this.ensureBannerAlive();
         });
         window.addEventListener('online', () => {
-          this.showBanner(this.currentBannerMargin);
+          this.ensureBannerAlive();
         });
         document.addEventListener('visibilitychange', () => {
           if (!document.hidden) {
-            this.resumeBanner();
+            this.ensureBannerAlive();
           }
         });
       }
@@ -202,11 +198,35 @@ class AdMobManager {
     }
   }
 
-  // 2. Banner Ad Management (24/7 Non-Removable)
+  // 2. Banner Ad Management (24/7 Non-Removable Real AdMob Banner)
+  async ensureBannerAlive() {
+    if (!Capacitor.isNativePlatform()) return;
+    if (!this.isInitialized) {
+      await this.initialize();
+      return;
+    }
+    if (this.isBannerActive) {
+      try {
+        await AdMob.resumeBanner();
+      } catch (e) {}
+      return;
+    }
+    if (!this.isBannerLoading) {
+      await this.showBanner(this.currentBannerMargin);
+    }
+  }
+
   async showBanner(margin = 56) {
     if (!Capacitor.isNativePlatform()) return;
+    if (this.isBannerActive) {
+      try {
+        await AdMob.resumeBanner();
+      } catch (e) {}
+      return;
+    }
 
     try {
+      this.isBannerLoading = true;
       this.currentBannerMargin = margin;
       await AdMob.showBanner({
         adId: ADMOB_CONFIG.UNITS.BANNER_ANDROID,
@@ -216,7 +236,9 @@ class AdMobManager {
         isTesting: ADMOB_CONFIG.isTesting,
       });
       this.isBannerActive = true;
+      this.isBannerLoading = false;
     } catch (err) {
+      this.isBannerLoading = false;
       console.warn('AdMob showBanner warning:', err);
       try {
         await AdMob.resumeBanner();
@@ -229,34 +251,21 @@ class AdMobManager {
   async hideBanner() {
     if (!Capacitor.isNativePlatform()) return;
     try {
-      await this.resumeBanner();
+      await this.ensureBannerAlive();
     } catch (e) {}
   }
 
   async resumeBanner() {
     if (!Capacitor.isNativePlatform()) return;
     try {
-      await AdMob.resumeBanner();
-      this.isBannerActive = true;
-    } catch (e) {
-      try {
-        await this.showBanner(this.currentBannerMargin);
-      } catch (err) {}
-    }
+      await this.ensureBannerAlive();
+    } catch (e) {}
   }
 
-  // Smooth banner adjustment when switching between reading mode and feed navigation
-  async setBannerReadingMode(isReading) {
+  // Keep banner alive 24/7 without resetting or destroying the active AdView
+  async setBannerReadingMode() {
     if (!Capacitor.isNativePlatform()) return;
-    const targetMargin = isReading ? 0 : 56;
-    if (this.currentBannerMargin === targetMargin && this.isBannerActive) return;
-
-    try {
-      // Re-anchor banner with desired bottom offset
-      await this.showBanner(targetMargin);
-    } catch (e) {
-      console.warn('AdMob setBannerReadingMode error:', e);
-    }
+    await this.ensureBannerAlive();
   }
 
   // 3. Interstitial Ad Management (Preload + Natural Break Trigger)

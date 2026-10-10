@@ -17,7 +17,7 @@
 
 /* Safe Area Inset Helpers for Android Edge-to-Edge & System Bars */
 .pb-safe-nav {
-  padding-bottom: calc(8.5rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))) !important;
+  padding-bottom: calc(5.5rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))) !important;
 }
 
 .pt-safe-header {

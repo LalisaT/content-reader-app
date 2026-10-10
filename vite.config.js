@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  cacheDir: 'node_modules/.vite-app',
   optimizeDeps: {
     include: [
       'react',
@@ -38,5 +39,15 @@ export default defineConfig({
     port: 3000,
     open: false,
     host: true,
+    watch: {
+      ignored: [
+        '**/android/**',
+        '**/ios/**',
+        '**/dist/**',
+        '**/dist-admin/**',
+        '**/.firebase/**',
+      ],
+    },
   },
 });
+
