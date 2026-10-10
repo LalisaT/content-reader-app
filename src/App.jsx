@@ -201,7 +201,11 @@ export default function App() {
 
     const timer = setTimeout(() => {
       // Notification Service Init & Deep Linking Handler
-      const handleNotificationClick = (articleId, articleData) => {
+      const handleNotificationClick = (articleId, articleData, extra = null) => {
+        if (extra && (extra.isJobAlert || extra.jobId || extra.jobSlug)) {
+          navigateToCareer(extra.jobSlug || extra.jobId);
+          return;
+        }
         navigateToArticle(articleId, articleData);
       };
 
@@ -517,19 +521,27 @@ export default function App() {
     };
   }, []);
 
-  // Trigger Rewarded Ad for locked premium articles (Requires active internet connection)
-  const handleUnlockPremium = (article) => {
+  // Trigger Rewarded Ad for locked premium articles or job vacancies (Requires active internet connection)
+  const handleUnlockPremium = (item, onSuccess = null) => {
+    const isJobItem = Boolean(item?.company || item?.salaryRange || item?.applyEmail || item?.applyUrl);
     if (!isOnline) {
-      alert('⚠️ Internet Connection Required\n\nPlease connect to Mobile Data or Wi-Fi to load and watch the sponsor video to unlock this article.');
+      alert(
+        isJobItem
+          ? '⚠️ Internet Connection Required\n\nPlease connect to Mobile Data or Wi-Fi to load and watch the sponsor video to unlock this job vacancy.'
+          : '⚠️ Internet Connection Required\n\nPlease connect to Mobile Data or Wi-Fi to load and watch the sponsor video to unlock this article.'
+      );
       return;
     }
-    setRewardedModalData({ isOpen: true, article });
+    setRewardedModalData({ isOpen: true, article: item, isJob: isJobItem, onSuccess });
   };
 
   const handleRewardEarned = () => {
     if (rewardedModalData.article) {
-      const updated = storageService.unlockPremiumArticle(rewardedModalData.article.id);
+      const updated = storageService.unlockPremiumArticle(String(rewardedModalData.article.id));
       setUnlockedGuides(updated);
+      if (typeof rewardedModalData.onSuccess === 'function') {
+        rewardedModalData.onSuccess();
+      }
     }
   };
 
@@ -568,6 +580,10 @@ export default function App() {
           if (notifData?.id) {
             const updated = notificationService.markAsRead(notifData.id);
             setNotifications(updated);
+          }
+          if (notifData && (notifData.isJobAlert || notifData.jobId || notifData.jobSlug || notifData.category === 'Job Vacancy')) {
+            navigateToCareer(notifData.jobSlug || notifData.jobId);
+            return;
           }
           navigateToArticle(articleId, notifData?.article);
         }}
@@ -679,6 +695,9 @@ export default function App() {
                   onClearTargetCareer={() => setPendingCareerSlug(null)}
                   isLoading={isLoadingJobs}
                   error={jobsError}
+                  unlockedGuides={unlockedGuides}
+                  onUnlockPremium={handleUnlockPremium}
+                  isOnline={isOnline}
                   onRetry={() => {
                     setIsLoadingJobs(true);
                     setJobsError(null);
@@ -798,8 +817,9 @@ export default function App() {
           <RewardedModal
             isOpen={rewardedModalData.isOpen}
             articleTitle={rewardedModalData.article?.title || ''}
+            isJob={Boolean(rewardedModalData.isJob)}
             isOnline={isOnline}
-            onClose={() => setRewardedModalData({ isOpen: false, article: null })}
+            onClose={() => setRewardedModalData({ isOpen: false, article: null, isJob: false, onSuccess: null })}
             onRewardEarned={handleRewardEarned}
           />
         )}
@@ -812,6 +832,10 @@ export default function App() {
             notifications={notifications}
             onSelectArticle={(articleId, notificationItem) => {
               setIsNotificationOpen(false);
+              if (notificationItem && (notificationItem.isJobAlert || notificationItem.jobId || notificationItem.jobSlug || notificationItem.category === 'Job Vacancy')) {
+                navigateToCareer(notificationItem.jobSlug || notificationItem.jobId);
+                return;
+              }
               let target = allArticles.find((a) => String(a.id) === String(articleId));
               if (!target) {
                 target = allArticles.find((a) => a.id === 'welcome-to-tippulse');

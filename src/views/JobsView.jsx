@@ -21,7 +21,10 @@ import {
   Video,
   AlertCircle,
   RefreshCw,
-  Loader2
+  Loader2,
+  Lock,
+  Play,
+  Wifi
 } from 'lucide-react';
 import JobDetailModal from '../components/JobDetailModal';
 import { storageService } from '../services/storageService';
@@ -247,7 +250,10 @@ export default function JobsView({
   onClearTargetCareer = null,
   isLoading = false,
   error = null,
-  onRetry = null
+  onRetry = null,
+  unlockedGuides = [],
+  onUnlockPremium = null,
+  isOnline = true
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDept, setSelectedDept] = useState('All');
@@ -257,6 +263,22 @@ export default function JobsView({
   const [onlyScholarships, setOnlyScholarships] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [appliedJobsMap, setAppliedJobsMap] = useState(() => storageService.getAppliedJobIds());
+
+  const handleOpenJob = (job) => {
+    if (!job) return;
+    if ((job.needsData || job.requiresOnline) && !isOnline) {
+      alert('⚠️ Internet Connection Required\n\nPlease turn on Mobile Data or Wi-Fi to view this online career vacancy.');
+      return;
+    }
+    const isLocked = Boolean(job.isPremium) && !unlockedGuides.includes(String(job.id));
+    if (isLocked && typeof onUnlockPremium === 'function') {
+      onUnlockPremium(job, () => {
+        setSelectedJob(job);
+      });
+      return;
+    }
+    setSelectedJob(job);
+  };
 
   // Automatic Deep Link Resolver (e.g. /careers/principal-ai-systems-architect, tippulse://careers/..., or ?job=...)
   useEffect(() => {
@@ -288,7 +310,7 @@ export default function JobsView({
           (lower === 'somethinglead' && (j.id === 'job-synapse-neuro-ux' || j.title?.toLowerCase().includes('lead cognitive')))
         );
         if (found) {
-          setSelectedJob(found);
+          handleOpenJob(found);
           if (onClearTargetCareer) onClearTargetCareer();
         }
       }
@@ -771,11 +793,12 @@ export default function JobsView({
           filteredJobs.map((job) => {
             const isSaved = savedJobIds.includes(String(job.id));
             const hasApplied = Boolean(appliedJobsMap[String(job.id)]);
+            const isLocked = Boolean(job.isPremium) && !unlockedGuides.includes(String(job.id));
 
             return (
               <div
                 key={job.id}
-                onClick={() => setSelectedJob(job)}
+                onClick={() => handleOpenJob(job)}
                 className={`group relative bg-white/95 dark:bg-slate-900/90 backdrop-blur-md rounded-3xl p-4 sm:p-5 border soft-card cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-[0.99] w-full min-w-0 overflow-hidden ${
                   job.isFeatured
                     ? 'border-amber-400/50 dark:border-amber-500/30 ring-1 ring-amber-400/20 shadow-md shadow-amber-500/5'
@@ -817,6 +840,19 @@ export default function JobsView({
                               {job.department}
                             </span>
                           </>
+                        )}
+                        {job.isPremium && (
+                          isLocked ? (
+                            <span className="px-1.5 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-wider flex items-center space-x-1 shrink-0">
+                              <Lock className="w-2.5 h-2.5" />
+                              <span>PRO</span>
+                            </span>
+                          ) : (
+                            <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider flex items-center space-x-1 shrink-0">
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                              <span>Unlocked</span>
+                            </span>
+                          )
                         )}
                       </div>
                       <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug break-words">
@@ -887,6 +923,11 @@ export default function JobsView({
                       <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 px-2 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/60 flex items-center space-x-1">
                         <CheckCircle2 className="w-3 h-3" />
                         <span>Applied</span>
+                      </span>
+                    ) : isLocked ? (
+                      <span className="text-[11px] font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-1 rounded-xl border border-amber-300/60 dark:border-amber-700/60 flex items-center space-x-1">
+                        <Play className="w-3 h-3 fill-amber-500 text-amber-500" />
+                        <span>Watch Ad to View</span>
                       </span>
                     ) : (
                       <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 group-hover:translate-x-0.5 transition-transform flex items-center space-x-0.5">

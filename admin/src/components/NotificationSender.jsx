@@ -8,6 +8,7 @@ export default function NotificationSender() {
   const [body, setBody] = useState('');
   const [category, setCategory] = useState('Announcement');
   const [articleId, setArticleId] = useState('');
+  const [jobSlug, setJobSlug] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sentSuccess, setSentSuccess] = useState(false);
 
@@ -18,13 +19,17 @@ export default function NotificationSender() {
     setIsSending(true);
     try {
       const notifId = `notif-${Date.now()}`;
+      const cleanJobSlug = jobSlug.trim();
       await setDoc(doc(db, 'notifications', notifId), {
         id: notifId,
         articleId: articleId.trim() || null,
+        jobId: cleanJobSlug || null,
+        jobSlug: cleanJobSlug || null,
+        isJobAlert: Boolean(cleanJobSlug || category.trim() === 'Job Vacancy'),
         title: title.trim(),
         body: body.trim() || 'Tap to open TipPulse and see what is new!',
         category: category.trim(),
-        imageUrl: '/app-icon.png',
+        imageUrl: cleanJobSlug ? '/career-growth-icon-gold.png' : '/app-icon.png',
         createdAt: Date.now(),
         author: 'Admin'
       });
@@ -32,6 +37,7 @@ export default function NotificationSender() {
       setTitle('');
       setBody('');
       setArticleId('');
+      setJobSlug('');
       setTimeout(() => setSentSuccess(false), 3500);
     } catch (err) {
       alert(`Broadcast failed: ${err.message}`);
@@ -87,14 +93,14 @@ export default function NotificationSender() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className="block font-bold text-slate-300 mb-1">Category Tag</label>
             <input
               type="text"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              placeholder="e.g. Announcement, Weekend Tip"
+              placeholder="e.g. Announcement, Job Vacancy"
               className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
             />
           </div>
@@ -105,8 +111,19 @@ export default function NotificationSender() {
               type="text"
               value={articleId}
               onChange={(e) => setArticleId(e.target.value)}
-              placeholder="e.g. prod-1 (Tapping opens article)"
+              placeholder="e.g. prod-1 (Opens article)"
               className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-amber-300 mb-1">Target Job Slug / ID (Optional)</label>
+            <input
+              type="text"
+              value={jobSlug}
+              onChange={(e) => setJobSlug(e.target.value)}
+              placeholder="e.g. principal-ai-systems-architect"
+              className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-amber-300 focus:outline-none focus:border-amber-500"
             />
           </div>
         </div>

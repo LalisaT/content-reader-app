@@ -3,7 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { Award, Play, CheckCircle2, X, Sparkles, ShieldCheck, WifiOff } from 'lucide-react';
 import { ADMOB_CONFIG, admobService } from '../services/admobService';
 
-export default function RewardedModal({ isOpen, onClose, onRewardEarned, articleTitle, isOnline = true }) {
+export default function RewardedModal({ isOpen, onClose, onRewardEarned, articleTitle, isOnline = true, isJob = false }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -94,11 +94,13 @@ export default function RewardedModal({ isOpen, onClose, onRewardEarned, article
               </div>
 
               <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-snug">
-                Unlock Premium Masterclass
+                {isJob ? 'Unlock Exclusive Career Vacancy' : 'Unlock Premium Masterclass'}
               </h3>
 
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                Watch a short 5-second sponsor video to get lifetime reading access to:
+                {isJob
+                  ? 'Watch a short 5-second sponsor video to unlock full role details & application access for:'
+                  : 'Watch a short 5-second sponsor video to get lifetime reading access to:'}
               </p>
               
               <div className="mt-2.5 p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
@@ -173,14 +175,16 @@ export default function RewardedModal({ isOpen, onClose, onRewardEarned, article
                 Reward Earned!
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                You have successfully unlocked this exclusive guide.
+                {isJob
+                  ? 'You have unlocked full details & application access for this vacancy.'
+                  : 'You have successfully unlocked this exclusive guide.'}
               </p>
 
               <button
                 onClick={handleClaimReward}
-                className="mt-5 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition-all"
+                className="mt-5 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition-all cursor-pointer"
               >
-                Start Reading Now
+                {isJob ? 'View Job Vacancy Now' : 'Start Reading Now'}
               </button>
             </div>
           )}

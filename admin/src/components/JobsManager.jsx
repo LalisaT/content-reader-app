@@ -29,7 +29,10 @@ import {
   Upload,
   Camera,
   Image as ImageIcon,
-  GraduationCap
+  GraduationCap,
+  Lock,
+  Wifi,
+  Bell
 } from 'lucide-react';
 import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebaseAdmin';
@@ -257,6 +260,9 @@ export default function JobsManager() {
   const [isFeatured, setIsFeatured] = useState(false);
   const [isScholarship, setIsScholarship] = useState(false);
   const [isUrgent, setIsUrgent] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [needsData, setNeedsData] = useState(false);
+  const [broadcastNotification, setBroadcastNotification] = useState(true);
   const [badgeText, setBadgeText] = useState('VIP Executive Search');
   const [status, setStatus] = useState('active');
   const modalBodyRef = useRef(null);
@@ -392,6 +398,9 @@ export default function JobsManager() {
     setIsFeatured(true);
     setIsScholarship(false);
     setIsUrgent(false);
+    setIsPremium(false);
+    setNeedsData(false);
+    setBroadcastNotification(true);
     setBadgeText('VIP Executive Search');
     setStatus('active');
     setIsEditorOpen(true);
@@ -429,6 +438,9 @@ export default function JobsManager() {
     setIsFeatured(d.isFeatured);
     setIsScholarship(Boolean(d.isScholarship));
     setIsUrgent(d.isUrgent);
+    setIsPremium(Boolean(d.isPremium));
+    setNeedsData(Boolean(d.needsData));
+    setBroadcastNotification(true);
     setBadgeText(d.badgeText);
     setStatus(d.status);
     setIsEditorOpen(true);
@@ -465,12 +477,35 @@ export default function JobsManager() {
     setIsFeatured(Boolean(job.isFeatured));
     setIsScholarship(Boolean(job.isScholarship));
     setIsUrgent(Boolean(job.isUrgent));
+    setIsPremium(Boolean(job.isPremium));
+    setNeedsData(Boolean(job.needsData || job.requiresOnline));
+    setBroadcastNotification(true);
     setBadgeText(job.badgeText || 'VIP Spotlight');
     setStatus(job.status || 'active');
     setIsEditorOpen(true);
     setTimeout(() => {
       if (modalBodyRef.current) modalBodyRef.current.scrollTop = 0;
     }, 10);
+  };
+
+  const broadcastJobNotification = async (jobData, isUpdate = false) => {
+    try {
+      const notifId = `notif-job-${Date.now()}`;
+      await setDoc(doc(db, 'notifications', notifId), {
+        id: notifId,
+        jobId: jobData.id,
+        jobSlug: jobData.slug || jobData.id,
+        isJobAlert: true,
+        title: isUpdate ? `💼 Updated Vacancy: ${jobData.title}` : `🚀 New Job Vacancy: ${jobData.title}`,
+        body: `${jobData.company} • ${jobData.location || 'Remote'} (${jobData.salaryRange || 'Competitive'}) — ${jobData.summary || 'Tap to view role details and apply.'}`,
+        category: 'Job Vacancy',
+        imageUrl: jobData.companyLogo || '/career-growth-icon-gold.png',
+        createdAt: Date.now(),
+        author: jobData.company || 'TipPulse Careers'
+      });
+    } catch (notifErr) {
+      console.warn('Job notification broadcast warning:', notifErr);
+    }
   };
 
   const handleSave = async (e) => {
@@ -522,6 +557,9 @@ export default function JobsManager() {
       isFeatured,
       isScholarship: Boolean(isScholarship),
       isUrgent,
+      isPremium: Boolean(isPremium),
+      needsData: Boolean(needsData),
+      requiresOnline: Boolean(needsData),
       badgeText: badgeText.trim() || (isFeatured ? 'VIP Spotlight' : 'Executive Role'),
       status,
       createdAt: currentJobId ? (jobs.find((j) => j.id === currentJobId)?.createdAt || Date.now()) : Date.now(),
@@ -531,8 +569,17 @@ export default function JobsManager() {
     try {
       const docRef = doc(db, JOBS_COLLECTION, payload.id);
       await setDoc(docRef, payload, { merge: true });
-      setSaveSuccessMsg(`Vacancy "${payload.title}" saved successfully to Cloud Firestore!`);
-      setTimeout(() => setSaveSuccessMsg(''), 3500);
+
+      if (broadcastNotification) {
+        await broadcastJobNotification(payload, Boolean(currentJobId));
+      }
+
+      setSaveSuccessMsg(
+        broadcastNotification
+          ? `Vacancy "${payload.title}" saved & Notification Alert broadcasted to all users!`
+          : `Vacancy "${payload.title}" saved successfully to Cloud Firestore!`
+      );
+      setTimeout(() => setSaveSuccessMsg(''), 4000);
       setIsEditorOpen(false);
     } catch (err) {
       console.error('Failed to save vacancy in Firestore:', err);
@@ -785,6 +832,13 @@ export default function JobsManager() {
                         <span>Urgent</span>
                       </span>
                     )}
+
+                    {job.isPremium && (
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-500/20 text-amber-300 border border-amber-500/40 flex items-center space-x-1">
+                        <Lock className="w-2.5 h-2.5 text-amber-400" />
+                        <span>PRO (Video Ad)</span>
+                      </span>
+                    )}
                   </div>
 
                   <h3 className="text-sm sm:text-base font-extrabold text-white leading-snug">
@@ -843,6 +897,20 @@ export default function JobsManager() {
 
               {/* Status and Actions */}
               <div className="flex items-center space-x-2 shrink-0 self-end sm:self-center">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await broadcastJobNotification(job, false);
+                    setSaveSuccessMsg(`Notification Alert sent to all users for "${job.title}"!`);
+                    setTimeout(() => setSaveSuccessMsg(''), 3500);
+                  }}
+                  title="Send Push Notification Alert for this Job"
+                  className="px-2.5 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-500/40 text-indigo-300 text-xs font-bold flex items-center space-x-1 transition-colors cursor-pointer"
+                >
+                  <Bell className="w-3.5 h-3.5 text-indigo-400" />
+                  <span className="hidden md:inline">Alert</span>
+                </button>
+
                 <button
                   onClick={() => handleToggleStatus(job)}
                   title={`Click to ${job.status === 'active' ? 'close' : 'activate'} role`}
@@ -1296,6 +1364,48 @@ export default function JobsManager() {
                     </div>
                   </label>
                 </div>
+
+                {/* Options: Lock as PRO Job (Video Ad), Require Internet Data, Send Notification Alert */}
+                <div className="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <label className="flex items-center space-x-2.5 cursor-pointer select-none p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={isPremium}
+                      onChange={(e) => setIsPremium(e.target.checked)}
+                      className="w-4 h-4 rounded text-indigo-600 focus:ring-0"
+                    />
+                    <span className="text-slate-200 flex items-center space-x-1.5 font-semibold">
+                      <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>Lock as PRO Job (Video Ad)</span>
+                    </span>
+                  </label>
+
+                  <label className="flex items-center space-x-2.5 cursor-pointer select-none p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-blue-500/50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={needsData}
+                      onChange={(e) => setNeedsData(e.target.checked)}
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-0"
+                    />
+                    <span className="text-slate-200 flex items-center space-x-1.5 font-semibold">
+                      <Wifi className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                      <span>Require Internet Data</span>
+                    </span>
+                  </label>
+
+                  <label className="flex items-center space-x-2.5 cursor-pointer select-none p-3 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-indigo-500/50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={broadcastNotification}
+                      onChange={(e) => setBroadcastNotification(e.target.checked)}
+                      className="w-4 h-4 rounded text-indigo-600 focus:ring-0"
+                    />
+                    <span className="text-indigo-300 font-bold flex items-center space-x-1.5">
+                      <Bell className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                      <span>Send Notification Alert</span>
+                    </span>
+                  </label>
+                </div>
               </div>
 
               {/* Section 3: Narrative & Scope */}
@@ -1541,6 +1651,48 @@ export default function JobsManager() {
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
+                </div>
+
+                {/* Options: Premium PRO (Video Ad), Online Data Required, and Push Notification */}
+                <div className="pt-3 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <label className="flex items-center space-x-2 cursor-pointer select-none p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={isPremium}
+                      onChange={(e) => setIsPremium(e.target.checked)}
+                      className="w-4 h-4 rounded text-indigo-600 focus:ring-0"
+                    />
+                    <span className="text-slate-300 flex items-center space-x-1.5 font-medium">
+                      <Lock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>Lock as PRO Job (Video Ad)</span>
+                    </span>
+                  </label>
+
+                  <label className="flex items-center space-x-2 cursor-pointer select-none p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={needsData}
+                      onChange={(e) => setNeedsData(e.target.checked)}
+                      className="w-4 h-4 rounded text-blue-600 focus:ring-0"
+                    />
+                    <span className="text-slate-300 flex items-center space-x-1.5 font-medium">
+                      <Wifi className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                      <span>Require Internet Data</span>
+                    </span>
+                  </label>
+
+                  <label className="flex items-center space-x-2 cursor-pointer select-none p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={broadcastNotification}
+                      onChange={(e) => setBroadcastNotification(e.target.checked)}
+                      className="w-4 h-4 rounded text-indigo-600 focus:ring-0"
+                    />
+                    <span className="text-indigo-300 font-semibold flex items-center space-x-1.5">
+                      <Bell className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                      <span>Send Notification Alert</span>
+                    </span>
+                  </label>
                 </div>
               </div>
 

@@ -114,8 +114,8 @@ export const notificationService = {
         // Add action listener when user taps on the notification in the phone status bar
         LocalNotifications.addListener('localNotificationActionPerformed', (notificationAction) => {
           const extra = notificationAction.notification.extra;
-          if (extra && extra.articleId && typeof onNotificationClick === 'function') {
-            onNotificationClick(extra.articleId, extra.article);
+          if (extra && (extra.articleId || extra.jobId || extra.jobSlug) && typeof onNotificationClick === 'function') {
+            onNotificationClick(extra.articleId, extra.article, extra);
           }
         });
 
@@ -153,6 +153,9 @@ export const notificationService = {
                 body: notification.body || '',
                 category: data.category || 'Tip',
                 articleId: data.articleId || null,
+                jobId: data.jobId || null,
+                jobSlug: data.jobSlug || null,
+                isJobAlert: Boolean(data.isJobAlert || data.jobId || data.category === 'Job Vacancy'),
                 imageUrl: data.imageUrl || null
               });
             }
@@ -161,8 +164,8 @@ export const notificationService = {
           // When user taps on a push notification (wakes up the closed app)
           PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
             const data = notification.notification?.data || {};
-            if (data.articleId && typeof onNotificationClick === 'function') {
-              onNotificationClick(data.articleId);
+            if ((data.articleId || data.jobId || data.jobSlug) && typeof onNotificationClick === 'function') {
+              onNotificationClick(data.articleId, null, data);
             }
           });
         } catch (pushInitErr) {
@@ -196,7 +199,7 @@ export const notificationService = {
   },
 
   // Trigger native heads-up notification in Android status bar + audio chime
-  async triggerSystemNotification({ id, title, body, articleId, article, imageUrl }) {
+  async triggerSystemNotification({ id, title, body, articleId, article, imageUrl, jobId, jobSlug, isJobAlert }) {
     // 1. Audio chime
     playNotificationChime();
 
@@ -226,9 +229,12 @@ export const notificationService = {
               isExactNotification: false,
               isExactMandatory: false,
               extra: {
-                articleId: articleId,
+                articleId: articleId || null,
                 article: article || null,
-                imageUrl: imageUrl || null
+                imageUrl: imageUrl || null,
+                jobId: jobId || null,
+                jobSlug: jobSlug || null,
+                isJobAlert: Boolean(isJobAlert)
               }
             }
           ]
@@ -244,13 +250,13 @@ export const notificationService = {
             body: body,
             icon: imageUrl || '/app-icon.png',
             badge: '/app-icon.png',
-            tag: `tippulse-alert-${articleId || Date.now()}`,
-            data: { articleId, article }
+            tag: `tippulse-alert-${articleId || jobId || Date.now()}`,
+            data: { articleId, article, jobId, jobSlug, isJobAlert }
           });
           webNotif.onclick = () => {
             window.focus();
             if (typeof window.__tippulse_on_notification_click === 'function') {
-              window.__tippulse_on_notification_click(articleId, article);
+              window.__tippulse_on_notification_click(articleId, article, { jobId, jobSlug, isJobAlert });
             }
           };
         } catch (e) {
@@ -321,7 +327,10 @@ export const notificationService = {
         title: notif.title || '🔔 New Tip Alert',
         body: notif.body || 'Tap to open the latest tip now!',
         articleId: notif.articleId,
-        imageUrl: notif.imageUrl
+        imageUrl: notif.imageUrl,
+        jobId: notif.jobId || null,
+        jobSlug: notif.jobSlug || null,
+        isJobAlert: Boolean(notif.isJobAlert || notif.jobId || notif.category === 'Job Vacancy')
       });
 
       if (typeof onNewAlert === 'function') {
@@ -335,7 +344,10 @@ export const notificationService = {
       const isAlreadyRead = readStatusMap.has(idStr) ? readStatusMap.get(idStr) : false;
       return {
         id: idStr,
-        articleId: cn.articleId,
+        articleId: cn.articleId || null,
+        jobId: cn.jobId || null,
+        jobSlug: cn.jobSlug || null,
+        isJobAlert: Boolean(cn.isJobAlert || cn.jobId || cn.category === 'Job Vacancy'),
         title: cn.title,
         body: cn.body,
         category: cn.category || 'Tip',
