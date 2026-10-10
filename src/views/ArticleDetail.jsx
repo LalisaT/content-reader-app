@@ -27,6 +27,7 @@ import YouTubeMusicPlayer, { extractYouTubeId } from '../components/YouTubeMusic
 import CommunityPollCard from '../components/CommunityPollCard';
 import RichMarkdownRenderer from '../components/RichMarkdownRenderer';
 import ShareModal from '../components/ShareModal';
+import BannerAd from '../components/BannerAd';
 import { storageService } from '../services/storageService';
 import { deepLinkService } from '../services/deepLinkService';
 import { Network } from '@capacitor/network';
@@ -546,6 +547,9 @@ export default function ArticleDetail({
           }
           return null;
         })()}
+
+        {/* 24/7 Inline Sponsored Banner Ad */}
+        <BannerAd position="inline" />
 
         {/* Reader Feedback & Claps */}
         <div className="flex items-center justify-between py-4 border-t border-slate-200 dark:border-slate-800">

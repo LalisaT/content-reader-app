@@ -750,9 +750,6 @@ export default function App() {
             </Suspense>
           </main>
 
-          {/* Anchored Bottom AdMob Banner */}
-          <BannerAd position="bottom" />
-
           {/* Bottom Navigation */}
           <BottomNav
             activeTab={activeTab}
@@ -764,6 +761,9 @@ export default function App() {
           />
         </div>
       )}
+
+      {/* Permanent 24/7 Docked Bottom AdMob / Sponsor Banner (Active across all views & reader) */}
+      <BannerAd position="bottom" hasBottomNav={!activeArticle} />
 
       {/* Daily Quick Tip Popup Dialog */}
       {isDailyTipOpen && (

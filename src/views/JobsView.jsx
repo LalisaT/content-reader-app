@@ -27,6 +27,7 @@ import {
   Wifi
 } from 'lucide-react';
 import JobDetailModal from '../components/JobDetailModal';
+import BannerAd from '../components/BannerAd';
 import { storageService } from '../services/storageService';
 import { firestoreSyncService } from '../services/firestoreSyncService';
 
@@ -963,6 +964,9 @@ export default function JobsView({
             </button>
           </div>
         )}
+
+        {/* 24/7 Inline Sponsored Banner Ad */}
+        <BannerAd position="inline" />
       </div>
 
       {/* Selected Job Full Detail Modal */}

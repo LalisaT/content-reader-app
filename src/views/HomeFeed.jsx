@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import CategoryChips from '../components/CategoryChips';
 import ArticleCard from '../components/ArticleCard';
 import CommunityPollCard from '../components/CommunityPollCard';
+import BannerAd from '../components/BannerAd';
 import { Sparkles, TrendingUp, Compass, ArrowRight, Music, Headphones, ShieldCheck, Briefcase, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 
 export default function HomeFeed({
@@ -220,15 +221,21 @@ export default function HomeFeed({
             {filteredArticles.map((article, index) => {
               if (selectedCategory === 'All' && index === 0) return null;
               return (
-                <ArticleCard
-                  key={article.id}
-                  article={article}
-                  isBookmarked={bookmarks.includes(article.id)}
-                  onToggleBookmark={onToggleBookmark}
-                  onOpenArticle={onOpenArticle}
-                />
+                <React.Fragment key={article.id}>
+                  <ArticleCard
+                    article={article}
+                    isBookmarked={bookmarks.includes(article.id)}
+                    onToggleBookmark={onToggleBookmark}
+                    onOpenArticle={onOpenArticle}
+                  />
+                  {index === 2 && <BannerAd position="inline" />}
+                </React.Fragment>
               );
             })}
+
+            {filteredArticles.length > 0 && filteredArticles.length <= 2 && (
+              <BannerAd position="inline" />
+            )}
 
             {filteredArticles.length === 0 && (
               <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">

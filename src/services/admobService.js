@@ -108,14 +108,18 @@ class AdMobManager {
         this.preloadInterstitial();
         this.preloadRewarded();
         this.showBanner(56);
-      }, 500);
+      }, 300);
 
-      // 24/7 Continuous Banner Keep-Alive Heartbeat
+      // 24/7 Non-Stop Continuous Banner Keep-Alive Heartbeat (Every 10s)
       setInterval(() => {
-        if (Capacitor.isNativePlatform() && this.isInitialized && !this.isBannerActive) {
-          this.showBanner(this.currentBannerMargin);
+        if (Capacitor.isNativePlatform() && this.isInitialized) {
+          if (!this.isBannerActive) {
+            this.showBanner(this.currentBannerMargin);
+          } else {
+            this.resumeBanner();
+          }
         }
-      }, 35000);
+      }, 10000);
     } catch (err) {
       console.warn('AdMob initialization error:', err);
     }
@@ -137,18 +141,21 @@ class AdMobManager {
       });
 
       AdMob.addListener(BannerAdPluginEvents.FailedToLoad, (err) => {
-        console.warn('AdMob: Banner failed to load, retrying in 15s:', err);
+        console.warn('AdMob: Banner failed to load, retrying in 8s:', err);
         this.isBannerActive = false;
         if (this.bannerRetryTimeout) clearTimeout(this.bannerRetryTimeout);
         this.bannerRetryTimeout = setTimeout(() => {
           this.showBanner(this.currentBannerMargin);
-        }, 15000);
+        }, 8000);
       });
 
-      // Window focus and foreground recovery to keep banner running 24/7
+      // Window focus, network reconnect, and foreground recovery to keep banner running 24/7
       if (typeof window !== 'undefined') {
         window.addEventListener('focus', () => {
           this.resumeBanner();
+        });
+        window.addEventListener('online', () => {
+          this.showBanner(this.currentBannerMargin);
         });
         document.addEventListener('visibilitychange', () => {
           if (!document.hidden) {
@@ -195,7 +202,7 @@ class AdMobManager {
     }
   }
 
-  // 2. Banner Ad Management
+  // 2. Banner Ad Management (24/7 Non-Removable)
   async showBanner(margin = 56) {
     if (!Capacitor.isNativePlatform()) return;
 
@@ -218,11 +225,11 @@ class AdMobManager {
     }
   }
 
+  // Never hide or remove the 24/7 banner; keep it active at all times
   async hideBanner() {
     if (!Capacitor.isNativePlatform()) return;
     try {
-      await AdMob.hideBanner();
-      this.isBannerActive = false;
+      await this.resumeBanner();
     } catch (e) {}
   }
 
@@ -231,7 +238,11 @@ class AdMobManager {
     try {
       await AdMob.resumeBanner();
       this.isBannerActive = true;
-    } catch (e) {}
+    } catch (e) {
+      try {
+        await this.showBanner(this.currentBannerMargin);
+      } catch (err) {}
+    }
   }
 
   // Smooth banner adjustment when switching between reading mode and feed navigation
