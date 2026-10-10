@@ -46,7 +46,7 @@ export default function ArticleDetail({
   polls = [],
   onVotePoll,
 }) {
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const progressBarRef = React.useRef(null);
   const [isLiked, setIsLiked] = useState(false);
   const [showAudio, setShowAudio] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -61,7 +61,9 @@ export default function ArticleDetail({
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-    setScrollProgress(0);
+    if (progressBarRef.current) {
+      progressBarRef.current.style.width = '0%';
+    }
 
     const scrollTimer = setTimeout(() => {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -99,18 +101,28 @@ export default function ArticleDetail({
     };
   }, []);
 
-  // Track reading scroll progress
+  // Track reading scroll progress with zero React re-renders (60/120fps direct DOM update)
   useEffect(() => {
-    const handleScroll = () => {
+    let rafId = null;
+    const updateProgress = () => {
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalHeight > 0) {
-        const currentProgress = (window.scrollY / totalHeight) * 100;
-        setScrollProgress(Math.min(100, Math.max(0, currentProgress)));
+      if (totalHeight > 0 && progressBarRef.current) {
+        const currentProgress = Math.min(100, Math.max(0, (window.scrollY / totalHeight) * 100));
+        progressBarRef.current.style.width = `${currentProgress}%`;
       }
+      rafId = null;
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleScroll = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(updateProgress);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const handleShare = () => {
@@ -142,7 +154,7 @@ export default function ArticleDetail({
   );
 
   return (
-    <div className={`min-h-screen pb-32 sm:pb-36 pb-safe-nav transition-colors ${
+    <div className={`min-h-screen pb-32 sm:pb-36 pb-safe-nav transition-colors w-full max-w-full overflow-x-hidden ${
       readerTheme === 'sepia' 
         ? 'theme-sepia' 
         : readerTheme === 'dark' 
@@ -155,8 +167,9 @@ export default function ArticleDetail({
         style={{ top: 'var(--safe-area-inset-top, env(safe-area-inset-top, 0px))' }}
       >
         <div
-          className="h-full bg-indigo-600 dark:bg-indigo-400 transition-all duration-75"
-          style={{ width: `${scrollProgress}%` }}
+          ref={progressBarRef}
+          className="h-full bg-indigo-600 dark:bg-indigo-400"
+          style={{ width: '0%', willChange: 'width' }}
         />
       </div>
 
@@ -252,33 +265,33 @@ export default function ArticleDetail({
       </header>
 
       {/* Main Reading Container */}
-      <article className="max-w-xl mx-auto px-4 pt-4 sm:pt-6">
+      <article className="max-w-xl mx-auto px-4 pt-4 sm:pt-6 w-full min-w-0 overflow-x-hidden">
         {/* Category & Read Time Meta */}
-        <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
+        <div className="flex items-center flex-wrap gap-2 text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
           <span className="uppercase tracking-wider px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/70 rounded-md border border-indigo-200/60 dark:border-indigo-800/40">
             {article.category}
           </span>
           <span className="text-slate-400">•</span>
           <span className="text-slate-500 dark:text-slate-400 flex items-center font-normal">
-            <Clock className="w-3.5 h-3.5 mr-1" />
+            <Clock className="w-3.5 h-3.5 mr-1 shrink-0" />
             {article.readTime}
           </span>
         </div>
 
         {/* Article Headline */}
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-snug mb-3">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-snug mb-3 break-words">
           {article.title}
         </h1>
 
         {/* Author & Publish Date Bar */}
-        <div className="flex items-center space-x-3 text-xs text-slate-500 dark:text-slate-400 py-3 border-y border-slate-100 dark:border-slate-800 mb-5">
-          <div className="flex items-center space-x-1.5">
-            <User className="w-3.5 h-3.5 text-slate-400" />
-            <span>{article.author || 'TipPulse Editorial'}</span>
+        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400 py-3 border-y border-slate-100 dark:border-slate-800 mb-5">
+          <div className="flex items-center space-x-1.5 min-w-0">
+            <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="truncate">{article.author || 'TipPulse Editorial'}</span>
           </div>
           <span>•</span>
           <div className="flex items-center space-x-1.5">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <span>{article.date || 'Today'}</span>
           </div>
         </div>

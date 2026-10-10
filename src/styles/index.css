@@ -44,10 +44,21 @@
   color: #382c1d !important;
 }
 
-/* Base & Dark Theme Backgrounds for Seamless Edge-to-Edge Experience */
+/* Base & Dark Theme Backgrounds for Seamless Edge-to-Edge Experience & Zero Horizontal Overflow */
 html, body {
   background-color: #f8fafc;
   color: #0f172a;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img, video, canvas, svg, iframe {
+  max-width: 100%;
 }
 
 html.dark, html.dark body {

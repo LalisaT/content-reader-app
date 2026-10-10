@@ -29,22 +29,36 @@ export default function PolicyView({ onBack }) {
         {/* Section 1 */}
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            1. Data Collection & Local Storage
+            1. Cloud-Native Real-Time Architecture & Zero Offline Disk Caching
           </h2>
           <p>
-            TipPulse operates on an offline-first, privacy-respecting architecture:
+            TipPulse delivers live editorial content and vacancy opportunities directly from Google Cloud Firestore:
           </p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><strong>Local Data:</strong> Your reading history, bookmarks, saved tips, theme preferences, and font settings are stored directly on your device via local storage.</li>
-            <li><strong>Community Polls:</strong> When participating in interactive community polls, votes are recorded anonymously to compute aggregate percentages. A local vote flag is saved on your device solely to display your voted state and prevent duplicate submissions. No personal identifiers or profile data are collected.</li>
-            <li><strong>External Transmission:</strong> Personal reading habits and local device settings remain on your device and are never sold or transmitted to external advertising databases.</li>
+            <li><strong>Direct Cloud Streaming:</strong> Articles, guides, live announcements, and career vacancies are retrieved in real time into transient application memory. The application does not maintain persistent local databases (such as IndexedDB, SQLite, or Service Worker disk caches) for public feeds. This ensures you always view the latest, authentic content without stale caches.</li>
+            <li><strong>Device UI Preferences:</strong> Minimal client-side device storage (localStorage) is used solely to store your active interface preferences (theme mode, font scaling, personal article bookmarks, and saved vacancy IDs). These preferences remain strictly on your physical device.</li>
+            <li><strong>Community Polls:</strong> When participating in polls, votes are recorded anonymously to compute aggregate results. A local vote flag is saved on your device solely to display your voted state and prevent duplicate submissions. No personal profile data is collected.</li>
           </ul>
         </section>
 
-        {/* Section 2 */}
+        {/* Section 2: Executive Careers & Scholarship Candidacy */}
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            2. Third-Party Advertising (Google AdMob)
+            2. Candidate Applications & Executive Career Privacy
+          </h2>
+          <p>
+            When utilizing the Job Vacancy & Scholarship Sanctuary portal:
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li><strong>Confidential Application Transfer:</strong> Information provided during candidate submissions (such as your name, email, phone number, portfolio/CV URL, and executive statement) is transferred directly to the designated recruiting team or verified external employer application endpoint using encrypted TLS/HTTPS protocols.</li>
+            <li><strong>Strict Non-Commercial Use:</strong> Candidate CVs, portfolio links, and recruitment inquiries are never sold, rented, or distributed to advertising networks or third-party data brokers. Candidate data is processed solely for evaluating professional candidacy.</li>
+          </ul>
+        </section>
+
+        {/* Section 3 */}
+        <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            3. Third-Party Advertising (Google AdMob)
           </h2>
           <p>
             We use Google AdMob to serve advertisements within the app (including adaptive banners, rewarded video ads, and occasional interstitial transitions). AdMob may automatically collect and process certain data to display relevant ads, including:
@@ -68,10 +82,10 @@ export default function PolicyView({ onBack }) {
           </p>
         </section>
 
-        {/* Section 3 */}
+        {/* Section 4 */}
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            3. YouTube API Services & Embedded Multimedia
+            4. YouTube API Services & Embedded Multimedia
           </h2>
           <p>
             TipPulse includes embedded audio and multimedia tracks (such as ambient focus, sleep soundscapes, and educational video guides) using official YouTube API services and embedded players:
@@ -107,10 +121,10 @@ export default function PolicyView({ onBack }) {
           </ul>
         </section>
 
-        {/* Section 4 */}
+        {/* Section 5 */}
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            4. User Rights & Choices
+            5. User Rights & Choices
           </h2>
           <ul className="list-disc pl-5 space-y-1">
             <li><strong>EEA/UK Residents (GDPR):</strong> You can review or adjust your personalized ad consent choices anytime through the in-app consent preferences.</li>
@@ -118,30 +132,30 @@ export default function PolicyView({ onBack }) {
           </ul>
         </section>
 
-        {/* Section 5 */}
+        {/* Section 6 */}
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            5. Children’s Privacy (COPPA)
+            6. Children’s Privacy (COPPA)
           </h2>
           <p>
             TipPulse is not directed toward children under 13 (or 16 in the EEA). We do not knowingly solicit or collect personal information from children.
           </p>
         </section>
 
-        {/* Section 6 */}
+        {/* Section 7 */}
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            6. Policy Updates
+            7. Policy Updates
           </h2>
           <p>
             We may update this Privacy Policy from time to time. Any changes will be reflected directly within the application and at our public privacy URL alongside the updated date.
           </p>
         </section>
 
-        {/* Section 7 */}
+        {/* Section 8 */}
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-slate-700">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            7. Contact Us
+            8. Contact Us
           </h2>
           <p>
             For questions regarding this policy or data practices, contact us at:

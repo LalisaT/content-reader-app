@@ -19,7 +19,7 @@ export default function TermsView({ onBack }) {
         </div>
 
         <div className="inline-block bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">
-          Effective Date: August 2026
+          Effective Date: October 2026
         </div>
 
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
@@ -39,14 +39,37 @@ export default function TermsView({ onBack }) {
             All original editorial articles, interfaces, graphics, and design elements within TipPulse are the intellectual property of the application developers.
           </p>
           <ul className="list-disc pl-5 space-y-1">
-            <li>You are granted a personal, non-exclusive, non-transferable license to use the app for personal, non-commercial reading and self-improvement purposes.</li>
+            <li>You are granted a personal, non-exclusive, non-transferable license to use the app for personal, non-commercial reading, career discovery, and self-improvement purposes.</li>
             <li>You may not redistribute, scrape, reverse-engineer, or commercially republish the content without prior written permission.</li>
           </ul>
         </section>
 
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            3. Third-Party Advertisements & Google AdMob
+            3. Executive Career Vacancies & Scholarship Directory
+          </h2>
+          <p>
+            TipPulse hosts a curated index of executive career openings, leadership roles, and academic scholarships/fellowships:
+          </p>
+          <ul className="list-disc pl-5 space-y-1">
+            <li><strong>Directory Nature:</strong> TipPulse serves as an informational discovery directory and talent bridge. Unless explicitly stated otherwise, TipPulse is not the direct employer or scholarship granting body.</li>
+            <li><strong>Applicant Representations:</strong> Candidates submitting applications or inquiries through the app represent and warrant that all professional qualifications, contact details, resumes, and portfolios are authentic and accurate.</li>
+            <li><strong>No Employment Guarantee:</strong> Listing a vacancy or submitting an application does not guarantee an interview, appointment, or funding grant. All hiring decisions, compensation negotiations, and terms remain exclusively at the discretion of the recruiting entity.</li>
+          </ul>
+        </section>
+
+        <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            4. Live Cloud Architecture & Network Availability
+          </h2>
+          <p>
+            TipPulse operates on a pure live cloud architecture. Content, vacancies, and notifications are streamed directly from cloud endpoints in real time. An active network connection is required to fetch updates and submit candidacies.
+          </p>
+        </section>
+
+        <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            5. Third-Party Advertisements & Google AdMob
           </h2>
           <p>
             TipPulse is supported by advertisements served through <strong>Google AdMob</strong>. Advertisements may link to external third-party products, websites, or services. We do not endorse or assume responsibility for any third-party websites, products, or content.
@@ -55,16 +78,16 @@ export default function TermsView({ onBack }) {
 
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            4. Limitation of Liability
+            6. Limitation of Liability
           </h2>
           <p>
-            TipPulse and its contributors shall not be liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use the application or reliance on any educational content provided.
+            TipPulse and its contributors shall not be liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use the application or reliance on any educational content or career listings provided.
           </p>
         </section>
 
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            5. Contact Information
+            7. Contact Information
           </h2>
           <p>
             If you have questions about these Terms, please contact us at: <strong>qaroo24@gmail.com</strong>.

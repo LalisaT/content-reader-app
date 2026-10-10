@@ -1,7 +1,6 @@
-import initialJobsData from '../data/initialJobs.json';
-
 // Storage Service for TipPulse Reader App
-// Manages bookmarks, read history, user preferences, offline data, and custom admin posts
+// Client Preferences & User Interactions Only (Zero Offline Caching of Remote Feeds/Posts)
+// All articles, vacancies, and cloud data flow directly from live remote endpoints in real time.
 
 const STORAGE_KEYS = {
   BOOKMARKS: 'tippulse_bookmarks',
@@ -10,111 +9,34 @@ const STORAGE_KEYS = {
   FONT_SIZE: 'tippulse_font_size',
   UNLOCKED_PREMIUM: 'tippulse_unlocked_premium',
   AD_CONSENT: 'tippulse_ad_consent',
-  CUSTOM_ARTICLES: 'tippulse_custom_articles',
-  CACHED_ARTICLES: 'tippulse_cached_all_articles',
-  DELETED_ARTICLES: 'tippulse_deleted_articles',
   VOTED_POLLS: 'tippulse_voted_polls',
-  CACHED_JOBS: 'tippulse_cached_jobs',
   SAVED_JOBS: 'tippulse_saved_jobs',
   APPLIED_JOBS: 'tippulse_applied_jobs',
 };
 
+// Purge any legacy stale offline post caches to ensure 100% fresh remote queries
+try {
+  localStorage.removeItem('tippulse_cached_all_articles');
+  localStorage.removeItem('tippulse_custom_articles');
+  localStorage.removeItem('tippulse_cached_jobs');
+  localStorage.removeItem('tippulse_deleted_articles');
+} catch (e) {
+  // Ignore in environments without window.localStorage
+}
+
 export const storageService = {
-  // Deleted articles blacklist (allows admin to delete ANY post including seeded/default)
-  getDeletedArticleIds: () => {
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.DELETED_ARTICLES);
-      return data ? JSON.parse(data) : [];
-    } catch {
-      return [];
-    }
-  },
+  // Legacy stubs - All articles & jobs are strictly remote-only
+  getDeletedArticleIds: () => [],
+  addDeletedArticleId: () => [],
+  getCachedArticles: () => [],
+  setCachedArticles: () => {},
+  getCustomArticles: () => [],
+  saveCustomArticle: () => [],
+  deleteCustomArticle: () => [],
+  getCachedJobs: () => [],
+  setCachedJobs: () => {},
 
-  addDeletedArticleId: (id) => {
-    const list = storageService.getDeletedArticleIds();
-    const strId = String(id);
-    if (!list.includes(strId)) {
-      const updated = [...list, strId];
-      localStorage.setItem(STORAGE_KEYS.DELETED_ARTICLES, JSON.stringify(updated));
-      return updated;
-    }
-    return list;
-  },
-
-  // Offline Full Articles Cache (Never lost when internet data is off)
-  getCachedArticles: () => {
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.CACHED_ARTICLES);
-      return data ? JSON.parse(data) : [];
-    } catch {
-      return [];
-    }
-  },
-
-  setCachedArticles: (articles) => {
-    try {
-      if (articles && articles.length > 0) {
-        localStorage.setItem(STORAGE_KEYS.CACHED_ARTICLES, JSON.stringify(articles));
-      }
-    } catch (e) {
-      console.warn('Could not update offline articles cache:', e);
-    }
-  },
-
-  // Custom User/Admin Articles
-  getCustomArticles: () => {
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.CUSTOM_ARTICLES);
-      return data ? JSON.parse(data) : [];
-    } catch {
-      return [];
-    }
-  },
-
-  saveCustomArticle: (article) => {
-    const list = storageService.getCustomArticles();
-    const existingIndex = list.findIndex((a) => a.id === article.id);
-    let updated;
-    if (existingIndex >= 0) {
-      updated = [...list];
-      updated[existingIndex] = article;
-    } else {
-      updated = [article, ...list];
-    }
-    localStorage.setItem(STORAGE_KEYS.CUSTOM_ARTICLES, JSON.stringify(updated));
-
-    // Also update full offline cached articles
-    const cached = storageService.getCachedArticles();
-    const cIndex = cached.findIndex((a) => a.id === article.id);
-    let updatedCached;
-    if (cIndex >= 0) {
-      updatedCached = [...cached];
-      updatedCached[cIndex] = article;
-    } else {
-      updatedCached = [article, ...cached];
-    }
-    storageService.setCachedArticles(updatedCached);
-
-    return updated;
-  },
-
-  deleteCustomArticle: (id) => {
-    const strId = String(id);
-    storageService.addDeletedArticleId(strId);
-
-    const list = storageService.getCustomArticles();
-    const updated = list.filter((a) => String(a.id) !== strId);
-    localStorage.setItem(STORAGE_KEYS.CUSTOM_ARTICLES, JSON.stringify(updated));
-
-    // Also remove from full offline cache
-    const cached = storageService.getCachedArticles();
-    const updatedCached = cached.filter((a) => String(a.id) !== strId);
-    localStorage.setItem(STORAGE_KEYS.CACHED_ARTICLES, JSON.stringify(updatedCached));
-
-    return updated;
-  },
-
-  // Bookmarks
+  // User Bookmarks (Personal Saved Reads)
   getBookmarks: () => {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.BOOKMARKS);
@@ -141,7 +63,7 @@ export const storageService = {
     return updated;
   },
 
-  // Premium Unlocks (via Rewarded Ads)
+  // Premium Article Access State
   getUnlockedPremium: () => {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.UNLOCKED_PREMIUM);
@@ -166,21 +88,33 @@ export const storageService = {
     return list;
   },
 
-  // Reader Settings
+  // User UI Preferences
   getThemeMode: () => {
-    return localStorage.getItem(STORAGE_KEYS.THEME_MODE) || 'light';
+    try {
+      return localStorage.getItem(STORAGE_KEYS.THEME_MODE) || 'light';
+    } catch {
+      return 'light';
+    }
   },
 
   setThemeMode: (mode) => {
-    localStorage.setItem(STORAGE_KEYS.THEME_MODE, mode);
+    try {
+      localStorage.setItem(STORAGE_KEYS.THEME_MODE, mode);
+    } catch (e) {}
   },
 
   getFontSize: () => {
-    return localStorage.getItem(STORAGE_KEYS.FONT_SIZE) || 'base';
+    try {
+      return localStorage.getItem(STORAGE_KEYS.FONT_SIZE) || 'base';
+    } catch {
+      return 'base';
+    }
   },
 
   setFontSize: (size) => {
-    localStorage.setItem(STORAGE_KEYS.FONT_SIZE, size);
+    try {
+      localStorage.setItem(STORAGE_KEYS.FONT_SIZE, size);
+    } catch (e) {}
   },
 
   // Ad Consent
@@ -194,7 +128,9 @@ export const storageService = {
   },
 
   setAdConsent: (consent) => {
-    localStorage.setItem(STORAGE_KEYS.AD_CONSENT, JSON.stringify(consent));
+    try {
+      localStorage.setItem(STORAGE_KEYS.AD_CONSENT, JSON.stringify(consent));
+    } catch (e) {}
   },
 
   // Read History
@@ -204,9 +140,7 @@ export const storageService = {
       const filtered = existing.filter((item) => item !== id);
       const updated = [id, ...filtered].slice(0, 50);
       localStorage.setItem(STORAGE_KEYS.READ_HISTORY, JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   },
 
   getHistory: () => {
@@ -234,7 +168,6 @@ export const storageService = {
       localStorage.setItem(STORAGE_KEYS.VOTED_POLLS, JSON.stringify(updated));
       return updated;
     } catch (e) {
-      console.warn('Could not save voted poll:', e);
       return {};
     }
   },
@@ -249,40 +182,7 @@ export const storageService = {
     return voted[String(pollId)] || null;
   },
 
-  // -------------------------------------------------------------
-  // Job Vacancies Offline Cache, Bookmarks, and Applications
-  // -------------------------------------------------------------
-  getCachedJobs: () => {
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.CACHED_JOBS);
-      if (data) {
-        const parsed = JSON.parse(data);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((j) => {
-            const seed = initialJobsData.find((ij) => ij.id === j.id);
-            return {
-              ...j,
-              slug: j.slug || seed?.slug || String(j.id).replace(/^job-/, '')
-            };
-          });
-        }
-      }
-      return Array.isArray(initialJobsData) ? initialJobsData : [];
-    } catch {
-      return Array.isArray(initialJobsData) ? initialJobsData : [];
-    }
-  },
-
-  setCachedJobs: (jobs) => {
-    try {
-      if (Array.isArray(jobs) && jobs.length > 0) {
-        localStorage.setItem(STORAGE_KEYS.CACHED_JOBS, JSON.stringify(jobs));
-      }
-    } catch (e) {
-      console.warn('Could not cache jobs locally:', e);
-    }
-  },
-
+  // User Saved Job Vacancies (Candidate Personal Bookmarks)
   getSavedJobIds: () => {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.SAVED_JOBS);
@@ -301,7 +201,6 @@ export const storageService = {
       localStorage.setItem(STORAGE_KEYS.SAVED_JOBS, JSON.stringify(updated));
       return updated;
     } catch (e) {
-      console.warn('Could not toggle saved job:', e);
       return [];
     }
   },
@@ -311,6 +210,7 @@ export const storageService = {
     return saved.includes(String(jobId));
   },
 
+  // In-App Job Applications Record
   getAppliedJobIds: () => {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.APPLIED_JOBS);
@@ -333,7 +233,6 @@ export const storageService = {
       localStorage.setItem(STORAGE_KEYS.APPLIED_JOBS, JSON.stringify(updated));
       return updated;
     } catch (e) {
-      console.warn('Could not record job application:', e);
       return {};
     }
   },

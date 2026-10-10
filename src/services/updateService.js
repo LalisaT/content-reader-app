@@ -1,11 +1,12 @@
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 
-const CURRENT_VERSION_CODE = 32;
-const CURRENT_VERSION_NAME = '1.3.1';
-const SKIP_STORAGE_KEY = 'tippulse_skip_update_v';
-const SKIP_TIME_KEY = 'tippulse_skip_update_ts';
+const CURRENT_VERSION_CODE = 34;
+const CURRENT_VERSION_NAME = '1.4.1';
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.tippulse.app';
+
+// Session-only memory state for skipped optional updates (no local storage persistence)
+const skippedSessionVersions = new Set();
 
 export const updateService = {
   // Get installed app version
@@ -34,54 +35,67 @@ export const updateService = {
     const latestVersionCode = Number(cloudConfig.latestVersionCode || 0);
     const latestVersionName = cloudConfig.latestVersionName || '';
     const minSupportedVersionCode = Number(cloudConfig.minSupportedVersionCode || 0);
-    const releaseNotes = cloudConfig.releaseNotes || 'Exciting new features and performance enhancements are now available.';
+    const releaseNotes =
+      cloudConfig.releaseNotes ||
+      '• Enhanced career & tip deep links for instant in-app opening\n• Real-time cloud streaming architecture\n• Performance and stability improvements';
     const isUpdateEnabled = cloudConfig.updatePromptEnabled !== false;
 
-    // If update prompt is disabled or latest version not configured, return null
-    if (!isUpdateEnabled || !latestVersionCode) return null;
+    // Allow instant visual verification via ?previewUpdate=1
+    let forcePreview = false;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('previewUpdate') === '1') {
+        forcePreview = true;
+      }
+    } catch (e) {}
+
+    // If update prompt is disabled or latest version not configured, return null (unless previewing)
+    if ((!isUpdateEnabled || !latestVersionCode) && !forcePreview) return null;
 
     const current = await updateService.getCurrentVersion();
 
     // If current version is equal to or newer than the latest on store, no update needed
-    if (current.versionCode >= latestVersionCode) {
+    if (!forcePreview && current.versionCode >= latestVersionCode) {
       return null;
     }
 
     // Force update if installed version is below minimum supported threshold
     const isForceUpdate = minSupportedVersionCode > 0 && current.versionCode < minSupportedVersionCode;
 
-    // If optional update, respect user's "Skip / Later" preference for 24 hours
-    if (!isForceUpdate) {
-      try {
-        const skippedVersion = localStorage.getItem(SKIP_STORAGE_KEY);
-        const skippedTs = Number(localStorage.getItem(SKIP_TIME_KEY) || 0);
-        const now = Date.now();
-        const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-
-        if (skippedVersion === String(latestVersionCode) && (now - skippedTs) < ONE_DAY_MS) {
-          return null;
-        }
-      } catch (e) {}
+    // If optional update, respect user's dismiss choice during active session
+    if (!isForceUpdate && !forcePreview && skippedSessionVersions.has(String(latestVersionCode))) {
+      return null;
     }
+
+    const formattedDate =
+      cloudConfig.lastUpdatedDate ||
+      new Date(cloudConfig.updatedAt || Date.now()).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
 
     return {
       hasUpdate: true,
       isForceUpdate,
+      appName: cloudConfig.appName || 'TipPulse',
       currentVersionCode: current.versionCode,
       currentVersionName: current.versionName,
-      latestVersionCode,
-      latestVersionName: latestVersionName || `v${latestVersionCode}`,
+      latestVersionCode: latestVersionCode || current.versionCode + 1,
+      latestVersionName: latestVersionName || `1.3.${(latestVersionCode || current.versionCode + 1) - 29}`,
       releaseNotes,
+      updateSize: cloudConfig.updateSize || '18 MB',
+      updateRating: cloudConfig.updateRating || '4.8',
+      lastUpdatedDate: formattedDate,
       updateUrl: cloudConfig.updateUrl || PLAY_STORE_URL,
     };
   },
 
-  // Remember that the user skipped this update version (24-hour cooldown)
+  // Remember that the user skipped this update version for the current session
   skipUpdate: (versionCode) => {
-    try {
-      localStorage.setItem(SKIP_STORAGE_KEY, String(versionCode));
-      localStorage.setItem(SKIP_TIME_KEY, String(Date.now()));
-    } catch (e) {}
+    if (versionCode !== undefined && versionCode !== null) {
+      skippedSessionVersions.add(String(versionCode));
+    }
   },
 
   // Launch Google Play Store directly
@@ -89,7 +103,6 @@ export const updateService = {
     const targetUrl = customUrl || PLAY_STORE_URL;
     if (Capacitor.isNativePlatform()) {
       try {
-        // Try opening native Google Play Store app directly
         window.location.href = `market://details?id=com.tippulse.app`;
         return;
       } catch (e) {}

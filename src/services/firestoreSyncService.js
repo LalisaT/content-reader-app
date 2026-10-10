@@ -13,9 +13,6 @@ import {
   runTransaction
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { storageService } from './storageService';
-import initialArticlesData from '../data/articles.json';
-import initialJobsData from '../data/initialJobs.json';
 
 const ARTICLES_COLLECTION = 'articles';
 const NOTIFICATIONS_COLLECTION = 'notifications';
@@ -25,68 +22,32 @@ const CONFIG_DOC = 'app_config';
 const CATEGORIES_DOC = 'app_categories';
 
 export const firestoreSyncService = {
-  // Subscribe to real-time articles sync across all devices
+  // Pure Remote Real-Time Stream: Fetch articles directly from Firestore with zero local caching
   subscribeArticles: (onArticlesUpdate, onError) => {
     try {
       const articlesRef = collection(db, ARTICLES_COLLECTION);
       
       const unsubscribe = onSnapshot(
         articlesRef,
-        async (snapshot) => {
-          if (snapshot.empty) {
-            // First run: Seed initial curated articles into Firestore
-            console.log('Firestore articles collection is empty. Seeding initial curated articles...');
-            try {
-              const batch = writeBatch(db);
-              initialArticlesData.forEach((art) => {
-                const docRef = doc(db, ARTICLES_COLLECTION, String(art.id));
-                batch.set(docRef, {
-                  ...art,
-                  createdAt: Date.now()
-                });
-              });
-              await batch.commit();
-              storageService.setCachedArticles(initialArticlesData);
-              onArticlesUpdate(initialArticlesData);
-            } catch (seedErr) {
-              console.warn('Could not auto-seed Firestore (check security rules):', seedErr);
-              const fallback = storageService.getCachedArticles().length > 0
-                ? storageService.getCachedArticles()
-                : initialArticlesData;
-              onArticlesUpdate(fallback);
-            }
-          } else {
-            const articles = snapshot.docs.map((docSnap) => {
-              const data = docSnap.data();
-              return {
-                id: docSnap.id,
-                ...data,
-              };
-            });
-            // Sort by custom order or newest first
-            articles.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-            // Permanently cache into device storage so it NEVER disappears when data is OFF
-            storageService.setCachedArticles(articles);
-            onArticlesUpdate(articles);
-          }
+        (snapshot) => {
+          const articles = snapshot.docs.map((docSnap) => ({
+            id: docSnap.id,
+            ...docSnap.data(),
+          }));
+          // Sort by custom order or newest first
+          articles.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          onArticlesUpdate(articles);
         },
         (err) => {
-          console.warn('Firestore subscription error (using local offline cache):', err);
-          const cached = storageService.getCachedArticles();
-          if (cached && cached.length > 0) {
-            onArticlesUpdate(cached);
-          }
+          console.error('Firestore articles stream error:', err);
           if (onError) onError(err);
         }
       );
 
       return unsubscribe;
     } catch (err) {
-      console.warn('Failed to initialize Firestore listener:', err);
-      const cached = storageService.getCachedArticles();
-      if (cached && cached.length > 0) {
-        onArticlesUpdate(cached);
-      }
+      console.error('Failed to initialize Firestore articles listener:', err);
+      if (onError) onError(err);
       return () => {};
     }
   },
@@ -349,68 +310,34 @@ export const firestoreSyncService = {
     }
   },
 
-  // -------------------------------------------------------------
-  // Job Vacancies & Executive Careers Real-Time Synchronization
-  // -------------------------------------------------------------
+  // Pure Remote Real-Time Stream: Fetch live vacancies directly from Firestore with zero local caching
   subscribeJobs: (onJobsUpdate, onError) => {
     try {
       const jobsRef = collection(db, JOBS_COLLECTION);
       const unsubscribe = onSnapshot(
         jobsRef,
-        async (snapshot) => {
-          if (snapshot.empty) {
-            console.log('Firestore jobs collection is empty. Seeding curated initial luxury vacancies...');
-            try {
-              const batch = writeBatch(db);
-              initialJobsData.forEach((job) => {
-                const docRef = doc(db, JOBS_COLLECTION, String(job.id));
-                batch.set(docRef, {
-                  ...job,
-                  createdAt: job.createdAt || Date.now(),
-                  updatedAt: Date.now()
-                });
-              });
-              await batch.commit();
-              storageService.setCachedJobs(initialJobsData);
-              onJobsUpdate(initialJobsData);
-            } catch (seedErr) {
-              console.warn('Could not auto-seed jobs in Firestore (using offline cache):', seedErr);
-              const fallback = storageService.getCachedJobs().length > 0
-                ? storageService.getCachedJobs()
-                : initialJobsData;
-              onJobsUpdate(fallback);
-            }
-          } else {
-            const jobs = snapshot.docs.map((docSnap) => ({
-              id: docSnap.id,
-              ...docSnap.data()
-            }));
-            // Sort: Featured VIP roles first, then newest posted
-            jobs.sort((a, b) => {
-              if (a.isFeatured && !b.isFeatured) return -1;
-              if (!a.isFeatured && b.isFeatured) return 1;
-              return (b.createdAt || 0) - (a.createdAt || 0);
-            });
-            storageService.setCachedJobs(jobs);
-            onJobsUpdate(jobs);
-          }
+        (snapshot) => {
+          const jobs = snapshot.docs.map((docSnap) => ({
+            id: docSnap.id,
+            ...docSnap.data()
+          }));
+          // Sort: Featured VIP roles first, then newest posted
+          jobs.sort((a, b) => {
+            if (a.isFeatured && !b.isFeatured) return -1;
+            if (!a.isFeatured && b.isFeatured) return 1;
+            return (b.createdAt || 0) - (a.createdAt || 0);
+          });
+          onJobsUpdate(jobs);
         },
         (err) => {
-          console.warn('Firestore jobs listener error (using local cache):', err);
-          const cached = storageService.getCachedJobs();
-          if (cached && cached.length > 0) {
-            onJobsUpdate(cached);
-          } else {
-            onJobsUpdate(initialJobsData);
-          }
+          console.error('Firestore jobs stream error:', err);
           if (onError) onError(err);
         }
       );
       return unsubscribe;
     } catch (err) {
-      console.warn('Failed to listen to jobs:', err);
-      const cached = storageService.getCachedJobs();
-      onJobsUpdate(cached.length > 0 ? cached : initialJobsData);
+      console.error('Failed to listen to live jobs:', err);
+      if (onError) onError(err);
       return () => {};
     }
   },

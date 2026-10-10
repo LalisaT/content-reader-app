@@ -28,7 +28,8 @@ import {
   ChevronDown,
   Upload,
   Camera,
-  Image as ImageIcon
+  Image as ImageIcon,
+  GraduationCap
 } from 'lucide-react';
 import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebaseAdmin';
@@ -254,6 +255,7 @@ export default function JobsManager() {
   const [applyInstructions, setApplyInstructions] = useState('');
   const [deadline, setDeadline] = useState('Open until filled');
   const [isFeatured, setIsFeatured] = useState(false);
+  const [isScholarship, setIsScholarship] = useState(false);
   const [isUrgent, setIsUrgent] = useState(false);
   const [badgeText, setBadgeText] = useState('VIP Executive Search');
   const [status, setStatus] = useState('active');
@@ -388,6 +390,7 @@ export default function JobsManager() {
     setApplyInstructions('Submit CV, portfolio, and brief executive summary.');
     setDeadline('Open until filled');
     setIsFeatured(true);
+    setIsScholarship(false);
     setIsUrgent(false);
     setBadgeText('VIP Executive Search');
     setStatus('active');
@@ -424,6 +427,7 @@ export default function JobsManager() {
     setApplyInstructions(d.applyInstructions);
     setDeadline(d.deadline);
     setIsFeatured(d.isFeatured);
+    setIsScholarship(Boolean(d.isScholarship));
     setIsUrgent(d.isUrgent);
     setBadgeText(d.badgeText);
     setStatus(d.status);
@@ -459,6 +463,7 @@ export default function JobsManager() {
     setApplyInstructions(job.applyInstructions || '');
     setDeadline(job.deadline || 'Open until filled');
     setIsFeatured(Boolean(job.isFeatured));
+    setIsScholarship(Boolean(job.isScholarship));
     setIsUrgent(Boolean(job.isUrgent));
     setBadgeText(job.badgeText || 'VIP Spotlight');
     setStatus(job.status || 'active');
@@ -515,6 +520,7 @@ export default function JobsManager() {
       applyInstructions: applyInstructions.trim(),
       deadline: deadline.trim(),
       isFeatured,
+      isScholarship: Boolean(isScholarship),
       isUrgent,
       badgeText: badgeText.trim() || (isFeatured ? 'VIP Spotlight' : 'Executive Role'),
       status,
@@ -965,14 +971,48 @@ export default function JobsManager() {
                 </div>
 
                 <div>
-                  <label className="block text-slate-300 font-bold mb-1">Department / Practice Area</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-slate-300 font-bold text-xs flex items-center space-x-1.5">
+                      <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Department / Category</span>
+                    </label>
+                    <span className="text-[10px] text-amber-400 font-medium bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                      Powers category tabs on candidate page
+                    </span>
+                  </div>
                   <input
                     type="text"
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
-                    placeholder="e.g. Artificial Intelligence & Cloud"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="e.g. Artificial Intelligence, Brand Strategy, Product, Quantitative Finance"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm"
                   />
+                  {/* Quick Select Category Chips */}
+                  <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Quick Pick:</span>
+                    {[
+                      'Artificial Intelligence',
+                      'Brand Strategy',
+                      'Product',
+                      'Quantitative Finance',
+                      'Engineering & Tech',
+                      'Scholarships & Fellowships',
+                      'Executive Leadership'
+                    ].map((chip) => (
+                      <button
+                        key={chip}
+                        type="button"
+                        onClick={() => setDepartment(chip)}
+                        className={`text-[10px] px-2 py-0.5 rounded-md border transition-all active:scale-95 ${
+                          department.toLowerCase().includes(chip.toLowerCase())
+                            ? 'bg-indigo-600 text-white border-indigo-500'
+                            : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
+                        }`}
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Company Logo / Brand Photo Upload Zone */}
@@ -1207,31 +1247,53 @@ export default function JobsManager() {
                 </div>
 
                 {/* Toggles */}
-                <div className="flex items-center space-x-6 pt-2">
-                  <label className="flex items-center space-x-2 cursor-pointer select-none">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  <label className="flex items-start space-x-2.5 p-3 rounded-xl bg-slate-950/80 border border-slate-800 cursor-pointer select-none hover:border-amber-500/50 transition-colors">
                     <input
                       type="checkbox"
                       checked={isFeatured}
                       onChange={(e) => setIsFeatured(e.target.checked)}
-                      className="rounded border-slate-700 bg-slate-950 text-amber-500 focus:ring-0"
+                      className="mt-0.5 rounded border-slate-700 bg-slate-950 text-amber-500 focus:ring-0"
                     />
-                    <span className="font-bold text-amber-400 flex items-center space-x-1">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>VIP Spotlight Highlight (Golden Glow)</span>
-                    </span>
+                    <div>
+                      <span className="font-bold text-xs text-amber-400 flex items-center space-x-1">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>VIP Spotlight</span>
+                      </span>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Powers "VIP Spotlight Only" filter pill</p>
+                    </div>
                   </label>
 
-                  <label className="flex items-center space-x-2 cursor-pointer select-none">
+                  <label className="flex items-start space-x-2.5 p-3 rounded-xl bg-slate-950/80 border border-slate-800 cursor-pointer select-none hover:border-amber-500/50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={isScholarship}
+                      onChange={(e) => setIsScholarship(e.target.checked)}
+                      className="mt-0.5 rounded border-slate-700 bg-slate-950 text-amber-500 focus:ring-0"
+                    />
+                    <div>
+                      <span className="font-bold text-xs text-amber-400 flex items-center space-x-1">
+                        <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Scholarship / Grant</span>
+                      </span>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Powers "Scholarships & Grants" filter pill</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start space-x-2.5 p-3 rounded-xl bg-slate-950/80 border border-slate-800 cursor-pointer select-none hover:border-rose-500/50 transition-colors">
                     <input
                       type="checkbox"
                       checked={isUrgent}
                       onChange={(e) => setIsUrgent(e.target.checked)}
-                      className="rounded border-slate-700 bg-slate-950 text-rose-500 focus:ring-0"
+                      className="mt-0.5 rounded border-slate-700 bg-slate-950 text-rose-500 focus:ring-0"
                     />
-                    <span className="font-bold text-rose-400 flex items-center space-x-1">
-                      <Flame className="w-3.5 h-3.5" />
-                      <span>Urgent Hiring Flag</span>
-                    </span>
+                    <div>
+                      <span className="font-bold text-xs text-rose-400 flex items-center space-x-1">
+                        <Flame className="w-3.5 h-3.5" />
+                        <span>Urgent Hiring Flag</span>
+                      </span>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Highlights opportunity with priority flame</p>
+                    </div>
                   </label>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, AlertTriangle, ShieldCheck, Heart, DollarSign, Brain, Youtube, HelpCircle } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, ShieldCheck, Heart, DollarSign, Brain, Youtube, HelpCircle, Briefcase } from 'lucide-react';
 
 export default function DisclaimerView({ onBack }) {
   return (
@@ -77,11 +77,22 @@ export default function DisclaimerView({ onBack }) {
           </p>
         </section>
 
-        {/* Section 6: Advertising Disclaimer */}
+        {/* Section 6: Executive Careers & Scholarship Notice */}
+        <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+            <Briefcase className="w-4 h-4 text-amber-500" />
+            <span>6. Executive Careers & Scholarship Opportunities Notice</span>
+          </h2>
+          <p>
+            Vacancy listings, compensation benchmarks, and fellowship endowment figures presented in the Job Vacancy & Scholarship Sanctuary are aggregated for informational discovery. TipPulse is not responsible for recruitment decisions, employer interview procedures, background evaluations, or visa sponsorships. Prospective candidates should verify exact terms directly with hiring institutions.
+          </p>
+        </section>
+
+        {/* Section 7: Advertising Disclaimer */}
         <section className="space-y-2 text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-300">
           <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
             <ShieldCheck className="w-4 h-4 text-indigo-600" />
-            <span>6. Advertising & External Links</span>
+            <span>7. Advertising & External Links</span>
           </h2>
           <p>
             Advertisements displayed within the application are delivered via Google AdMob. Any purchases or interactions made with third-party advertisers are solely between you and the third-party sponsor.

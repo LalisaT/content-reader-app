@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
+import { initAudioUnlock } from './services/notificationService';
 import './styles/index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -13,9 +14,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 );
 
 // Defer non-critical audio context initialization off the initial thread
-setTimeout(async () => {
+setTimeout(() => {
   try {
-    const { initAudioUnlock } = await import('./services/notificationService');
     initAudioUnlock();
   } catch {}
 }, 400);

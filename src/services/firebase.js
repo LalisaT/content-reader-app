@@ -1,8 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import {
   initializeFirestore,
-  persistentLocalCache,
-  persistentMultipleTabManager
+  memoryLocalCache
 } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -18,11 +17,9 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Cloud Firestore with offline persistent disk caching
+// Pure Live Remote Architecture: In-memory transient cache only, no IndexedDB/disk persistence
 export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
-  })
+  localCache: memoryLocalCache()
 });
 
 export default app;

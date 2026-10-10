@@ -158,12 +158,12 @@
     "location": "San Francisco, CA / Remote Worldwide",
     "salaryRange": "$150,000 - $195,000 / yr",
     "experienceLevel": "Lead / Head of Dept (6+ Years)",
-    "summary": "Drive mobile engineering architecture, offline-first resilience, and fluid 120 FPS reader interactions for millions of global active readers.",
-    "description": "TipPulse is accelerating into a premier digital reading sanctuary. We are searching for an exceptional Head of Mobile Product & Engineering to architect our next era of high-performance mobile apps, offline-first synchronization, and delightful micro-interactions.",
+    "summary": "Drive mobile engineering architecture, real-time cloud resilience, and fluid 120 FPS reader interactions for millions of global active readers.",
+    "description": "TipPulse is accelerating into a premier digital reading sanctuary. We are searching for an exceptional Head of Mobile Product & Engineering to architect our next era of high-performance mobile apps, real-time cloud synchronization, and delightful micro-interactions.",
     "responsibilities": [
       "Lead cross-platform mobile architecture across React, Capacitor Android/iOS, and native bindings.",
       "Optimize bundle delivery, instant cold-boot start times, and zero-jank 120 FPS reader rendering.",
-      "Architect offline-first data replication layers bridging Firestore and SQLite/IndexedDB.",
+      "Architect cloud-native real-time streaming layers bridging Firestore and high-performance endpoints.",
       "Oversee AdMob hybrid monetization and in-app purchase systems with strict compliance.",
       "Define release pipelines, automated UI testing, and continuous deployment workflows."
     ],

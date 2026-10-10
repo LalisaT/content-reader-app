@@ -66,9 +66,10 @@ export default function App() {
   // Dynamic Categories
   const [categories, setCategories] = useState(categoryService.getCategories());
 
-  // Cloud Real-Time Articles & Custom Articles (Offline-First Persistent)
-  const [customArticles, setCustomArticles] = useState(storageService.getCustomArticles());
-  const [cloudArticles, setCloudArticles] = useState(() => storageService.getCachedArticles());
+  // Cloud Real-Time Direct Remote Streaming (Zero Local Disk Cache)
+  const [cloudArticles, setCloudArticles] = useState([]);
+  const [isLoadingArticles, setIsLoadingArticles] = useState(true);
+  const [articlesError, setArticlesError] = useState(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine ?? true);
 
   // Modals State
@@ -82,10 +83,40 @@ export default function App() {
   const exitTapTimerRef = useRef(null);
   const [notifications, setNotifications] = useState(() => notificationService.getNotifications());
   const [luxuryNotification, setLuxuryNotification] = useState(null);
-  const [updateInfo, setUpdateInfo] = useState(null);
+  const [updateInfo, setUpdateInfo] = useState(() => {
+    try {
+      if (new URLSearchParams(window.location.search).get('previewUpdate') === '1') {
+        return {
+          hasUpdate: true,
+          isForceUpdate: false,
+          appName: 'TipPulse',
+          currentVersionCode: 32,
+          currentVersionName: '1.3.1',
+          latestVersionCode: 33,
+          latestVersionName: '1.3.2',
+          releaseNotes: '• Enhanced career & tip deep links for instant in-app opening\n• Real-time cloud streaming architecture\n• Performance and stability improvements',
+          updateSize: '18 MB',
+          updateRating: '4.8',
+          lastUpdatedDate: 'Oct 10, 2026',
+          updateUrl: 'https://play.google.com/store/apps/details?id=com.tippulse.app',
+        };
+      }
+    } catch {}
+    return null;
+  });
   const [polls, setPolls] = useState([]);
-  const [jobs, setJobs] = useState(() => storageService.getCachedJobs());
+  const [jobs, setJobs] = useState([]);
+  const [isLoadingJobs, setIsLoadingJobs] = useState(true);
+  const [jobsError, setJobsError] = useState(null);
   const [savedJobIds, setSavedJobIds] = useState(() => storageService.getSavedJobIds());
+  const [pendingArticleId, setPendingArticleId] = useState(null);
+  const [pendingCareerSlug, setPendingCareerSlug] = useState(() => {
+    try {
+      return deepLinkService.extractCareerIdFromUrl(window.location.href);
+    } catch {
+      return null;
+    }
+  });
 
   const handleToggleSaveJob = (jobId) => {
     const updated = storageService.toggleSaveJob(jobId);
@@ -99,17 +130,41 @@ export default function App() {
       setActiveTab('feed');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (articleId) {
-      const cached = storageService.getCachedArticles() || [];
-      const custom = storageService.getCustomArticles() || [];
-      const allArticlesList = [...cached, ...custom, ...initialArticlesData];
+      const allArticlesList = cloudArticles && cloudArticles.length > 0 ? cloudArticles : initialArticlesData;
       const target = allArticlesList.find((a) => String(a.id) === String(articleId));
       if (target) {
         setActiveArticle(target);
+        setPendingArticleId(null);
         setActiveTab('feed');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // Wait for live Firestore stream to populate cloudArticles
+        setPendingArticleId(String(articleId));
+        setActiveTab('feed');
       }
     }
   };
+
+  // Navigate seamlessly to a specific career / job vacancy from deep link
+  const navigateToCareer = (careerSlug) => {
+    setActiveArticle(null);
+    setActiveTab('jobs');
+    if (careerSlug) {
+      setPendingCareerSlug(String(careerSlug));
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Resolve pending deep-linked article as soon as cloudArticles stream arrives
+  useEffect(() => {
+    if (pendingArticleId && cloudArticles && cloudArticles.length > 0) {
+      const target = cloudArticles.find((a) => String(a.id) === String(pendingArticleId));
+      if (target) {
+        setActiveArticle(target);
+        setPendingArticleId(null);
+      }
+    }
+  }, [pendingArticleId, cloudArticles]);
 
   // Real-time Cloud Synchronization & Network Connectivity Listeners
   useEffect(() => {
@@ -155,11 +210,16 @@ export default function App() {
       });
       window.__tippulse_on_notification_click = handleNotificationClick;
 
-      // Deferred Deep Link Resolver
-      deepLinkService.init((articleId) => {
-        if (!articleId) return;
-        navigateToArticle(articleId);
-      });
+      // Deferred & Universal Deep Link Resolver (Articles + Careers)
+      deepLinkService.init(
+        (articleId) => {
+          if (!articleId) return;
+          navigateToArticle(articleId);
+        },
+        (careerSlug) => {
+          navigateToCareer(careerSlug);
+        }
+      );
 
       // Background Firestore Subscriptions for Cloud Notifications (Multi-device Sync)
       unsubNotifications = firestoreSyncService.subscribeNotifications((cloudNotifs) => {
@@ -171,16 +231,30 @@ export default function App() {
         }
       });
 
-      // Background Firestore Subscriptions for Articles (Auto-alert on newly published articles)
+      // Background Firestore Subscriptions for Articles (Direct Remote API without local disk cache)
       unsubArticles = firestoreSyncService.subscribeArticles((articles) => {
-        if (articles && articles.length > 0) {
+        setIsLoadingArticles(false);
+        setArticlesError(null);
+        if (articles) {
           setCloudArticles(articles);
-          storageService.setCachedArticles(articles);
           notificationService.syncCloudArticles(articles, (newNotif) => {
             setLuxuryNotification(newNotif);
           });
         }
+      }, (err) => {
+        console.error('Remote articles stream error:', err);
+        setIsLoadingArticles(false);
+        setArticlesError('Unable to connect to live content cloud. Please verify your internet connection.');
       });
+
+      // Check if previewUpdate=1 is active on initial load
+      try {
+        if (new URLSearchParams(window.location.search).get('previewUpdate') === '1') {
+          updateService.checkForUpdate({ appName: 'TipPulse' }).then((info) => {
+            if (info) setUpdateInfo(info);
+          });
+        }
+      } catch (e) {}
 
       unsubConfig = firestoreSyncService.subscribeAppConfig((config) => {
         if (config) {
@@ -189,9 +263,7 @@ export default function App() {
           }
           // Real-time In-App Update Prompt Check
           updateService.checkForUpdate(config).then((info) => {
-            if (info) {
-              setUpdateInfo(info);
-            }
+            setUpdateInfo(info);
           }).catch((err) => console.warn('Update check error:', err));
         }
       });
@@ -209,9 +281,15 @@ export default function App() {
       });
 
       unsubJobs = firestoreSyncService.subscribeJobs((cloudJobs) => {
+        setIsLoadingJobs(false);
+        setJobsError(null);
         if (cloudJobs) {
           setJobs(cloudJobs);
         }
+      }, (err) => {
+        console.error('Remote vacancies stream error:', err);
+        setIsLoadingJobs(false);
+        setJobsError('Unable to connect to live career cloud. Please verify your internet connection.');
       });
     }, 100);
 
@@ -239,24 +317,14 @@ export default function App() {
     };
   }, []);
 
-  // Combined articles (Real-time Cloud Articles + Offline Local Cache + Curated Fallback)
+  // Live Remote Articles (Direct Cloud API Stream without Local Cache Fallback)
   const allArticles = useMemo(() => {
-    const deletedIds = storageService.getDeletedArticleIds();
-    let list = [];
     if (cloudArticles && cloudArticles.length > 0) {
-      list = cloudArticles;
-    } else {
-      const cached = storageService.getCachedArticles();
-      if (cached && cached.length > 0) {
-        list = cached;
-      } else if (customArticles && customArticles.length > 0) {
-        list = [...customArticles, ...initialArticlesData];
-      } else {
-        list = initialArticlesData;
-      }
+      return cloudArticles;
     }
-    return list.filter((a) => !deletedIds.includes(String(a.id)));
-  }, [cloudArticles, customArticles]);
+    // Fallback to starter curated catalogue only if cloud stream hasn't populated yet
+    return initialArticlesData;
+  }, [cloudArticles]);
 
   // Sync dark theme class on document element
   useEffect(() => {
@@ -526,7 +594,7 @@ export default function App() {
         </Suspense>
       ) : (
         /* Otherwise display Main App Navigation & Views */
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen w-full max-w-full overflow-x-hidden min-w-0">
           {/* Top Navbar with 1-click Night Mode toggle */}
           <Navbar
             activeTab={activeTab}
@@ -543,16 +611,16 @@ export default function App() {
             onOpenNotifications={() => setIsNotificationOpen(true)}
           />
 
-          {/* Offline Mode Banner (Shows when mobile data / wifi is off) */}
+          {/* Network Disconnection Status (Shows if device loses connectivity) */}
           {!isOnline && (
-            <div className="bg-amber-500/15 dark:bg-amber-950/40 border-b border-amber-300/40 dark:border-amber-800/40 px-4 py-2 text-center text-xs font-semibold text-amber-800 dark:text-amber-300 flex items-center justify-center space-x-1.5 animate-in fade-in">
-              <WifiOff className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              <span>Offline Reading Mode: All your written & saved articles are ready offline.</span>
+            <div className="bg-rose-500/15 dark:bg-rose-950/40 border-b border-rose-300/40 dark:border-rose-800/40 px-4 py-2 text-center text-xs font-semibold text-rose-800 dark:text-rose-300 flex items-center justify-center space-x-1.5 animate-in fade-in">
+              <WifiOff className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
+              <span>Live Cloud Streaming Paused: Device is offline. Reconnect to stream latest articles & vacancies.</span>
             </div>
           )}
 
           {/* View Container */}
-          <main className="flex-1">
+          <main className="flex-1 w-full max-w-full overflow-x-hidden min-w-0">
             {activeTab === 'feed' && (
               <HomeFeed
                 articles={allArticles}
@@ -568,6 +636,20 @@ export default function App() {
                 onNavigateToJobs={() => {
                   setActiveTab('jobs');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                isLoading={isLoadingArticles}
+                error={articlesError}
+                onRetry={() => {
+                  setIsLoadingArticles(true);
+                  setArticlesError(null);
+                  firestoreSyncService.subscribeArticles((articles) => {
+                    setIsLoadingArticles(false);
+                    setArticlesError(null);
+                    if (articles) setCloudArticles(articles);
+                  }, (err) => {
+                    setIsLoadingArticles(false);
+                    setArticlesError('Unable to connect to live content cloud. Check your connection.');
+                  });
                 }}
               />
             )}
@@ -593,6 +675,22 @@ export default function App() {
                   jobs={jobs}
                   savedJobIds={savedJobIds}
                   onToggleSaveJob={handleToggleSaveJob}
+                  targetCareerSlug={pendingCareerSlug}
+                  onClearTargetCareer={() => setPendingCareerSlug(null)}
+                  isLoading={isLoadingJobs}
+                  error={jobsError}
+                  onRetry={() => {
+                    setIsLoadingJobs(true);
+                    setJobsError(null);
+                    firestoreSyncService.subscribeJobs((cloudJobs) => {
+                      setIsLoadingJobs(false);
+                      setJobsError(null);
+                      if (cloudJobs) setJobs(cloudJobs);
+                    }, (err) => {
+                      setIsLoadingJobs(false);
+                      setJobsError('Unable to connect to live career cloud. Check your connection.');
+                    });
+                  }}
                 />
               )}
 
@@ -800,11 +898,12 @@ export default function App() {
         </div>
       )}
 
-      {/* Real-time In-App Update Prompt Modal (Update Now or Skip) */}
+      {/* Real-time In-App Update Prompt Modal (Google Play Store Bottom Sheet) */}
       {updateInfo && (
         <Suspense fallback={null}>
           <AppUpdateModal
             updateInfo={updateInfo}
+            appConfig={appConfig}
             onUpdate={() => updateService.openPlayStore(updateInfo.updateUrl)}
             onSkip={() => {
               updateService.skipUpdate(updateInfo.latestVersionCode);
