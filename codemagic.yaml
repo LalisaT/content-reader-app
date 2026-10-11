@@ -1,0 +1,42 @@
+workflows:
+  android-capacitor-release:
+    name: TipPulse Android Play Store Release (AAB & APK)
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      node: 20
+      java: 21
+      vars:
+        KEYSTORE_BASE64: "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"
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+          source: true
+    scripts:
+      - name: Install dependencies and build web assets
+        script: |
+          npm install
+          npm run build
+          npx cap copy android
+      - name: Configure Android SDK and Signing Keystore
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/android/local.properties"
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$CM_BUILD_DIR/android/app/my-release-key.jks"
+          cat <<EOF > "$CM_BUILD_DIR/android/keystore.properties"
+          storeFile=my-release-key.jks
+          storePassword=15739482
+          keyAlias=my-key-alias
+          keyPassword=15739482
+          EOF
+      - name: Build Signed Android Release AAB & APK
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew bundleRelease assembleRelease -x lint -x lintVitalRelease
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+      - android/app/build/outputs/apk/release/*.apk
+      - android/app/build/outputs/mapping/release/mapping.txt

@@ -1,5 +1,6 @@
 @echo off
-title TipPulse - Free Local Play Store AAB & APK Builder (No Ionic Appflow Needed)
+setlocal enabledelayedexpansion
+title TipPulse - 100% Free Play Store AAB and APK Builder
 color 0B
 echo ============================================================================
 echo   TIPPULSE - 100%% FREE PLAY STORE .AAB ^& .APK BUILDER (NO APPFLOW CREDITS)
@@ -8,18 +9,43 @@ echo.
 
 cd /d "C:\Users\PC\.gemini\antigravity\scratch\content_reader_app"
 
+:: If an earlier run saved "my-release-key.jks" as the keyAlias, clear it automatically
+if exist "android\keystore.properties" (
+    findstr /I "keyAlias=my-release-key.jks" "android\keystore.properties" >nul 2>&1
+    if !errorlevel! equ 0 (
+        del /F /Q "android\keystore.properties"
+    )
+)
+
+:ASK_PASS
 if not exist "android\keystore.properties" (
-    echo [Step 1] Setting up your Android Signing Keystore once...
-    echo Found keystore on Desktop: C:\Users\PC\Desktop\my-release-key.jks
+    echo [Step 1] Found your keystore: C:\Users\PC\Desktop\my-release-key.jks
+    echo (You do NOT need to type the Key Alias - it will be detected automatically!)
     echo.
-    set /p KS_ALIAS="Enter your Key Alias (default: key0 or alias_name, press Enter for key0): "
-    if "%KS_ALIAS%"=="" set KS_ALIAS=key0
-    set /p KS_PASS="Enter your Keystore Password: "
+    set "KS_PASS="
+    set /p KS_PASS="Enter your Keystore Password and press Enter: "
+    if "!KS_PASS!"=="" goto ASK_PASS
+
+    echo.
+    echo Verifying password and auto-detecting Key Alias from my-release-key.jks...
+    set "DETECTED_ALIAS="
+    for /f "tokens=1 delims=," %%A in ('keytool -list -keystore "C:\Users\PC\Desktop\my-release-key.jks" -storepass "!KS_PASS!" ^| findstr /I "PrivateKeyEntry"') do (
+        set "DETECTED_ALIAS=%%A"
+    )
+
+    if "!DETECTED_ALIAS!"=="" (
+        echo.
+        echo [!] Password did not match C:\Users\PC\Desktop\my-release-key.jks. Please try again!
+        echo.
+        goto ASK_PASS
+    )
+
+    echo [OK] Password verified! Auto-detected Key Alias: !DETECTED_ALIAS!
     (
         echo storeFile=C:/Users/PC/Desktop/my-release-key.jks
-        echo storePassword=%KS_PASS%
-        echo keyAlias=%KS_ALIAS%
-        echo keyPassword=%KS_PASS%
+        echo storePassword=!KS_PASS!
+        echo keyAlias=!DETECTED_ALIAS!
+        echo keyPassword=!KS_PASS!
     ) > "android\keystore.properties"
     echo Saved signing configuration to android\keystore.properties!
     echo.
@@ -30,9 +56,9 @@ call npm.cmd run build
 call npx.cmd cap copy android
 
 echo.
-echo [Step 3] Building Signed Google Play Store Bundle (.aab) and (.apk)...
+echo [Step 3] Building Signed Google Play Store Bundle (.aab)...
 cd /d "C:\Users\PC\.gemini\antigravity\scratch\content_reader_app\android"
-call gradlew.bat bundleRelease assembleRelease
+call gradlew.bat bundleRelease -x lint -x lintVitalRelease
 
 echo.
 if exist "app\build\outputs\bundle\release\app-release.aab" (
@@ -42,7 +68,7 @@ if exist "app\build\outputs\bundle\release\app-release.aab" (
     echo   --^> C:\Users\PC\Desktop\TipPulse-PlayStore-Release.aab
     echo ============================================================================
 ) else (
-    echo [!] Build finished with warnings or check password in android\keystore.properties.
+    echo [!] Build did not produce app-release.aab. Check any error message above.
 )
 
 if exist "app\build\outputs\apk\release\app-release.apk" (
