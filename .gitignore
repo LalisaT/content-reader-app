@@ -23,3 +23,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Android local SDK & private signing keys
+android/local.properties
+android/keystore.properties
+*.jks
+*.keystore
+
