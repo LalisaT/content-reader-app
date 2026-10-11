@@ -234,9 +234,22 @@ export default function JobsManager() {
   const [title, setTitle] = useState('');
   const [company, setCompany] = useState('');
   const [companyLogo, setCompanyLogo] = useState('');
+  const [logoFit, setLogoFit] = useState('contain'); // 'contain' | 'cover'
   const [photos, setPhotos] = useState([]);
+  const [photoFit, setPhotoFit] = useState('cover'); // 'cover' | 'contain'
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const [cropModal, setCropModal] = useState({
+    isOpen: false,
+    target: 'logo', // 'logo' | 'photo'
+    photoIndex: null,
+    rawSrc: '',
+    mode: 'fit-contain', // 'fit-contain' | 'crop-square' | 'crop-16-9' | 'original'
+    bgColor: '#ffffff',
+    zoom: 1,
+    offsetX: 0,
+    offsetY: 0
+  });
   const logoInputRef = useRef(null);
   const photosInputRef = useRef(null);
   const [department, setDepartment] = useState('Engineering & Tech');
@@ -256,6 +269,10 @@ export default function JobsManager() {
   const [applyEmail, setApplyEmail] = useState('');
   const [applyUrl, setApplyUrl] = useState('');
   const [applyInstructions, setApplyInstructions] = useState('');
+  const [showExpressApply, setShowExpressApply] = useState(true);
+  const [showApplyNow, setShowApplyNow] = useState(true);
+  const [expressApplyLabel, setExpressApplyLabel] = useState('Express In-App Application');
+  const [applyNowLabel, setApplyNowLabel] = useState('Apply Now');
   const [deadline, setDeadline] = useState('Open until filled');
   const [isFeatured, setIsFeatured] = useState(false);
   const [isScholarship, setIsScholarship] = useState(false);
@@ -267,46 +284,142 @@ export default function JobsManager() {
   const [status, setStatus] = useState('active');
   const modalBodyRef = useRef(null);
 
-  // Client-side canvas image compression to keep Firestore docs ultralight (<50KB)
-  const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.8) => {
+  // Auto-resize all textareas inside the editor modal so they fit as much content as needed
+  const autoResizeTextarea = (el, minHeight = 90) => {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.max(minHeight, el.scrollHeight + 4)}px`;
+  };
+
+  useEffect(() => {
+    if (!isEditorOpen || !modalBodyRef.current) return;
+    const timer = setTimeout(() => {
+      if (!modalBodyRef.current) return;
+      const textareas = modalBodyRef.current.querySelectorAll('textarea[data-autoresize="true"]');
+      textareas.forEach((ta) => {
+        const minH = Number(ta.getAttribute('data-minheight')) || 110;
+        autoResizeTextarea(ta, minH);
+      });
+    }, 20);
+    return () => clearTimeout(timer);
+  }, [
+    isEditorOpen,
+    summary,
+    description,
+    responsibilitiesText,
+    requirementsText,
+    niceToHaveText,
+    benefitsText,
+    skillsText,
+    applyInstructions
+  ]);
+
+  // Smart Canvas Image Crop & Fit Processor
+  const renderCroppedOrFittedDataUrl = (rawSrc, options = {}) => {
+    const {
+      mode = 'fit-contain', // 'fit-contain' | 'crop-square' | 'crop-16-9' | 'original'
+      bgColor = '#ffffff',
+      zoom = 1,
+      offsetX = 0,
+      offsetY = 0,
+      target = 'logo'
+    } = options;
+
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = reject;
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onerror = reject;
-        img.onload = () => {
-          let width = img.width;
-          let height = img.height;
-          if (width > maxWidth || height > maxHeight) {
-            if (width / height > maxWidth / maxHeight) {
-              height = Math.round((height * maxWidth) / width);
-              width = maxWidth;
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onerror = reject;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        if (mode === 'original') {
+          const maxDim = target === 'logo' ? 500 : 1000;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
             } else {
-              width = Math.round((width * maxHeight) / height);
-              height = maxHeight;
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
             }
           }
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', quality));
-        };
-        img.src = e.target.result;
+          canvas.width = w;
+          canvas.height = h;
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+          return;
+        }
+
+        const outW = mode === 'crop-16-9' ? 960 : target === 'logo' ? 400 : 800;
+        const outH = mode === 'crop-16-9' ? 540 : target === 'logo' ? 400 : mode === 'crop-square' ? 800 : 540;
+        canvas.width = outW;
+        canvas.height = outH;
+
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, outW, outH);
+
+        const scaleContain = Math.min(outW / img.width, outH / img.height);
+        const scaleCover = Math.max(outW / img.width, outH / img.height);
+        const baseScale = mode === 'fit-contain' ? scaleContain * 0.92 : scaleCover;
+        const finalScale = baseScale * Math.max(0.5, Number(zoom) || 1);
+
+        const drawW = img.width * finalScale;
+        const drawH = img.height * finalScale;
+
+        const panX = (Number(offsetX) / 100) * (outW * 0.5);
+        const panY = (Number(offsetY) / 100) * (outH * 0.5);
+
+        const dx = (outW - drawW) / 2 + panX;
+        const dy = (outH - drawH) / 2 + panY;
+
+        ctx.drawImage(img, dx, dy, drawW, drawH);
+        resolve(canvas.toDataURL('image/jpeg', 0.86));
       };
-      reader.readAsDataURL(file);
+      img.src = rawSrc;
     });
   };
+
+  const readFileAsDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setIsUploadingLogo(true);
     try {
-      const compressed = await compressImage(file, 400, 400, 0.85);
-      setCompanyLogo(compressed);
+      const rawDataUrl = await readFileAsDataUrl(file);
+      // Auto-fit logo cleanly first AND open interactive Crop/Fit dialog so admin can choose Fit vs Crop
+      const autoFitted = await renderCroppedOrFittedDataUrl(rawDataUrl, {
+        mode: 'fit-contain',
+        bgColor: '#ffffff',
+        zoom: 1,
+        offsetX: 0,
+        offsetY: 0,
+        target: 'logo'
+      });
+      setCompanyLogo(autoFitted);
+      setLogoFit('contain');
+      setCropModal({
+        isOpen: true,
+        target: 'logo',
+        photoIndex: null,
+        rawSrc: rawDataUrl,
+        mode: 'fit-contain',
+        bgColor: '#ffffff',
+        zoom: 1,
+        offsetX: 0,
+        offsetY: 0
+      });
     } catch (err) {
       console.error('Error processing logo file:', err);
       alert('Could not process the selected image.');
@@ -321,10 +434,36 @@ export default function JobsManager() {
     if (!files.length) return;
     setIsUploadingPhotos(true);
     try {
-      const compressedList = await Promise.all(
-        files.map((f) => compressImage(f, 900, 600, 0.78))
+      const rawList = await Promise.all(files.map((f) => readFileAsDataUrl(f)));
+      const processedList = await Promise.all(
+        rawList.map((raw) =>
+          renderCroppedOrFittedDataUrl(raw, {
+            mode: 'original',
+            bgColor: '#0f172a',
+            zoom: 1,
+            offsetX: 0,
+            offsetY: 0,
+            target: 'photo'
+          })
+        )
       );
-      setPhotos((prev) => [...prev, ...compressedList].slice(0, 6));
+      const nextPhotos = [...photos, ...processedList].slice(0, 6);
+      setPhotos(nextPhotos);
+
+      // Open Crop & Fit studio for the newly uploaded photo so admin can choose Crop 16:9 vs Full Fit
+      if (rawList.length > 0) {
+        setCropModal({
+          isOpen: true,
+          target: 'photo',
+          photoIndex: Math.min(photos.length, 5),
+          rawSrc: rawList[0],
+          mode: 'original',
+          bgColor: '#0f172a',
+          zoom: 1,
+          offsetX: 0,
+          offsetY: 0
+        });
+      }
     } catch (err) {
       console.error('Error uploading photos:', err);
       alert('Could not process one or more photo files.');
@@ -332,6 +471,38 @@ export default function JobsManager() {
       setIsUploadingPhotos(false);
       if (e.target) e.target.value = '';
     }
+  };
+
+  const handleApplyCropModal = async () => {
+    if (!cropModal.rawSrc) {
+      setCropModal((prev) => ({ ...prev, isOpen: false }));
+      return;
+    }
+    try {
+      const resultUrl = await renderCroppedOrFittedDataUrl(cropModal.rawSrc, {
+        mode: cropModal.mode,
+        bgColor: cropModal.bgColor,
+        zoom: cropModal.zoom,
+        offsetX: cropModal.offsetX,
+        offsetY: cropModal.offsetY,
+        target: cropModal.target
+      });
+      if (cropModal.target === 'logo') {
+        setCompanyLogo(resultUrl);
+        setLogoFit(cropModal.mode === 'crop-square' ? 'cover' : 'contain');
+      } else {
+        setPhotos((prev) => {
+          const updated = [...prev];
+          const idx = cropModal.photoIndex !== null && cropModal.photoIndex < updated.length ? cropModal.photoIndex : updated.length - 1;
+          if (idx >= 0) updated[idx] = resultUrl;
+          return updated;
+        });
+        setPhotoFit(cropModal.mode === 'fit-contain' || cropModal.mode === 'original' ? 'contain' : 'cover');
+      }
+    } catch (err) {
+      console.warn('Could not apply custom crop:', err);
+    }
+    setCropModal((prev) => ({ ...prev, isOpen: false }));
   };
 
   const handleRemovePhoto = (idx) => {
@@ -376,7 +547,9 @@ export default function JobsManager() {
     setTitle('');
     setCompany('');
     setCompanyLogo('');
+    setLogoFit('contain');
     setPhotos([]);
+    setPhotoFit('cover');
     setDepartment('Engineering & Artificial Intelligence');
     setEmploymentType('Full-Time');
     setWorkplaceType('Remote');
@@ -394,6 +567,10 @@ export default function JobsManager() {
     setApplyEmail('careers@company.com');
     setApplyUrl('https://company.com/careers');
     setApplyInstructions('Submit CV, portfolio, and brief executive summary.');
+    setShowExpressApply(true);
+    setShowApplyNow(true);
+    setExpressApplyLabel('Express In-App Application');
+    setApplyNowLabel('Apply Now');
     setDeadline('Open until filled');
     setIsFeatured(true);
     setIsScholarship(false);
@@ -416,7 +593,9 @@ export default function JobsManager() {
     setTitle(d.title);
     setCompany(d.company);
     setCompanyLogo(d.companyLogo);
+    setLogoFit(d.logoFit || 'contain');
     setPhotos(d.photos || []);
+    setPhotoFit(d.photoFit || 'cover');
     setDepartment(d.department);
     setEmploymentType(d.employmentType);
     setWorkplaceType(d.workplaceType);
@@ -434,6 +613,10 @@ export default function JobsManager() {
     setApplyEmail(d.applyEmail);
     setApplyUrl(d.applyUrl);
     setApplyInstructions(d.applyInstructions);
+    setShowExpressApply(d.showExpressApply !== false);
+    setShowApplyNow(d.showApplyNow !== false);
+    setExpressApplyLabel(d.expressApplyLabel || 'Express In-App Application');
+    setApplyNowLabel(d.applyNowLabel || 'Apply Now');
     setDeadline(d.deadline);
     setIsFeatured(d.isFeatured);
     setIsScholarship(Boolean(d.isScholarship));
@@ -455,7 +638,9 @@ export default function JobsManager() {
     setTitle(job.title || '');
     setCompany(job.company || '');
     setCompanyLogo(job.companyLogo || '');
+    setLogoFit(job.logoFit || 'contain');
     setPhotos(Array.isArray(job.photos) ? job.photos : []);
+    setPhotoFit(job.photoFit || 'cover');
     setDepartment(job.department || 'General');
     setEmploymentType(job.employmentType || 'Full-Time');
     setWorkplaceType(job.workplaceType || 'Remote');
@@ -473,6 +658,10 @@ export default function JobsManager() {
     setApplyEmail(job.applyEmail || '');
     setApplyUrl(job.applyUrl || '');
     setApplyInstructions(job.applyInstructions || '');
+    setShowExpressApply(job.showExpressApply !== false);
+    setShowApplyNow(job.showApplyNow !== false);
+    setExpressApplyLabel(job.expressApplyLabel || 'Express In-App Application');
+    setApplyNowLabel(job.applyNowLabel || 'Apply Now');
     setDeadline(job.deadline || 'Open until filled');
     setIsFeatured(Boolean(job.isFeatured));
     setIsScholarship(Boolean(job.isScholarship));
@@ -535,7 +724,9 @@ export default function JobsManager() {
       title: title.trim(),
       company: company.trim(),
       companyLogo: companyLogo.trim(),
+      logoFit: logoFit || 'contain',
       photos: Array.isArray(photos) ? photos : [],
+      photoFit: photoFit || 'cover',
       department: department.trim(),
       employmentType,
       workplaceType,
@@ -553,6 +744,10 @@ export default function JobsManager() {
       applyEmail: applyEmail.trim(),
       applyUrl: applyUrl.trim(),
       applyInstructions: applyInstructions.trim(),
+      showExpressApply: Boolean(showExpressApply),
+      showApplyNow: Boolean(showApplyNow),
+      expressApplyLabel: expressApplyLabel.trim() || 'Express In-App Application',
+      applyNowLabel: applyNowLabel.trim() || 'Apply Now',
       deadline: deadline.trim(),
       isFeatured,
       isScholarship: Boolean(isScholarship),
@@ -1085,23 +1280,50 @@ export default function JobsManager() {
 
                 {/* Company Logo / Brand Photo Upload Zone */}
                 <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-slate-200 font-bold text-xs flex items-center space-x-1.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label className="text-slate-200 font-bold text-xs flex items-center space-x-1.5">
                       <Camera className="w-3.5 h-3.5 text-indigo-400" />
                       <span>Company Logo / Brand Photo</span>
                     </label>
-                    <span className="text-[10px] text-slate-400 font-medium">PNG, JPG, SVG, WebP</span>
+                    <div className="flex items-center space-x-1.5">
+                      <span className="text-[10px] text-slate-400 font-semibold">View Fit:</span>
+                      <button
+                        type="button"
+                        onClick={() => setLogoFit('contain')}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                          logoFit !== 'cover'
+                            ? 'bg-indigo-600 text-white border-indigo-500 shadow-xs'
+                            : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                        }`}
+                      >
+                        ✓ Fit Full Logo (No Cut)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setLogoFit('cover')}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                          logoFit === 'cover'
+                            ? 'bg-indigo-600 text-white border-indigo-500 shadow-xs'
+                            : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                        }`}
+                      >
+                        Crop to Fill (1:1)
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5">
-                    {/* Visual Avatar Preview */}
-                    <div className="w-16 h-16 rounded-2xl bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center overflow-hidden shrink-0 relative group shadow-sm">
+                    {/* Visual Avatar Preview (Exact 64x64 Badge Preview) */}
+                    <div
+                      style={{ width: '64px', height: '64px', minWidth: '64px', minHeight: '64px' }}
+                      className="w-16 h-16 rounded-2xl bg-white border-2 border-slate-700 p-1 flex items-center justify-center overflow-hidden shrink-0 relative group shadow-sm"
+                    >
                       {companyLogo ? (
                         <>
                           <img
                             src={companyLogo}
                             alt="Logo preview"
-                            className="w-full h-full object-cover"
+                            className={`w-full h-full ${logoFit === 'cover' ? 'object-cover' : 'object-contain'} rounded-xl`}
                           />
                           <button
                             type="button"
@@ -1114,7 +1336,7 @@ export default function JobsManager() {
                           </button>
                         </>
                       ) : (
-                        <Building2 className="w-7 h-7 text-slate-600" />
+                        <Building2 className="w-7 h-7 text-slate-400" />
                       )}
                     </div>
 
@@ -1139,13 +1361,36 @@ export default function JobsManager() {
                         </button>
 
                         {companyLogo && (
-                          <button
-                            type="button"
-                            onClick={() => setCompanyLogo('')}
-                            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-300 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
-                          >
-                            Clear Photo
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCropModal({
+                                  isOpen: true,
+                                  target: 'logo',
+                                  photoIndex: null,
+                                  rawSrc: companyLogo,
+                                  mode: logoFit === 'cover' ? 'crop-square' : 'fit-contain',
+                                  bgColor: '#ffffff',
+                                  zoom: 1,
+                                  offsetX: 0,
+                                  offsetY: 0
+                                })
+                              }
+                              className="px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
+                            >
+                              <Sparkles className="w-3.5 h-3.5" />
+                              <span>Crop / Fit for View</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setCompanyLogo('')}
+                              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-300 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+                            >
+                              Clear Photo
+                            </button>
+                          </>
                         )}
                       </div>
 
@@ -1154,7 +1399,7 @@ export default function JobsManager() {
                           type="url"
                           value={companyLogo.startsWith('data:') ? '' : companyLogo}
                           onChange={(e) => setCompanyLogo(e.target.value)}
-                          placeholder={companyLogo.startsWith('data:') ? '✓ Photo uploaded directly from device' : 'Or paste direct image URL (https://...)'}
+                          placeholder={companyLogo.startsWith('data:') ? '✓ Photo uploaded & fitted for view' : 'Or paste direct image URL (https://...)'}
                           className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 text-[11px] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                         />
                       </div>
@@ -1164,17 +1409,42 @@ export default function JobsManager() {
 
                 {/* Additional Workplace & Vacancy Showcase Photos */}
                 <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <h5 className="text-xs font-black uppercase tracking-wider text-slate-200 flex items-center space-x-1.5">
                         <Camera className="w-3.5 h-3.5 text-amber-400" />
                         <span>Workplace & Vacancy Showcase Photos (Optional)</span>
                       </h5>
                       <p className="text-[11px] text-slate-400 mt-0.5">
-                        Upload office atmosphere, campus, or vacancy flyer pictures to showcase on the candidate view.
+                        Upload office atmosphere, campus, or full vacancy flyer pictures to showcase on the candidate view.
                       </p>
                     </div>
-                    <span className="text-[10px] text-slate-500 font-bold shrink-0">{photos.length}/6 photos</span>
+                    <div className="flex items-center space-x-1.5">
+                      <span className="text-[10px] text-slate-400 font-semibold">Gallery Fit:</span>
+                      <button
+                        type="button"
+                        onClick={() => setPhotoFit('contain')}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                          photoFit === 'contain'
+                            ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-xs'
+                            : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                        }`}
+                      >
+                        Full Flyer Fit (No Cut)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPhotoFit('cover')}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                          photoFit !== 'contain'
+                            ? 'bg-indigo-600 text-white border-indigo-500 shadow-xs'
+                            : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                        }`}
+                      >
+                        16:9 Card Crop
+                      </button>
+                      <span className="text-[10px] text-slate-500 font-bold shrink-0 ml-1">{photos.length}/6</span>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -1186,9 +1456,29 @@ export default function JobsManager() {
                         <img
                           src={photoUrl}
                           alt={`Showcase ${idx + 1}`}
-                          className="w-full h-full object-cover"
+                          className={`w-full h-full ${photoFit === 'contain' ? 'object-contain' : 'object-cover'}`}
                         />
-                        <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute inset-0 bg-slate-950/75 flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setCropModal({
+                                isOpen: true,
+                                target: 'photo',
+                                photoIndex: idx,
+                                rawSrc: photoUrl,
+                                mode: photoFit === 'contain' ? 'original' : 'crop-16-9',
+                                bgColor: '#0f172a',
+                                zoom: 1,
+                                offsetX: 0,
+                                offsetY: 0
+                              })
+                            }
+                            className="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-[10px] font-extrabold transition-colors cursor-pointer"
+                            title="Crop or Fit Photo"
+                          >
+                            Crop / Fit
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleRemovePhoto(idx)}
@@ -1224,7 +1514,7 @@ export default function JobsManager() {
                           <span className="text-[11px] font-bold">
                             {isUploadingPhotos ? 'Processing...' : '+ Upload Photos'}
                           </span>
-                          <span className="text-[9px] text-slate-500">From device</span>
+                          <span className="text-[9px] text-slate-500">Auto Crop / Fit</span>
                         </button>
                       </>
                     )}
@@ -1408,70 +1698,90 @@ export default function JobsManager() {
                 </div>
               </div>
 
-              {/* Section 3: Narrative & Scope */}
+              {/* Section 3: Narrative & Scope (All Auto-Expanding Textareas) */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                   <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center space-x-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
                     <span>3. Executive Narrative & Comprehensive Scope</span>
                   </h4>
-                  <span className="text-[11px] text-slate-400">Ample writing space for role context</span>
+                  <span className="text-[11px] text-emerald-400 font-semibold">✓ All boxes auto-expand as much as needed</span>
                 </div>
 
                 <div>
                   <label className="block text-slate-200 font-bold mb-1.5 text-xs flex items-center justify-between">
                     <span>Executive Summary (Short Excerpt)</span>
-                    <span className="text-[10px] text-slate-400 font-normal">Shown on candidate feed card</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Shown on candidate feed card &bull; Auto-expands</span>
                   </label>
                   <textarea
                     rows={3}
+                    data-autoresize="true"
+                    data-minheight="95"
                     value={summary}
-                    onChange={(e) => setSummary(e.target.value)}
+                    onChange={(e) => {
+                      setSummary(e.target.value);
+                      autoResizeTextarea(e.currentTarget, 95);
+                    }}
                     placeholder="Enter a punchy, high-impact overview displayed on candidate cards..."
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm leading-relaxed min-h-[90px]"
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm leading-relaxed min-h-[95px] resize-y"
                   />
                 </div>
 
                 <div>
                   <label className="block text-slate-200 font-bold mb-1.5 text-xs flex items-center justify-between">
-                    <span>Full Detailed Mission & Context</span>
-                    <span className="text-[10px] text-slate-400 font-normal">Displayed in detail modal</span>
+                    <span>Full Detailed Mission & Context (Role Overview)</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Displayed in detail modal &bull; Auto-expands</span>
                   </label>
                   <textarea
-                    rows={7}
+                    rows={6}
+                    data-autoresize="true"
+                    data-minheight="170"
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                      autoResizeTextarea(e.currentTarget, 170);
+                    }}
                     placeholder="Provide a comprehensive narrative of the organization, core strategic mission, executive mandate, team culture, and engineering philosophy..."
-                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm leading-relaxed min-h-[170px]"
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm leading-relaxed min-h-[170px] resize-y"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
                   <div>
                     <label className="block text-slate-200 font-bold mb-1.5 text-xs flex items-center justify-between">
-                      <span>Key Responsibilities (One per line)</span>
-                      <span className="text-[10px] text-indigo-400 font-normal">Bullet points</span>
+                      <span>Key Responsibilities & Deliverables (One per line)</span>
+                      <span className="text-[10px] text-indigo-400 font-normal">Bullet points &bull; Auto-expands as you type</span>
                     </label>
                     <textarea
-                      rows={8}
+                      rows={6}
+                      data-autoresize="true"
+                      data-minheight="160"
                       value={responsibilitiesText}
-                      onChange={(e) => setResponsibilitiesText(e.target.value)}
+                      onChange={(e) => {
+                        setResponsibilitiesText(e.target.value);
+                        autoResizeTextarea(e.currentTarget, 160);
+                      }}
                       placeholder="Architect distributed systems...\nLead cross-functional engineering teams...\nDrive sub-50ms inference milestones..."
-                      className="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-mono leading-relaxed min-h-[190px]"
+                      className="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm font-mono leading-relaxed min-h-[160px] resize-y"
                     />
                   </div>
 
                   <div>
                     <label className="block text-slate-200 font-bold mb-1.5 text-xs flex items-center justify-between">
-                      <span>Requirements & Competencies (One per line)</span>
-                      <span className="text-[10px] text-amber-400 font-normal">Candidate criteria</span>
+                      <span>Requirements, Qualifications & Competencies (One per line)</span>
+                      <span className="text-[10px] text-amber-400 font-normal">Candidate criteria &bull; Auto-expands as you type</span>
                     </label>
                     <textarea
-                      rows={8}
+                      rows={6}
+                      data-autoresize="true"
+                      data-minheight="160"
                       value={requirementsText}
-                      onChange={(e) => setRequirementsText(e.target.value)}
+                      onChange={(e) => {
+                        setRequirementsText(e.target.value);
+                        autoResizeTextarea(e.currentTarget, 160);
+                      }}
                       placeholder="8+ years systems architecture...\nDemonstrated mastery in cloud pipelines...\nStrong track record with Rust / Python..."
-                      className="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs font-mono leading-relaxed min-h-[190px]"
+                      className="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm font-mono leading-relaxed min-h-[160px] resize-y"
                     />
                   </div>
                 </div>
@@ -1480,28 +1790,38 @@ export default function JobsManager() {
                   <div>
                     <label className="block text-slate-200 font-bold mb-1.5 text-xs flex items-center justify-between">
                       <span>Luxury Benefits & Perks (One per line)</span>
-                      <span className="text-[10px] text-emerald-400 font-normal">Executive package</span>
+                      <span className="text-[10px] text-emerald-400 font-normal">Executive package &bull; Auto-expands</span>
                     </label>
                     <textarea
-                      rows={6}
+                      rows={5}
+                      data-autoresize="true"
+                      data-minheight="140"
                       value={benefitsText}
-                      onChange={(e) => setBenefitsText(e.target.value)}
+                      onChange={(e) => {
+                        setBenefitsText(e.target.value);
+                        autoResizeTextarea(e.currentTarget, 140);
+                      }}
                       placeholder="Top-tier equity options and performance bonuses\nGlobal private executive healthcare & wellness\nUnlimited flexible PTO with mandatory rest recharge\n$5,000 workstation & equipment stipend..."
-                      className="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs leading-relaxed min-h-[150px]"
+                      className="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm leading-relaxed min-h-[140px] resize-y"
                     />
                   </div>
 
                   <div>
                     <label className="block text-slate-200 font-bold mb-1.5 text-xs flex items-center justify-between">
                       <span>Distinguishing Plus Factors (Nice to have)</span>
-                      <span className="text-[10px] text-sky-400 font-normal">Bonus qualifiers</span>
+                      <span className="text-[10px] text-sky-400 font-normal">Bonus qualifiers &bull; Auto-expands</span>
                     </label>
                     <textarea
-                      rows={6}
+                      rows={5}
+                      data-autoresize="true"
+                      data-minheight="140"
                       value={niceToHaveText}
-                      onChange={(e) => setNiceToHaveText(e.target.value)}
+                      onChange={(e) => {
+                        setNiceToHaveText(e.target.value);
+                        autoResizeTextarea(e.currentTarget, 140);
+                      }}
                       placeholder="Major open-source contributions...\nDoctorate or advanced degree in Computer Science...\nPublished patents or technical papers..."
-                      className="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs leading-relaxed min-h-[150px]"
+                      className="w-full px-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm leading-relaxed min-h-[140px] resize-y"
                     />
                   </div>
                 </div>
@@ -1509,14 +1829,19 @@ export default function JobsManager() {
                 <div>
                   <label className="block text-slate-200 font-bold mb-1.5 text-xs flex items-center justify-between">
                     <span>Skills / Tech Stack Tags (Comma-separated)</span>
-                    <span className="text-[10px] text-slate-400 font-normal">Tags for search</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Tags for search &bull; Auto-expands</span>
                   </label>
-                  <input
-                    type="text"
+                  <textarea
+                    rows={2}
+                    data-autoresize="true"
+                    data-minheight="64"
                     value={skillsText}
-                    onChange={(e) => setSkillsText(e.target.value)}
+                    onChange={(e) => {
+                      setSkillsText(e.target.value);
+                      autoResizeTextarea(e.currentTarget, 64);
+                    }}
                     placeholder="AI Systems, Distributed Architecture, Rust, Kubernetes, Vector DB"
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm leading-relaxed min-h-[64px] resize-y"
                   />
                 </div>
               </div>
@@ -1541,7 +1866,7 @@ export default function JobsManager() {
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs"
                     />
                     <p className="text-[10px] text-slate-400 mt-1">
-                      Direct link opened when candidate taps "Apply via Official Portal".
+                      Direct link opened when candidate taps "Apply Now".
                     </p>
                   </div>
 
@@ -1603,7 +1928,7 @@ export default function JobsManager() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-slate-300 font-bold mb-1">Application Method</label>
                     <select
@@ -1614,6 +1939,17 @@ export default function JobsManager() {
                       <option value="url">External Career Portal Link</option>
                       <option value="email">Direct Talent Email</option>
                     </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-300 font-bold mb-1">Deadline Date</label>
+                    <input
+                      type="text"
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                      placeholder="e.g. November 30, 2026 or Open until filled"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
                   </div>
 
                   <div>
@@ -1629,27 +1965,241 @@ export default function JobsManager() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Instructions for Applicants</label>
-                    <input
-                      type="text"
+                {/* Full-Width Spacious Auto-Expanding Instructions for Applicants (How to Apply) */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/90 border border-indigo-500/30 space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <label className="text-slate-100 font-extrabold text-xs sm:text-sm flex items-center space-x-2">
+                        <Send className="w-4 h-4 text-indigo-400" />
+                        <span>Instructions for Applicants (How to Apply)</span>
+                      </label>
+                      <span className="text-[10px] font-bold text-indigo-300 bg-indigo-500/15 px-2.5 py-0.5 rounded-full border border-indigo-500/30">
+                        ✓ Auto-expands to fit as much writing as needed
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Write complete step-by-step application instructions, required documents, registration places, or contact details. Supports multiple paragraphs and bullet points.
+                    </p>
+                    <textarea
+                      rows={5}
+                      data-autoresize="true"
+                      data-minheight="150"
                       value={applyInstructions}
-                      onChange={(e) => setApplyInstructions(e.target.value)}
-                      placeholder="Submit portfolio and CV with subject line..."
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      onChange={(e) => {
+                        setApplyInstructions(e.target.value);
+                        autoResizeTextarea(e.currentTarget, 150);
+                      }}
+                      placeholder="Interested applicants must attach all original and copy of their supporting documents, CV, and educational credentials...\n\n• Step 1: Prepare your updated CV and supporting certificates\n• Step 2: Submit online via the official portal or email before the deadline"
+                      className="w-full px-4 py-3.5 rounded-2xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm leading-relaxed min-h-[150px] resize-y"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-slate-300 font-bold mb-1">Deadline Date</label>
-                    <input
-                      type="text"
-                      value={deadline}
-                      onChange={(e) => setDeadline(e.target.value)}
-                      placeholder="e.g. November 30, 2026 or Open until filled"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
+                  {/* Add / Remove Application Action Buttons Control */}
+                  <div className="pt-3 border-t border-slate-800 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <span className="text-xs font-extrabold text-white block">
+                          🔘 Application Action Buttons (Add or Remove as Needed)
+                        </span>
+                        <span className="text-[11px] text-slate-400">
+                          Choose which buttons appear under &ldquo;How to Apply&rdquo; (or remove both for in-person / written instructions only)
+                        </span>
+                      </div>
+
+                      {/* Quick Presets */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowExpressApply(true);
+                            setShowApplyNow(true);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                            showExpressApply && showApplyNow
+                              ? 'bg-emerald-600/20 border-emerald-500 text-emerald-300'
+                              : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          Show Both
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowExpressApply(false);
+                            setShowApplyNow(true);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                            !showExpressApply && showApplyNow
+                              ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
+                              : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          Only &ldquo;Apply Now&rdquo;
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowExpressApply(true);
+                            setShowApplyNow(false);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                            showExpressApply && !showApplyNow
+                              ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                              : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          Only &ldquo;Express In-App&rdquo;
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowExpressApply(false);
+                            setShowApplyNow(false);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all cursor-pointer ${
+                            !showExpressApply && !showApplyNow
+                              ? 'bg-rose-600/20 border-rose-500 text-rose-300'
+                              : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          Remove Both (Instructions Only)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {/* Card 1: Express In-App Application Button */}
+                      <div
+                        className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-3 ${
+                          showExpressApply
+                            ? 'bg-slate-900/90 border-amber-500/40'
+                            : 'bg-slate-900/30 border-slate-800 opacity-75'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-400 block">
+                              1. In-App Form Button
+                            </span>
+                            <div
+                              className={`inline-flex px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 font-black text-xs items-center space-x-1.5 shadow-xs ${
+                                !showExpressApply ? 'line-through opacity-40' : ''
+                              }`}
+                            >
+                              <Send className="w-3 h-3 shrink-0" />
+                              <span>{expressApplyLabel || 'Express In-App Application'}</span>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowExpressApply((prev) => !prev)}
+                            className={`px-3 py-1.5 rounded-xl font-extrabold text-xs flex items-center space-x-1 transition-all cursor-pointer shrink-0 ${
+                              showExpressApply
+                                ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30'
+                                : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                            }`}
+                          >
+                            {showExpressApply ? (
+                              <>
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Remove</span>
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>Add Button</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+
+                        {showExpressApply ? (
+                          <div>
+                            <label className="text-[10px] text-slate-400 font-semibold block mb-1">
+                              Button Label Text:
+                            </label>
+                            <input
+                              type="text"
+                              value={expressApplyLabel}
+                              onChange={(e) => setExpressApplyLabel(e.target.value)}
+                              placeholder="Express In-App Application"
+                              className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-amber-400"
+                            />
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-rose-400 font-semibold">
+                            ✕ Removed from vacancy page (Click &ldquo;+ Add Button&rdquo; to restore)
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Card 2: Apply Now Button */}
+                      <div
+                        className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-3 ${
+                          showApplyNow
+                            ? 'bg-slate-900/90 border-indigo-500/40'
+                            : 'bg-slate-900/30 border-slate-800 opacity-75'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-400 block">
+                              2. Primary &ldquo;Apply Now&rdquo; Button
+                            </span>
+                            <div
+                              className={`inline-flex px-3 py-1.5 rounded-xl bg-indigo-600 text-white font-bold text-xs items-center space-x-1.5 shadow-xs ${
+                                !showApplyNow ? 'line-through opacity-40' : ''
+                              }`}
+                            >
+                              <Send className="w-3 h-3 shrink-0" />
+                              <span>{applyNowLabel || 'Apply Now'}</span>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setShowApplyNow((prev) => !prev)}
+                            className={`px-3 py-1.5 rounded-xl font-extrabold text-xs flex items-center space-x-1 transition-all cursor-pointer shrink-0 ${
+                              showApplyNow
+                                ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30'
+                                : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40'
+                            }`}
+                          >
+                            {showApplyNow ? (
+                              <>
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Remove</span>
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>Add Button</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+
+                        {showApplyNow ? (
+                          <div>
+                            <label className="text-[10px] text-slate-400 font-semibold block mb-1">
+                              Button Label Text:
+                            </label>
+                            <input
+                              type="text"
+                              value={applyNowLabel}
+                              onChange={(e) => setApplyNowLabel(e.target.value)}
+                              placeholder="Apply Now"
+                              className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:outline-none focus:border-indigo-400"
+                            />
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-rose-400 font-semibold">
+                            ✕ Removed from vacancy page (Click &ldquo;+ Add Button&rdquo; to restore)
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1723,6 +2273,223 @@ export default function JobsManager() {
               </div>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Interactive Photo Crop & Fit Studio Modal */}
+      {cropModal.isOpen && (
+        <div className="fixed inset-0 z-[70] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 text-xs text-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center">
+                  <Camera className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-sm text-white">
+                    Photo Crop & Fit for View
+                  </h4>
+                  <p className="text-[11px] text-slate-400">
+                    Choose how your uploaded photo should fit on candidate cards & detail view
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCropModal((prev) => ({ ...prev, isOpen: false }))}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Live Visual Preview Box */}
+            <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-950 border border-slate-800">
+              <div
+                style={{
+                  backgroundColor: cropModal.bgColor,
+                  width: cropModal.target === 'logo' || cropModal.mode === 'crop-square' ? '160px' : '280px',
+                  height: cropModal.target === 'logo' || cropModal.mode === 'crop-square' ? '160px' : '158px'
+                }}
+                className="rounded-2xl border-2 border-indigo-500/50 overflow-hidden flex items-center justify-center shadow-lg relative"
+              >
+                <img
+                  src={cropModal.rawSrc}
+                  alt="Crop preview"
+                  style={{
+                    transform: `translate(${cropModal.offsetX * 0.5}%, ${cropModal.offsetY * 0.5}%) scale(${cropModal.zoom})`,
+                    objectFit:
+                      cropModal.mode === 'fit-contain' || cropModal.mode === 'original'
+                        ? 'contain'
+                        : 'cover'
+                  }}
+                  className="w-full h-full transition-transform duration-75"
+                />
+              </div>
+              <span className="text-[10px] text-slate-400 mt-2">
+                Live Mobile View Preview ({cropModal.target === 'logo' ? '64x64 Brand Badge' : 'Candidate Showcase Card'})
+              </span>
+            </div>
+
+            {/* Fit / Crop Preset Buttons */}
+            <div className="space-y-1.5">
+              <label className="block font-bold text-slate-300">Select Fit or Crop Mode:</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCropModal((prev) => ({ ...prev, mode: 'fit-contain', zoom: 1, offsetX: 0, offsetY: 0 }))}
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                    cropModal.mode === 'fit-contain'
+                      ? 'bg-indigo-600/30 border-indigo-500 text-white font-bold'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <div className="text-xs font-extrabold text-amber-300">✓ Fit Full Photo (No Cut)</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">Shows 100% of logo or text without cutting edges</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCropModal((prev) => ({ ...prev, mode: 'crop-square', zoom: 1, offsetX: 0, offsetY: 0 }))}
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                    cropModal.mode === 'crop-square'
+                      ? 'bg-indigo-600/30 border-indigo-500 text-white font-bold'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <div className="text-xs font-extrabold text-white">Auto-Crop Square (1:1)</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">Fills entire square badge edge-to-edge</div>
+                </button>
+
+                {cropModal.target === 'photo' && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setCropModal((prev) => ({ ...prev, mode: 'crop-16-9', zoom: 1, offsetX: 0, offsetY: 0 }))}
+                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        cropModal.mode === 'crop-16-9'
+                          ? 'bg-indigo-600/30 border-indigo-500 text-white font-bold'
+                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <div className="text-xs font-extrabold text-white">Auto-Crop Banner (16:9)</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">Widescreen card crop</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCropModal((prev) => ({ ...prev, mode: 'original', zoom: 1, offsetX: 0, offsetY: 0 }))}
+                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        cropModal.mode === 'original'
+                          ? 'bg-indigo-600/30 border-indigo-500 text-white font-bold'
+                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <div className="text-xs font-extrabold text-white">Original Full Flyer</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">Keeps full poster proportions</div>
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Zoom & Position Fine-Tuning Sliders */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-2xl bg-slate-950 border border-slate-800">
+              <div>
+                <div className="flex justify-between text-[10px] text-slate-400 mb-1">
+                  <span>Zoom</span>
+                  <span className="font-mono text-white">{Math.round(cropModal.zoom * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.6"
+                  max="2.4"
+                  step="0.05"
+                  value={cropModal.zoom}
+                  onChange={(e) => setCropModal((prev) => ({ ...prev, zoom: Number(e.target.value) }))}
+                  className="w-full accent-indigo-500 cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-[10px] text-slate-400 mb-1">
+                  <span>Left / Right</span>
+                  <span className="font-mono text-white">{cropModal.offsetX}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="-80"
+                  max="80"
+                  step="2"
+                  value={cropModal.offsetX}
+                  onChange={(e) => setCropModal((prev) => ({ ...prev, offsetX: Number(e.target.value) }))}
+                  className="w-full accent-indigo-500 cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-[10px] text-slate-400 mb-1">
+                  <span>Up / Down</span>
+                  <span className="font-mono text-white">{cropModal.offsetY}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="-80"
+                  max="80"
+                  step="2"
+                  value={cropModal.offsetY}
+                  onChange={(e) => setCropModal((prev) => ({ ...prev, offsetY: Number(e.target.value) }))}
+                  className="w-full accent-indigo-500 cursor-pointer"
+                />
+              </div>
+            </div>
+
+            {/* Background Fill Color for Fit Mode */}
+            <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center space-x-2">
+                <span className="text-[11px] text-slate-400 font-semibold">Backdrop:</span>
+                <button
+                  type="button"
+                  onClick={() => setCropModal((prev) => ({ ...prev, bgColor: '#ffffff' }))}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border cursor-pointer ${
+                    cropModal.bgColor === '#ffffff'
+                      ? 'bg-white text-slate-900 border-indigo-400'
+                      : 'bg-slate-800 text-slate-300 border-slate-700'
+                  }`}
+                >
+                  White Backdrop
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCropModal((prev) => ({ ...prev, bgColor: '#0f172a' }))}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border cursor-pointer ${
+                    cropModal.bgColor === '#0f172a'
+                      ? 'bg-indigo-600 text-white border-indigo-400'
+                      : 'bg-slate-800 text-slate-300 border-slate-700'
+                  }`}
+                >
+                  Dark Backdrop
+                </button>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setCropModal((prev) => ({ ...prev, isOpen: false }))}
+                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+                >
+                  Keep As Is
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyCropModal}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/30 cursor-pointer"
+                >
+                  ✓ Apply & Fit Photo
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

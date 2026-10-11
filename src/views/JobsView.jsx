@@ -640,12 +640,16 @@ export default function JobsView({
                 {/* Company & Role Header */}
                 <div className="flex items-start justify-between gap-2.5 sm:gap-3 mb-3 min-w-0">
                   <div className="flex items-start space-x-3 sm:space-x-3.5 min-w-0 flex-1">
-                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-slate-100 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-600 flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-xs">
+                    <div
+                      style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px' }}
+                      className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-xs"
+                    >
                       {job.companyLogo ? (
                         <img
                           src={job.companyLogo}
                           alt={job.company}
-                          className="w-full h-full object-cover rounded-xl"
+                          style={{ maxWidth: '100%', maxHeight: '100%' }}
+                          className={`w-full h-full ${job.logoFit === 'cover' ? 'object-cover' : 'object-contain'} rounded-xl`}
                         />
                       ) : (
                         <Building2 className="w-6 h-6 text-slate-400" />

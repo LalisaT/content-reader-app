@@ -59,6 +59,7 @@ export default function JobDetailModal({
   const [copiedDeepLink, setCopiedDeepLink] = useState(false);
   const [isHelpful, setIsHelpful] = useState(false);
   const [heroImageError, setHeroImageError] = useState(false);
+  const [activeLightboxPhoto, setActiveLightboxPhoto] = useState(null);
   const [isOnline, setIsOnline] = useState(propIsOnline);
 
   useEffect(() => {
@@ -286,12 +287,16 @@ export default function JobDetailModal({
           <div className="absolute top-0 right-0 w-44 h-44 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="flex items-start space-x-3.5 sm:space-x-4 min-w-0">
-            <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl bg-indigo-100/60 dark:bg-white/10 backdrop-blur-md border border-indigo-200/60 dark:border-white/20 p-1 flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+            <div
+              style={{ width: '56px', height: '56px', minWidth: '56px', minHeight: '56px' }}
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 p-1.5 flex items-center justify-center shrink-0 shadow-sm overflow-hidden"
+            >
               {job.companyLogo ? (
                 <img
                   src={job.companyLogo}
                   alt={job.company}
-                  className="w-full h-full object-cover rounded-xl"
+                  style={{ maxWidth: '100%', maxHeight: '100%' }}
+                  className={`w-full h-full ${job.logoFit === 'cover' ? 'object-cover' : 'object-contain'} rounded-xl`}
                 />
               ) : (
                 <Building2 className="w-7 h-7 sm:w-8 sm:h-8 text-amber-600 dark:text-amber-300" />
@@ -598,18 +603,26 @@ export default function JobDetailModal({
             <section className="space-y-3 font-sans">
               <h4 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white pt-2 pb-1 flex items-center space-x-2">
                 <span className="w-1.5 h-4 bg-indigo-600 dark:bg-indigo-400 rounded-full inline-block flex-shrink-0"></span>
-                <span>Workplace & Environment Gallery ({job.photos.length})</span>
+                <span>Workplace & Vacancy Showcase ({job.photos.length})</span>
               </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className={job.photos.length === 1 || job.photoFit === 'contain' ? 'grid grid-cols-1 gap-3' : 'grid grid-cols-1 sm:grid-cols-2 gap-3'}>
                 {job.photos.map((photoUrl, pIdx) => (
                   <div
                     key={pIdx}
-                    className="relative aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900 shadow-xs"
+                    onClick={() => setActiveLightboxPhoto(photoUrl)}
+                    title="Tap to view full photo"
+                    className={`relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 shadow-xs cursor-pointer group ${
+                      job.photoFit === 'contain' ? 'max-h-[420px] flex items-center justify-center p-2' : 'aspect-video'
+                    }`}
                   >
                     <img
                       src={photoUrl}
                       alt={`${job.company} showcase ${pIdx + 1}`}
-                      className="w-full h-full object-cover"
+                      className={`w-full ${
+                        job.photoFit === 'contain'
+                          ? 'max-h-[400px] object-contain rounded-xl'
+                          : 'h-full object-cover'
+                      }`}
                     />
                   </div>
                 ))}
@@ -625,58 +638,78 @@ export default function JobDetailModal({
             </h4>
 
             <div className="rounded-2xl bg-indigo-50/50 dark:bg-slate-800/70 border border-indigo-200/70 dark:border-slate-700 p-4 sm:p-5 space-y-4">
-              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                {job.applyInstructions ||
-                  'Submit your application directly through the official recruitment portal, recruiter email, or express in-app candidacy form below.'}
-              </p>
-
-              {/* Primary Application Buttons */}
-              <div className="space-y-2.5">
-                {job.applyEmail && (
-                  <div>
-                    <a
-                      href={`mailto:${job.applyEmail}?subject=${encodeURIComponent(`Application: ${job.title}`)}`}
-                      className="inline-flex px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-xs border border-slate-300 dark:border-slate-700 items-center space-x-1.5 transition-all no-underline max-w-full"
-                    >
-                      <Mail className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                      <span className="truncate">{job.applyEmail}</span>
-                    </a>
-                  </div>
-                )}
-
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setIsApplying(true)}
-                    className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-sm flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer"
-                  >
-                    <Send className="w-3.5 h-3.5 shrink-0" />
-                    <span>{hasApplied ? 'Update Application' : 'Express In-App Application'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (job.applyUrl) {
-                        window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
-                        if (onApplySuccess) onApplySuccess(job.id);
-                      } else {
-                        setIsApplying(true);
-                      }
-                    }}
-                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer"
-                  >
-                    <Send className="w-3.5 h-3.5 shrink-0" />
-                    <span>Apply Now</span>
-                  </button>
-                </div>
+              <div className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-line break-words">
+                <RichMarkdownRenderer
+                  content={
+                    job.applyInstructions ||
+                    'Submit your application directly through the official recruitment portal, recruiter email, or express in-app candidacy form below.'
+                  }
+                  className="font-sans text-xs sm:text-sm leading-relaxed"
+                />
               </div>
+
+              {/* Primary Application Buttons (Admin can add or remove either or both) */}
+              {(job.applyEmail || job.showExpressApply !== false || job.showApplyNow !== false) && (
+                <div className="space-y-2.5">
+                  {job.applyEmail && (
+                    <div>
+                      <a
+                        href={`mailto:${job.applyEmail}?subject=${encodeURIComponent(`Application: ${job.title}`)}`}
+                        className="inline-flex px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-white font-bold text-xs border border-slate-300 dark:border-slate-700 items-center space-x-1.5 transition-all no-underline max-w-full"
+                      >
+                        <Mail className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                        <span className="truncate">{job.applyEmail}</span>
+                      </a>
+                    </div>
+                  )}
+
+                  {(job.showExpressApply !== false || job.showApplyNow !== false) && (
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {job.showExpressApply !== false && (
+                        <button
+                          type="button"
+                          onClick={() => setIsApplying(true)}
+                          className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-sm flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer"
+                        >
+                          <Send className="w-3.5 h-3.5 shrink-0" />
+                          <span>
+                            {hasApplied
+                              ? 'Update Application'
+                              : job.expressApplyLabel || 'Express In-App Application'}
+                          </span>
+                        </button>
+                      )}
+
+                      {job.showApplyNow !== false && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (job.applyUrl) {
+                              window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
+                              if (onApplySuccess) onApplySuccess(job.id);
+                            } else if (job.applyEmail) {
+                              window.location.href = `mailto:${job.applyEmail}?subject=${encodeURIComponent(`Application: ${job.title}`)}`;
+                              if (onApplySuccess) onApplySuccess(job.id);
+                            } else {
+                              setIsApplying(true);
+                            }
+                          }}
+                          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm flex items-center space-x-1.5 transition-all active:scale-95 cursor-pointer"
+                        >
+                          <Send className="w-3.5 h-3.5 shrink-0" />
+                          <span>{job.applyNowLabel || 'Apply Now'}</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Official Shareable Deep Link Box */}
               <div className="pt-3 border-t border-indigo-200/60 dark:border-slate-700/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
                 <div className="min-w-0 flex-1">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block mb-1">
-                    🔗 Official Shareable Career Link
+                    🔗 Share with your friends
                   </span>
                   <div className="text-[11px] font-mono text-indigo-600 dark:text-indigo-300 font-semibold break-all bg-white dark:bg-slate-900 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
                     {deepLinkUrl}
@@ -841,6 +874,28 @@ export default function JobDetailModal({
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Full-Screen Photo Lightbox Viewer */}
+      {activeLightboxPhoto && (
+        <div
+          onClick={() => setActiveLightboxPhoto(null)}
+          className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150"
+        >
+          <button
+            type="button"
+            onClick={() => setActiveLightboxPhoto(null)}
+            className="absolute top-6 right-5 p-2.5 rounded-full bg-white/15 hover:bg-white/25 text-white transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <img
+            src={activeLightboxPhoto}
+            alt="Full Showcase View"
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+          />
         </div>
       )}
     </div>

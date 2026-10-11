@@ -177,6 +177,17 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
     setTimeout(() => setToast(null), 3500);
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      document.querySelectorAll('textarea[data-autoresize-article="true"]').forEach((el) => {
+        el.style.height = 'auto';
+        const minH = el === textareaRef.current ? 260 : 72;
+        el.style.height = `${Math.max(el.scrollHeight, minH)}px`;
+      });
+    }, 30);
+    return () => clearTimeout(timer);
+  }, [summary, content, editingArticle]);
+
   const openButtonModal = () => {
     const textarea = textareaRef.current;
     let label = 'Click Here';
@@ -940,15 +951,21 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
 
             {/* Summary */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">
-                Summary / Catchphrase (Shows on mobile feed card)
+              <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center justify-between">
+                <span>Summary / Catchphrase (Shows on mobile feed card)</span>
+                <span className="text-[10px] font-semibold text-indigo-400">Auto-expands as you type</span>
               </label>
               <textarea
-                rows={2}
+                rows={3}
+                data-autoresize-article="true"
                 value={summary}
-                onChange={(e) => setSummary(e.target.value)}
+                onChange={(e) => {
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${Math.max(e.target.scrollHeight, 72)}px`;
+                  setSummary(e.target.value);
+                }}
                 placeholder="A 1-2 sentence compelling summary of the guide..."
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                className="w-full px-3 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed resize-y overflow-hidden"
               />
             </div>
 
@@ -991,8 +1008,9 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
 
             {/* Markdown Content & Toolbar */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">
-                Article Body Content <span className="text-rose-400">*</span>
+              <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center justify-between">
+                <span>Article Body Content <span className="text-rose-400">*</span></span>
+                <span className="text-[10px] font-semibold text-indigo-400">Auto-expands to fit full post</span>
               </label>
 
               {/* Formatting Toolbar */}
@@ -1097,11 +1115,16 @@ export default function ArticleEditor({ editingArticle, onArticleSaved, onCancel
               <textarea
                 ref={textareaRef}
                 rows={12}
+                data-autoresize-article="true"
                 required
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(e) => {
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${Math.max(e.target.scrollHeight, 260)}px`;
+                  setContent(e.target.value);
+                }}
                 placeholder="Write your article in markdown format..."
-                className="w-full p-3 bg-slate-950 border border-t-0 border-slate-700 rounded-b-xl text-xs text-white placeholder-slate-600 font-mono focus:outline-none focus:border-indigo-500"
+                className="w-full min-h-[260px] p-3.5 bg-slate-950 border border-t-0 border-slate-700 rounded-b-xl text-xs text-white placeholder-slate-600 font-mono leading-relaxed focus:outline-none focus:border-indigo-500 resize-y overflow-hidden"
               />
             </div>
 
