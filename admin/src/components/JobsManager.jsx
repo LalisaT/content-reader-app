@@ -26,10 +26,16 @@ import {
   ArrowRight,
   Layers,
   ChevronDown,
+  ChevronUp,
   Upload,
   Camera,
   Image as ImageIcon,
   GraduationCap,
+  Users,
+  ArrowUp,
+  ArrowDown,
+  FileText,
+  Check,
   Lock,
   Wifi,
   Bell
@@ -40,6 +46,154 @@ import { db } from '../firebaseAdmin';
 const JOBS_COLLECTION = 'job_vacancies';
 
 const JOB_TEMPLATES = [
+  {
+    name: 'Bank of Oromia (9 Banking Vacancies)',
+    data: {
+      title: 'Bank of Oromia Multiple Banking Vacancies (9 Positions)',
+      company: 'Bank of Oromia',
+      companyLogo: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=150&auto=format&fit=crop&q=80',
+      logoFit: 'contain',
+      department: 'Banking & Retail Operations',
+      employmentType: 'Full-Time',
+      workplaceType: 'On-Site',
+      location: 'Addis Ababa & Regional Branches',
+      salaryRange: 'As per Bank\'s Salary Scale & Benefits',
+      experienceLevel: 'All Levels (Fresh Graduates to Managers)',
+      summary: 'Bank of Oromia invites qualified applicants for 9 diverse banking vacancies ranging from Fresh Graduate Customer Service to Technical & Branch Management positions.',
+      description: 'Bank of Oromia is dedicated to providing modern, inclusive, and value-adding banking solutions. We invite qualified, competent, and motivated professionals to join our expanding branch and head office operations across Ethiopia.',
+      responsibilities: [
+        'Deliver exceptional banking services aligned with the Bank\'s customer-centric values.',
+        'Ensure rigorous compliance with National Bank of Ethiopia and internal operating policies.',
+        'Collaborate with team members to meet branch deposit mobilization and operational targets.'
+      ],
+      requirements: [
+        'Demonstrated integrity, professional work ethic, and teamwork spirit.',
+        'Communication fluency in Afan Oromo and Amharic is an advantageous asset.',
+        'Valid National ID, digital Kebele ID, or Passport with clean background records.'
+      ],
+      niceToHave: ['Prior banking software or digital financial services familiarity.'],
+      benefits: [
+        'Attractive salary as per the Bank\'s competitive institutional scale',
+        'Comprehensive medical insurance and provident fund benefits',
+        'Continuous professional training and clear banking career promotion ladder'
+      ],
+      skills: ['Banking Operations', 'Customer Service', 'Fresh Graduate', 'Accounting', 'Branch Management'],
+      applyType: 'url',
+      applyEmail: 'recruitment@bankoforomia.com',
+      applyUrl: 'https://bankoforomia.com.et/careers',
+      applyInstructions: 'Interested applicants who fulfill the minimum requirements should submit their application letter, updated CV, and non-returnable copies of degree/diploma certificates.\n\n1. Online Application: Apply via the official career portal before October 20, 2026.\n2. In-Person: You may submit credentials to Bank of Oromia HR Directorate, Head Office, Addis Ababa.',
+      showExpressApply: true,
+      showApplyNow: true,
+      expressApplyLabel: 'Express In-App Application',
+      applyNowLabel: 'Apply on Bank Portal',
+      deadline: 'October 20, 2026',
+      isFeatured: true,
+      isUrgent: true,
+      badgeText: '9 Positions Available',
+      status: 'active',
+      positions: [
+        {
+          id: 'pos-1',
+          title: 'Associate Branch Sales & Customer Service Officer',
+          targetGroup: 'Fresh Graduates (0 Years)',
+          education: 'BA Degree in Economics, Accounting, Management, Banking & Finance, Marketing, or related business fields (CGPA 2.75+)',
+          experience: '0 Years (Fresh Graduates / 2026 Batch)',
+          location: 'Addis Ababa & Outlying Branch Network',
+          slots: '50+ Openings',
+          duties: 'Account opening, front-desk customer service, deposit mobilization, cash transactions, and digital mobile banking onboarding.',
+          isExpanded: true
+        },
+        {
+          id: 'pos-2',
+          title: 'Administrative Assistant',
+          targetGroup: 'Experienced (2+ Years)',
+          education: 'Diploma or BA in Secretarial Science, Office Administration, or Business Management',
+          experience: '2 years relevant administrative or secretarial experience',
+          location: 'Head Office, Addis Ababa',
+          slots: '4 Openings',
+          duties: 'Manage correspondence, schedule meetings, maintain official department archives, and coordinate office workflows.',
+          isExpanded: false
+        },
+        {
+          id: 'pos-3',
+          title: 'Cleaners Attendant',
+          targetGroup: 'Entry-Level (1 Year)',
+          education: '10th / 12th Grade Complete',
+          experience: '1 year experience in office cleaning or hospitality upkeep',
+          location: 'Addis Ababa Branches',
+          slots: '10 Openings',
+          duties: 'Maintain spotless sanitation across banking halls, office suites, and executive customer conference areas.',
+          isExpanded: false
+        },
+        {
+          id: 'pos-4',
+          title: 'Maintenance Technician',
+          targetGroup: 'Experienced (2+ Years)',
+          education: 'TVET Level IV or Diploma in Electricity, Plumbing, or Building Maintenance',
+          experience: '2 years experience in building electrical and plumbing systems maintenance',
+          location: 'Head Office & Branch Facilities',
+          slots: '3 Openings',
+          duties: 'Perform preventive and corrective maintenance on backup generators, electrical wiring, HVAC, and plumbing.',
+          isExpanded: false
+        },
+        {
+          id: 'pos-5',
+          title: 'Auto Mechanic',
+          targetGroup: 'Experienced (3+ Years)',
+          education: 'TVET Level IV or Diploma in Automotive Technology / Auto Mechanics',
+          experience: '3 years experience in vehicle diagnosis, preventive maintenance, and engine overhaul',
+          location: 'Fleet Management Garage, Addis Ababa',
+          slots: '2 Openings',
+          duties: 'Service bank vehicle fleet, perform mechanical troubleshooting, inspect vehicle safety, and log repairs.',
+          isExpanded: false
+        },
+        {
+          id: 'pos-6',
+          title: 'Senior Transport Officer',
+          targetGroup: 'Experienced (4+ Years)',
+          education: 'BA in Logistics, Supply Chain Management, Transport Management, or Automotive Engineering',
+          experience: '4 years relevant fleet operations and vehicle dispatching experience',
+          location: 'Head Office, Addis Ababa',
+          slots: '1 Opening',
+          duties: 'Oversee vehicle allocation, fuel consumption tracking, driver scheduling, and regulatory vehicle compliance.',
+          isExpanded: false
+        },
+        {
+          id: 'pos-7',
+          title: 'Senior Administrative Assistant',
+          targetGroup: 'Experienced (4+ Years)',
+          education: 'BA Degree in Management, Office Administration, or Business Information Systems',
+          experience: '4 years progressive executive administration experience',
+          location: 'Executive Directorate, Addis Ababa',
+          slots: '2 Openings',
+          duties: 'High-level executive correspondence, document preparation, minute taking, and inter-departmental liaison.',
+          isExpanded: false
+        },
+        {
+          id: 'pos-8',
+          title: 'Branch Manager',
+          targetGroup: 'Senior / Manager (6+ Years)',
+          education: 'Master\'s or BA Degree in Banking, Finance, Economics, or Business Administration',
+          experience: '6+ years in banking operations with at least 2 years in supervisory or managerial capacity',
+          location: 'Selected City & Outlying Branches',
+          slots: 'Multiple Outlets',
+          duties: 'Drive total branch profitability, oversee loan portfolio quality, staff leadership, and community banking expansion.',
+          isExpanded: false
+        },
+        {
+          id: 'pos-9',
+          title: 'Principal Data Analyst',
+          targetGroup: 'Senior / Lead (5+ Years)',
+          education: 'BSc or MSc in Data Science, Computer Science, Statistics, or Information Systems',
+          experience: '5 years experience with SQL, Python/R, PowerBI, and banking predictive data models',
+          location: 'FinTech & Analytics Directorate, Addis Ababa',
+          slots: '2 Openings',
+          duties: 'Build customer segmentation models, credit risk predictive analytics, and executive financial performance dashboards.',
+          isExpanded: false
+        }
+      ]
+    }
+  },
   {
     name: 'Principal AI & Cloud Architect',
     data: {
@@ -282,6 +436,9 @@ export default function JobsManager() {
   const [broadcastNotification, setBroadcastNotification] = useState(true);
   const [badgeText, setBadgeText] = useState('VIP Executive Search');
   const [status, setStatus] = useState('active');
+  const [positions, setPositions] = useState([]);
+  const [isBatchPasteOpen, setIsBatchPasteOpen] = useState(false);
+  const [batchPasteText, setBatchPasteText] = useState('');
   const modalBodyRef = useRef(null);
 
   // Auto-resize all textareas inside the editor modal so they fit as much content as needed
@@ -509,6 +666,123 @@ export default function JobsManager() {
     setPhotos((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  // Multi-Position Vacancy Helpers
+  const handleAddPosition = () => {
+    const newPos = {
+      id: `pos-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      title: '',
+      targetGroup: 'Fresh Graduates (0 Years)',
+      education: '',
+      experience: '',
+      location: location || '',
+      slots: '',
+      duties: '',
+      isExpanded: true
+    };
+    setPositions((prev) => [...prev, newPos]);
+  };
+
+  const handleUpdatePosition = (id, field, value) => {
+    setPositions((prev) =>
+      prev.map((pos) => (pos.id === id ? { ...pos, [field]: value } : pos))
+    );
+  };
+
+  const handleRemovePosition = (id) => {
+    setPositions((prev) => prev.filter((pos) => pos.id !== id));
+  };
+
+  const handleMovePosition = (idx, direction) => {
+    setPositions((prev) => {
+      const copy = [...prev];
+      const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (targetIdx < 0 || targetIdx >= copy.length) return prev;
+      const temp = copy[idx];
+      copy[idx] = copy[targetIdx];
+      copy[targetIdx] = temp;
+      return copy;
+    });
+  };
+
+  const handleDuplicatePosition = (pos) => {
+    const duplicated = {
+      ...pos,
+      id: `pos-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      title: `${pos.title || 'Position'} (Copy)`,
+      isExpanded: true
+    };
+    setPositions((prev) => {
+      const idx = prev.findIndex((p) => p.id === pos.id);
+      if (idx === -1) return [...prev, duplicated];
+      const copy = [...prev];
+      copy.splice(idx + 1, 0, duplicated);
+      return copy;
+    });
+  };
+
+  const handleTogglePositionExpand = (id) => {
+    setPositions((prev) =>
+      prev.map((pos) =>
+        pos.id === id ? { ...pos, isExpanded: !pos.isExpanded } : pos
+      )
+    );
+  };
+
+  const handleToggleAllPositions = (expand) => {
+    setPositions((prev) => prev.map((pos) => ({ ...pos, isExpanded: expand })));
+  };
+
+  const handleBatchImportPositions = () => {
+    if (!batchPasteText.trim()) {
+      setIsBatchPasteOpen(false);
+      return;
+    }
+
+    const lines = batchPasteText
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean);
+
+    const parsed = [];
+    lines.forEach((line, idx) => {
+      const cleanedLine = line.replace(/^\d+[\.\)\-:]\s*/, '').trim();
+      if (!cleanedLine) return;
+
+      if (cleanedLine.includes('|')) {
+        const parts = cleanedLine.split('|').map((p) => p.trim());
+        parsed.push({
+          id: `pos-batch-${Date.now()}-${idx}`,
+          title: parts[0] || `Position ${idx + 1}`,
+          targetGroup: parts[1] || 'Open to All Candidates',
+          education: parts[2] || '',
+          experience: parts[3] || '',
+          location: parts[4] || location || '',
+          slots: parts[5] || '',
+          duties: parts[6] || '',
+          isExpanded: idx === 0
+        });
+      } else {
+        parsed.push({
+          id: `pos-batch-${Date.now()}-${idx}`,
+          title: cleanedLine,
+          targetGroup: 'Open to All Candidates',
+          education: '',
+          experience: '',
+          location: location || '',
+          slots: '',
+          duties: '',
+          isExpanded: idx === 0
+        });
+      }
+    });
+
+    if (parsed.length > 0) {
+      setPositions((prev) => [...prev, ...parsed]);
+    }
+    setBatchPasteText('');
+    setIsBatchPasteOpen(false);
+  };
+
   // Real-time Firestore Subscription
   useEffect(() => {
     setIsLoading(true);
@@ -580,6 +854,7 @@ export default function JobsManager() {
     setBroadcastNotification(true);
     setBadgeText('VIP Executive Search');
     setStatus('active');
+    setPositions([]);
     setIsEditorOpen(true);
     setTimeout(() => {
       if (modalBodyRef.current) modalBodyRef.current.scrollTop = 0;
@@ -626,6 +901,15 @@ export default function JobsManager() {
     setBroadcastNotification(true);
     setBadgeText(d.badgeText);
     setStatus(d.status);
+    setPositions(
+      Array.isArray(d.positions)
+        ? d.positions.map((p, idx) => ({
+            ...p,
+            id: p.id || `pos-${Date.now()}-${idx}`,
+            isExpanded: idx === 0
+          }))
+        : []
+    );
     setIsEditorOpen(true);
     setTimeout(() => {
       if (modalBodyRef.current) modalBodyRef.current.scrollTop = 0;
@@ -671,6 +955,15 @@ export default function JobsManager() {
     setBroadcastNotification(true);
     setBadgeText(job.badgeText || 'VIP Spotlight');
     setStatus(job.status || 'active');
+    setPositions(
+      Array.isArray(job.positions)
+        ? job.positions.map((p, idx) => ({
+            ...p,
+            id: p.id || `pos-${Date.now()}-${idx}`,
+            isExpanded: false
+          }))
+        : []
+    );
     setIsEditorOpen(true);
     setTimeout(() => {
       if (modalBodyRef.current) modalBodyRef.current.scrollTop = 0;
@@ -757,6 +1050,20 @@ export default function JobsManager() {
       requiresOnline: Boolean(needsData),
       badgeText: badgeText.trim() || (isFeatured ? 'VIP Spotlight' : 'Executive Role'),
       status,
+      positions: Array.isArray(positions)
+        ? positions
+            .filter((p) => p && (p.title || '').trim().length > 0)
+            .map((p, idx) => ({
+              id: p.id || `pos-${Date.now()}-${idx}`,
+              title: (p.title || '').trim(),
+              targetGroup: (p.targetGroup || '').trim(),
+              education: (p.education || '').trim(),
+              experience: (p.experience || '').trim(),
+              location: (p.location || '').trim(),
+              slots: (p.slots || '').trim(),
+              duties: (p.duties || '').trim()
+            }))
+        : [],
       createdAt: currentJobId ? (jobs.find((j) => j.id === currentJobId)?.createdAt || Date.now()) : Date.now(),
       updatedAt: Date.now()
     };
@@ -1698,12 +2005,310 @@ export default function JobsManager() {
                 </div>
               </div>
 
-              {/* Section 3: Narrative & Scope (All Auto-Expanding Textareas) */}
+              {/* Section 3: Multi-Position Vacancy Breakdown */}
+              <div className="space-y-4 p-5 rounded-2xl bg-indigo-950/20 border border-indigo-500/25">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-indigo-500/20">
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-indigo-400 flex items-center space-x-2">
+                      <Users className="w-4 h-4 text-indigo-400" />
+                      <span>3. Multi-Position Vacancy Breakdown (Optional)</span>
+                      {positions.length > 0 && (
+                        <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 font-extrabold text-[10px]">
+                          {positions.length} {positions.length === 1 ? 'Position' : 'Positions'}
+                        </span>
+                      )}
+                    </h4>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      Use this for announcements with multiple job roles (e.g. Bank of Oromia 9-role recruitment flyer). Each role gets an interactive accordion item with dedicated qualifications, experience, location, and apply button.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {positions.length > 0 && (
+                      <div className="flex items-center space-x-1 mr-1">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleAllPositions(true)}
+                          className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition-colors cursor-pointer"
+                        >
+                          Expand All
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleAllPositions(false)}
+                          className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold transition-colors cursor-pointer"
+                        >
+                          Collapse All
+                        </button>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => setIsBatchPasteOpen(true)}
+                      className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/30 text-amber-300 font-extrabold text-xs flex items-center space-x-1.5 transition-all cursor-pointer"
+                      title="Quickly import multiple position titles by pasting a list"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>⚡ Batch Paste List</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleAddPosition}
+                      className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs flex items-center space-x-1.5 transition-all shadow-md shadow-indigo-600/30 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Position</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Positions List */}
+                {positions.length === 0 ? (
+                  <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-center space-y-2">
+                    <p className="text-xs text-slate-400">
+                      This vacancy is currently configured as a single role. If this advertisement has multiple job openings (e.g. Trainees, Officers, Managers, Attendants), click <strong className="text-indigo-400">+ Add Position</strong> or <strong className="text-amber-300">⚡ Batch Paste List</strong>.
+                    </p>
+                    <div className="flex items-center justify-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleAddPosition}
+                        className="px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>+ Add First Position</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsBatchPasteOpen(true)}
+                        className="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Batch Paste Titles</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {positions.map((pos, idx) => (
+                      <div
+                        key={pos.id || idx}
+                        className="rounded-xl bg-slate-950 border border-slate-800 overflow-hidden transition-all shadow-xs"
+                      >
+                        {/* Position Card Header */}
+                        <div className="p-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between gap-2">
+                          <div className="flex items-center space-x-2.5 min-w-0 flex-1">
+                            <span className="w-6 h-6 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-indigo-400 font-black text-xs flex items-center justify-center shrink-0">
+                              #{idx + 1}
+                            </span>
+                            <div className="min-w-0 flex-1 flex items-center space-x-2">
+                              <span className="font-extrabold text-white text-xs sm:text-sm truncate">
+                                {pos.title || `Position #${idx + 1} (Untitled)`}
+                              </span>
+                              {pos.targetGroup && (
+                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold shrink-0 hidden sm:inline-block ${
+                                  pos.targetGroup.toLowerCase().includes('fresh') || pos.targetGroup.toLowerCase().includes('0 year')
+                                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                    : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                                }`}>
+                                  {pos.targetGroup}
+                                </span>
+                              )}
+                              {pos.slots && (
+                                <span className="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-semibold shrink-0 hidden md:inline-block">
+                                  {pos.slots}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex items-center space-x-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleMovePosition(idx, 'up')}
+                              disabled={idx === 0}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                              title="Move Up"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMovePosition(idx, 'down')}
+                              disabled={idx === positions.length - 1}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                              title="Move Down"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDuplicatePosition(pos)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-300 hover:bg-slate-800 transition-colors"
+                              title="Duplicate Position"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePosition(pos.id)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors"
+                              title="Delete Position"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleTogglePositionExpand(pos.id)}
+                              className="p-1.5 rounded-lg text-indigo-400 hover:bg-indigo-950/40 transition-colors"
+                              title={pos.isExpanded ? 'Collapse' : 'Expand'}
+                            >
+                              {pos.isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Position Card Form (Expandable) */}
+                        {pos.isExpanded && (
+                          <div className="p-4 space-y-3.5 bg-slate-950/80">
+                            {/* Row 1: Title & Target Group */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
+                                  Position Title *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={pos.title}
+                                  onChange={(e) => handleUpdatePosition(pos.id, 'title', e.target.value)}
+                                  placeholder="e.g. Associate Branch Sales & Customer Service Officer"
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-semibold"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
+                                  Applicant Category / Seniority Badge
+                                </label>
+                                <input
+                                  type="text"
+                                  value={pos.targetGroup}
+                                  onChange={(e) => handleUpdatePosition(pos.id, 'targetGroup', e.target.value)}
+                                  placeholder="e.g. Fresh Graduates (0 Years) or Experienced (2+ Years)"
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                                />
+                                <div className="flex items-center gap-1 flex-wrap mt-1.5">
+                                  {[
+                                    'Fresh Graduates (0 Years)',
+                                    'Entry-Level (1 Year)',
+                                    'Experienced (2+ Years)',
+                                    'Senior / Lead (5+ Years)',
+                                    'Open to All'
+                                  ].map((chip) => (
+                                    <button
+                                      key={chip}
+                                      type="button"
+                                      onClick={() => handleUpdatePosition(pos.id, 'targetGroup', chip)}
+                                      className={`text-[9px] px-1.5 py-0.5 rounded border transition-colors ${
+                                        pos.targetGroup === chip
+                                          ? 'bg-indigo-600 text-white border-indigo-500'
+                                          : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                                      }`}
+                                    >
+                                      {chip}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Row 2: Education / CGPA & Experience */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
+                                  Educational Qualification & CGPA
+                                </label>
+                                <input
+                                  type="text"
+                                  value={pos.education}
+                                  onChange={(e) => handleUpdatePosition(pos.id, 'education', e.target.value)}
+                                  placeholder="e.g. BA in Economics, Accounting, Management (CGPA 2.75+)"
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
+                                  Experience Requirement
+                                </label>
+                                <input
+                                  type="text"
+                                  value={pos.experience}
+                                  onChange={(e) => handleUpdatePosition(pos.id, 'experience', e.target.value)}
+                                  placeholder="e.g. 0 Years (Fresh Graduates / 2026 Batch) or 2+ Years"
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Row 3: Duty Station & Headcount */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
+                                  Duty Station / Location
+                                </label>
+                                <input
+                                  type="text"
+                                  value={pos.location}
+                                  onChange={(e) => handleUpdatePosition(pos.id, 'location', e.target.value)}
+                                  placeholder="e.g. Addis Ababa & Outlying Branches"
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
+                                  Available Openings / Headcount
+                                </label>
+                                <input
+                                  type="text"
+                                  value={pos.slots}
+                                  onChange={(e) => handleUpdatePosition(pos.id, 'slots', e.target.value)}
+                                  placeholder="e.g. 50+ Openings or 2 Vacancies"
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-amber-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-semibold"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Row 4: Duties / Key Details */}
+                            <div>
+                              <label className="block text-slate-300 font-bold text-[11px] mb-1">
+                                Key Duties & Specific Requirements (Optional)
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={pos.duties}
+                                onChange={(e) => handleUpdatePosition(pos.id, 'duties', e.target.value)}
+                                placeholder="Describe specific responsibilities, age limits, driving license requirements, or examination notes for this position..."
+                                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs leading-relaxed"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Section 4: Narrative & Scope (All Auto-Expanding Textareas) */}
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                   <h4 className="text-xs font-black uppercase tracking-wider text-emerald-400 flex items-center space-x-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span>3. Executive Narrative & Comprehensive Scope</span>
+                    <span>4. General Vacancy Overview & Scope</span>
                   </h4>
                   <span className="text-[11px] text-emerald-400 font-semibold">✓ All boxes auto-expand as much as needed</span>
                 </div>
@@ -1846,10 +2451,10 @@ export default function JobsManager() {
                 </div>
               </div>
 
-              {/* Section 4: Application Logistics & Deep Links */}
+              {/* Section 5: Application Logistics & Deep Links */}
               <div className="space-y-4">
                 <h4 className="text-[11px] font-black uppercase tracking-wider text-sky-400 border-b border-slate-800 pb-1 flex items-center justify-between">
-                  <span>4. Application Links & Shareable Deep Link</span>
+                  <span>5. Application Links & Shareable Deep Link</span>
                   <span className="text-[10px] font-normal text-slate-400">Where candidates apply & shareable URLs</span>
                 </h4>
 
@@ -2488,6 +3093,65 @@ export default function JobsManager() {
                   ✓ Apply & Fit Photo
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Batch Import Positions Modal */}
+      {isBatchPasteOpen && (
+        <div className="fixed inset-0 z-60 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-sm text-white">⚡ Batch Import Vacancy Positions</h4>
+                  <p className="text-[11px] text-slate-400">Paste your list of roles to add them instantly</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBatchPasteOpen(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-slate-300">
+                Paste Position Titles (One per line or pipe-delimited):
+              </label>
+              <textarea
+                rows={8}
+                value={batchPasteText}
+                onChange={(e) => setBatchPasteText(e.target.value)}
+                placeholder={"1. Associate Customer Service Officer\n2. Junior IT Support Specialist\n3. Senior Accountant\n4. Branch Manager\n\n-- OR with pipes --\nAssociate CSO | Fresh Graduates | BA in Economics | 0 Years | Addis Ababa | 50 Openings"}
+                className="w-full p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 leading-relaxed"
+              />
+              <p className="text-[10px] text-slate-400">
+                Tip: Number prefixes like &ldquo;1.&rdquo; or &ldquo;2)&rdquo; are stripped automatically. You can edit full qualifications, CGPA, and duties for each role afterward.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setIsBatchPasteOpen(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleBatchImportPositions}
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 cursor-pointer"
+              >
+                ✓ Import All Positions
+              </button>
             </div>
           </div>
         </div>

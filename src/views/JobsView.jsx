@@ -24,7 +24,8 @@ import {
   Loader2,
   Lock,
   Play,
-  Wifi
+  Wifi,
+  Users
 } from 'lucide-react';
 import JobDetailModal from '../components/JobDetailModal';
 import BannerAd from '../components/BannerAd';
@@ -684,6 +685,19 @@ export default function JobsView({
                       <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-snug break-words">
                         {job.title}
                       </h3>
+                      {Array.isArray(job.positions) && job.positions.length > 0 && (
+                        <div className="mt-1 flex items-center space-x-1.5 flex-wrap">
+                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-[10px] font-black uppercase tracking-wider">
+                            <Users className="w-2.5 h-2.5" />
+                            <span>{job.positions.length} Open Positions</span>
+                          </span>
+                          {job.positions.slice(0, 2).map((p, pIdx) => (
+                            <span key={pIdx} className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate max-w-[130px] hidden sm:inline-block">
+                              &bull; {p.title}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ArrowLeft,
@@ -28,7 +28,12 @@ import {
   Lock,
   Play,
   WifiOff,
-  RotateCcw
+  RotateCcw,
+  ChevronDown,
+  ChevronUp,
+  Users,
+  Search,
+  GraduationCap
 } from 'lucide-react';
 import { Share as CapacitorShare } from '@capacitor/share';
 import { Network } from '@capacitor/network';
@@ -62,6 +67,46 @@ export default function JobDetailModal({
   const [activeLightboxPhoto, setActiveLightboxPhoto] = useState(null);
   const [isOnline, setIsOnline] = useState(propIsOnline);
 
+  // Multi-Position Accordion States
+  const [openPositionIds, setOpenPositionIds] = useState(() => {
+    if (Array.isArray(job?.positions) && job.positions.length > 0) {
+      return [job.positions[0].id || 'pos-0'];
+    }
+    return [];
+  });
+  const [positionSearch, setPositionSearch] = useState('');
+  const [selectedPositionForApply, setSelectedPositionForApply] = useState(null);
+
+  const togglePositionAccordion = (posId) => {
+    setOpenPositionIds((prev) =>
+      prev.includes(posId) ? prev.filter((id) => id !== posId) : [...prev, posId]
+    );
+  };
+
+  const handleExpandAllPositions = (positionsList) => {
+    setOpenPositionIds(positionsList.map((p, idx) => p.id || `pos-${idx}`));
+  };
+
+  const handleCollapseAllPositions = () => {
+    setOpenPositionIds([]);
+  };
+
+  const filteredPositions = useMemo(() => {
+    if (!Array.isArray(job?.positions) || job.positions.length === 0) return [];
+    if (!positionSearch.trim()) return job.positions;
+    const q = positionSearch.toLowerCase().trim();
+    return job.positions.filter((p) => {
+      return (
+        (p.title && p.title.toLowerCase().includes(q)) ||
+        (p.targetGroup && p.targetGroup.toLowerCase().includes(q)) ||
+        (p.education && p.education.toLowerCase().includes(q)) ||
+        (p.experience && p.experience.toLowerCase().includes(q)) ||
+        (p.location && p.location.toLowerCase().includes(q)) ||
+        (p.duties && p.duties.toLowerCase().includes(q))
+      );
+    });
+  }, [job?.positions, positionSearch]);
+
   useEffect(() => {
     setIsOnline(propIsOnline);
   }, [propIsOnline]);
@@ -74,6 +119,13 @@ export default function JobDetailModal({
     if (progressBarRef.current) {
       progressBarRef.current.style.width = '0%';
     }
+    if (Array.isArray(job?.positions) && job.positions.length > 0) {
+      setOpenPositionIds([job.positions[0].id || 'pos-0']);
+    } else {
+      setOpenPositionIds([]);
+    }
+    setPositionSearch('');
+    setSelectedPositionForApply(null);
   }, [isOpen, job?.id]);
 
   useEffect(() => {
@@ -181,9 +233,12 @@ export default function JobDetailModal({
       }
 
       if (job.applyEmail) {
-        const mailSubject = encodeURIComponent(`Application: ${job.title} - ${applicantName.trim()}`);
+        const roleName = selectedPositionForApply
+          ? `${selectedPositionForApply.title} (${job.title})`
+          : job.title;
+        const mailSubject = encodeURIComponent(`Application: ${roleName} - ${applicantName.trim()}`);
         const mailBody = encodeURIComponent(
-          `Dear Hiring Team at ${job.company},\n\nI am applying for the position of ${job.title}.\n\nName: ${applicantName.trim()}\nEmail: ${applicantEmail.trim()}\nPortfolio/Profile: ${applicantPortfolio.trim()}\n\nNote:\n${applicantNote.trim()}\n\nThank you for your consideration.`
+          `Dear Hiring Team at ${job.company},\n\nI am applying for the role: ${roleName}.\n\nName: ${applicantName.trim()}\nEmail: ${applicantEmail.trim()}\nPortfolio/Profile: ${applicantPortfolio.trim()}\n\nCandidate Note:\n${applicantNote.trim()}\n\nThank you for your consideration.`
         );
         window.open(`mailto:${job.applyEmail}?subject=${mailSubject}&body=${mailBody}`, '_system');
       } else if (job.applyUrl) {
@@ -511,6 +566,257 @@ export default function JobDetailModal({
         ) : (
         /* Continuous Editorial Body Content with Vertical Indigo Bar Headings */
         <div className="reader-text space-y-6 font-serif text-base leading-relaxed text-slate-800 dark:text-slate-200">
+          {/* Multi-Position Interactive Accordion Section */}
+          {Array.isArray(job.positions) && job.positions.length > 0 && (
+            <section className="space-y-4 font-sans not-italic">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 pb-1 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center space-x-2">
+                  <span className="w-1.5 h-4 bg-indigo-600 dark:bg-indigo-400 rounded-full inline-block flex-shrink-0"></span>
+                  <h4 className="text-lg sm:text-xl font-bold font-sans text-slate-900 dark:text-white flex items-center space-x-2">
+                    <span>Open Positions Breakdown</span>
+                    <span className="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-extrabold text-xs border border-indigo-200 dark:border-indigo-800">
+                      {job.positions.length} Open Roles
+                    </span>
+                  </h4>
+                </div>
+
+                {job.positions.length > 1 && (
+                  <div className="flex items-center space-x-1.5 self-end sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={() => handleExpandAllPositions(job.positions)}
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      Expand All
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCollapseAllPositions}
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      Collapse All
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Search & Filter if 3 or more positions */}
+              {job.positions.length >= 3 && (
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={positionSearch}
+                    onChange={(e) => setPositionSearch(e.target.value)}
+                    placeholder={`Filter across ${job.positions.length} positions (e.g. Fresh, 0 Year, Accountant, Manager)...`}
+                    className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  {positionSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setPositionSearch('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Position Accordion Cards List */}
+              <div className="space-y-3">
+                {filteredPositions.map((pos, pIdx) => {
+                  const posId = pos.id || `pos-${pIdx}`;
+                  const isExpanded = openPositionIds.includes(posId);
+                  const isFreshGrad =
+                    (pos.targetGroup || '').toLowerCase().includes('fresh') ||
+                    (pos.targetGroup || '').toLowerCase().includes('0 year') ||
+                    (pos.experience || '').toLowerCase().includes('0 year');
+
+                  return (
+                    <div
+                      key={posId}
+                      className={`rounded-2xl border transition-all overflow-hidden ${
+                        isExpanded
+                          ? 'bg-gradient-to-br from-indigo-50/40 via-white to-white dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/20 border-indigo-300 dark:border-indigo-500/50 shadow-md'
+                          : 'bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs'
+                      }`}
+                    >
+                      {/* Accordion Trigger Header */}
+                      <button
+                        type="button"
+                        onClick={() => togglePositionAccordion(posId)}
+                        className="w-full p-3.5 sm:p-4 text-left flex items-start justify-between gap-3 cursor-pointer select-none"
+                      >
+                        <div className="flex items-start space-x-3 min-w-0 flex-1">
+                          <span className={`w-7 h-7 rounded-xl font-black text-xs flex items-center justify-center shrink-0 mt-0.5 ${
+                            isExpanded
+                              ? 'bg-indigo-600 text-white shadow-xs'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+                          }`}>
+                            #{pIdx + 1}
+                          </span>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center flex-wrap gap-1.5 mb-1">
+                              {pos.targetGroup && (
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide flex items-center space-x-1 border ${
+                                  isFreshGrad
+                                    ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-300/80 dark:border-emerald-700/60'
+                                    : 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 border-indigo-300/80 dark:border-indigo-700/60'
+                                }`}>
+                                  {isFreshGrad && <GraduationCap className="w-3 h-3 shrink-0" />}
+                                  <span>{pos.targetGroup}</span>
+                                </span>
+                              )}
+
+                              {pos.slots && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300/70 dark:border-amber-700/50">
+                                  {pos.slots}
+                                </span>
+                              )}
+                            </div>
+
+                            <h5 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white leading-snug break-words">
+                              {pos.title}
+                            </h5>
+
+                            {/* Collapsed Snippet */}
+                            {!isExpanded && (pos.education || pos.experience) && (
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                                {[pos.education, pos.experience].filter(Boolean).join(' • ')}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className={`p-1.5 rounded-xl transition-transform ${isExpanded ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 rotate-180' : 'text-slate-400'}`}>
+                          <ChevronDown className="w-4 h-4" />
+                        </div>
+                      </button>
+
+                      {/* Expanded Content Details */}
+                      {isExpanded && (
+                        <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-slate-800/80 space-y-3.5 animate-in fade-in duration-100">
+                          {/* 4-Chip Specification Grid */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
+                            {pos.education && (
+                              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-0.5">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center space-x-1">
+                                  <GraduationCap className="w-3 h-3 text-indigo-500" />
+                                  <span>Education & Qualification</span>
+                                </span>
+                                <p className="font-semibold text-slate-800 dark:text-slate-200 text-xs">
+                                  {pos.education}
+                                </p>
+                              </div>
+                            )}
+
+                            {pos.experience && (
+                              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-0.5">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center space-x-1">
+                                  <Award className="w-3 h-3 text-amber-500" />
+                                  <span>Experience Required</span>
+                                </span>
+                                <p className="font-semibold text-slate-800 dark:text-slate-200 text-xs">
+                                  {pos.experience}
+                                </p>
+                              </div>
+                            )}
+
+                            {pos.location && (
+                              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-0.5">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center space-x-1">
+                                  <MapPin className="w-3 h-3 text-emerald-500" />
+                                  <span>Work Location</span>
+                                </span>
+                                <p className="font-semibold text-slate-800 dark:text-slate-200 text-xs">
+                                  {pos.location}
+                                </p>
+                              </div>
+                            )}
+
+                            {pos.slots && (
+                              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-0.5">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center space-x-1">
+                                  <Users className="w-3 h-3 text-sky-500" />
+                                  <span>Headcount / Openings</span>
+                                </span>
+                                <p className="font-semibold text-slate-800 dark:text-slate-200 text-xs">
+                                  {pos.slots}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Specific Duties & Requirements */}
+                          {pos.duties && (
+                            <div className="p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 space-y-1">
+                              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                                Key Duties & Specific Requirements
+                              </span>
+                              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+                                {pos.duties}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Action Bar for this Specific Role */}
+                          <div className="pt-1 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800/60">
+                            <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                              Interested in this role?
+                            </span>
+                            <div className="flex items-center gap-2">
+                              {job.applyUrl && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
+                                    if (onApplySuccess) onApplySuccess(job.id);
+                                  }}
+                                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs flex items-center space-x-1 transition-all cursor-pointer"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                  <span>Open Portal</span>
+                                </button>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedPositionForApply(pos);
+                                  setApplicantNote(`Applying specifically for Position #${pIdx + 1}: ${pos.title}`);
+                                  setIsApplying(true);
+                                }}
+                                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-black text-xs flex items-center space-x-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
+                              >
+                                <Send className="w-3 h-3" />
+                                <span>Apply for Position #{pIdx + 1}</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {filteredPositions.length === 0 && (
+                  <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 text-center text-xs text-slate-500">
+                    No positions matched &ldquo;{positionSearch}&rdquo;.
+                    <button
+                      type="button"
+                      onClick={() => setPositionSearch('')}
+                      className="text-indigo-600 dark:text-indigo-400 font-bold ml-1 hover:underline cursor-pointer"
+                    >
+                      Clear search
+                    </button>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
           {/* Section 1: Role Overview & Mission */}
           {job.description && (
             <section className="space-y-3">
@@ -802,6 +1108,43 @@ export default function JobDetailModal({
             </div>
 
             <form onSubmit={handleApplySubmit} className="mt-4 space-y-3.5 text-xs">
+              {Array.isArray(job.positions) && job.positions.length > 0 && (
+                <div className="p-3 rounded-2xl bg-indigo-50/70 dark:bg-slate-800/80 border border-indigo-200/80 dark:border-indigo-500/30 space-y-1.5">
+                  <label className="block text-indigo-900 dark:text-indigo-300 font-extrabold text-[11px] flex items-center justify-between">
+                    <span>Target Open Position:</span>
+                    {selectedPositionForApply && (
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                        ✓ Specific Role Selected
+                      </span>
+                    )}
+                  </label>
+                  <select
+                    value={selectedPositionForApply ? selectedPositionForApply.id : ''}
+                    onChange={(e) => {
+                      const selId = e.target.value;
+                      if (!selId) {
+                        setSelectedPositionForApply(null);
+                        setApplicantNote('');
+                      } else {
+                        const targetPos = job.positions.find((p, idx) => (p.id || `pos-${idx}`) === selId);
+                        if (targetPos) {
+                          setSelectedPositionForApply(targetPos);
+                          setApplicantNote(`Applying specifically for: ${targetPos.title}`);
+                        }
+                      }
+                    }}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-bold text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                  >
+                    <option value="">-- General Application (All Positions) --</option>
+                    {job.positions.map((pos, pIdx) => (
+                      <option key={pos.id || pIdx} value={pos.id || `pos-${pIdx}`}>
+                        #{pIdx + 1}: {pos.title} {pos.targetGroup ? `(${pos.targetGroup})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1">
                   Full Legal / Professional Name *
