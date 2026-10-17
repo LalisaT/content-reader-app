@@ -2172,34 +2172,36 @@ export default function JobsManager() {
 
                         {/* Position Card Form (Expandable) */}
                         {pos.isExpanded && (
-                          <div className="p-4 space-y-3.5 bg-slate-950/80">
+                          <div className="p-5 sm:p-6 space-y-5 bg-slate-950/95 border-t border-slate-800/80">
                             {/* Row 1: Title & Target Group */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
-                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
-                                  Position Title *
+                                <label className="block text-slate-200 font-extrabold text-xs mb-1.5 flex items-center justify-between">
+                                  <span>Position Title *</span>
+                                  <span className="text-[10px] text-indigo-400 font-normal">Official designation</span>
                                 </label>
                                 <input
                                   type="text"
                                   value={pos.title}
                                   onChange={(e) => handleUpdatePosition(pos.id, 'title', e.target.value)}
                                   placeholder="e.g. Associate Branch Sales & Customer Service Officer"
-                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-semibold"
+                                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm font-semibold"
                                 />
                               </div>
 
                               <div>
-                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
-                                  Applicant Category / Seniority Badge
+                                <label className="block text-slate-200 font-extrabold text-xs mb-1.5 flex items-center justify-between">
+                                  <span>Applicant Category / Seniority Badge</span>
+                                  <span className="text-[10px] text-amber-400 font-normal">Card badge</span>
                                 </label>
                                 <input
                                   type="text"
                                   value={pos.targetGroup}
                                   onChange={(e) => handleUpdatePosition(pos.id, 'targetGroup', e.target.value)}
                                   placeholder="e.g. Fresh Graduates (0 Years) or Experienced (2+ Years)"
-                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm"
                                 />
-                                <div className="flex items-center gap-1 flex-wrap mt-1.5">
+                                <div className="flex items-center gap-1.5 flex-wrap mt-2">
                                   {[
                                     'Fresh Graduates (0 Years)',
                                     'Entry-Level (1 Year)',
@@ -2211,10 +2213,10 @@ export default function JobsManager() {
                                       key={chip}
                                       type="button"
                                       onClick={() => handleUpdatePosition(pos.id, 'targetGroup', chip)}
-                                      className={`text-[9px] px-1.5 py-0.5 rounded border transition-colors ${
+                                      className={`text-[10px] px-2 py-0.5 rounded-md border transition-colors cursor-pointer ${
                                         pos.targetGroup === chip
-                                          ? 'bg-indigo-600 text-white border-indigo-500'
-                                          : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
+                                          ? 'bg-indigo-600 text-white border-indigo-500 font-bold'
+                                          : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
                                       }`}
                                     >
                                       {chip}
@@ -2224,39 +2226,47 @@ export default function JobsManager() {
                               </div>
                             </div>
 
-                            {/* Row 2: Education / CGPA & Experience */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div>
-                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
-                                  Educational Qualification & CGPA
+                            {/* Row 2: Education / CGPA & Experience (Spacious Multi-line Textareas) */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="space-y-1.5">
+                                <label className="block text-slate-200 font-extrabold text-xs flex items-center justify-between">
+                                  <span>Educational Qualification & CGPA</span>
+                                  <span className="text-[10px] text-emerald-400 font-normal">Spacious multi-line</span>
                                 </label>
-                                <input
-                                  type="text"
+                                <textarea
+                                  rows={3}
                                   value={pos.education}
-                                  onChange={(e) => handleUpdatePosition(pos.id, 'education', e.target.value)}
-                                  placeholder="e.g. BA in Economics, Accounting, Management (CGPA 2.75+)"
-                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                                  onChange={(e) => {
+                                    handleUpdatePosition(pos.id, 'education', e.target.value);
+                                    autoResizeTextarea(e.currentTarget, 85);
+                                  }}
+                                  placeholder="e.g. BA in Economics, Accounting, Management, Banking & Finance with CGPA of 2.75 and above for Male and 2.5 and above for Female candidates..."
+                                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm leading-relaxed min-h-[85px] resize-y"
                                 />
                               </div>
 
-                              <div>
-                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
-                                  Experience Requirement
+                              <div className="space-y-1.5">
+                                <label className="block text-slate-200 font-extrabold text-xs flex items-center justify-between">
+                                  <span>Experience Requirement</span>
+                                  <span className="text-[10px] text-emerald-400 font-normal">Spacious multi-line</span>
                                 </label>
-                                <input
-                                  type="text"
+                                <textarea
+                                  rows={3}
                                   value={pos.experience}
-                                  onChange={(e) => handleUpdatePosition(pos.id, 'experience', e.target.value)}
-                                  placeholder="e.g. 0 Years (Fresh Graduates / 2026 Batch) or 2+ Years"
-                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                                  onChange={(e) => {
+                                    handleUpdatePosition(pos.id, 'experience', e.target.value);
+                                    autoResizeTextarea(e.currentTarget, 85);
+                                  }}
+                                  placeholder="e.g. 0 Years (Fresh Graduates / 2026 Batch) OR 2+ years direct experience in commercial banking operations..."
+                                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm leading-relaxed min-h-[85px] resize-y"
                                 />
                               </div>
                             </div>
 
                             {/* Row 3: Duty Station & Headcount */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
-                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
+                                <label className="block text-slate-200 font-extrabold text-xs mb-1.5">
                                   Duty Station / Location
                                 </label>
                                 <input
@@ -2264,12 +2274,12 @@ export default function JobsManager() {
                                   value={pos.location}
                                   onChange={(e) => handleUpdatePosition(pos.id, 'location', e.target.value)}
                                   placeholder="e.g. Addis Ababa & Outlying Branches"
-                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs"
+                                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm"
                                 />
                               </div>
 
                               <div>
-                                <label className="block text-slate-300 font-bold text-[11px] mb-1">
+                                <label className="block text-slate-200 font-extrabold text-xs mb-1.5">
                                   Available Openings / Headcount
                                 </label>
                                 <input
@@ -2277,22 +2287,26 @@ export default function JobsManager() {
                                   value={pos.slots}
                                   onChange={(e) => handleUpdatePosition(pos.id, 'slots', e.target.value)}
                                   placeholder="e.g. 50+ Openings or 2 Vacancies"
-                                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-amber-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs font-semibold"
+                                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-amber-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm font-semibold"
                                 />
                               </div>
                             </div>
 
-                            {/* Row 4: Duties / Key Details */}
-                            <div>
-                              <label className="block text-slate-300 font-bold text-[11px] mb-1">
-                                Key Duties & Specific Requirements (Optional)
+                            {/* Row 4: Duties / Key Details (Extra Large Writing Area) */}
+                            <div className="space-y-1.5 pt-1">
+                              <label className="block text-slate-200 font-extrabold text-xs flex items-center justify-between">
+                                <span>Key Duties & Specific Requirements (Optional)</span>
+                                <span className="text-[10px] text-amber-300 font-normal">Large writing area &bull; Press Enter for new lines</span>
                               </label>
                               <textarea
-                                rows={2}
+                                rows={5}
                                 value={pos.duties}
-                                onChange={(e) => handleUpdatePosition(pos.id, 'duties', e.target.value)}
-                                placeholder="Describe specific responsibilities, age limits, driving license requirements, or examination notes for this position..."
-                                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 text-xs leading-relaxed"
+                                onChange={(e) => {
+                                  handleUpdatePosition(pos.id, 'duties', e.target.value);
+                                  autoResizeTextarea(e.currentTarget, 130);
+                                }}
+                                placeholder="Describe specific responsibilities, age limits, driving license grade, examination notes, or any special instructions for this role...&#10;&#10;• Provide customer service across cash counters and accounts&#10;• Cross-sell digital banking services and mobile applications&#10;• Ensure compliance with operational procedures"
+                                className="w-full px-4 py-3.5 rounded-2xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm leading-relaxed min-h-[130px] resize-y"
                               />
                             </div>
                           </div>
