@@ -81,32 +81,40 @@ const INTERVIEW_STAGES = [
 
 const HIGHLIGHT_ITEMS = [
   {
-    badge: 'Presidential Scholarship',
-    title: 'Global AI & Technology Fellowship 2026',
-    subtitle: 'Vanguard Academic Foundation • Fully Funded Endowment',
-    value: '$120k Grant',
-    isScholarship: true
+    badge: '9 Banking Vacancies',
+    title: 'Bank of Oromia Professional Banking Recruitment',
+    subtitle: 'Bank of Oromia • Addis Ababa & Outlying Branches',
+    valueLabel: 'Target Compensation',
+    value: 'Attractive Banking Scale',
+    isScholarship: false,
+    companyLogo: null
   },
   {
     badge: 'VIP Executive Search',
-    title: 'Principal AI & Systems Architect',
+    title: 'Principal AI & Cloud Architect',
     subtitle: 'Apex Global Labs • London HQ & Worldwide Remote',
+    valueLabel: 'Target Compensation',
     value: '$225k / yr',
-    isScholarship: false
+    isScholarship: false,
+    companyLogo: null
   },
   {
-    badge: 'Creative Fellowship',
+    badge: 'Presidential Scholarship',
+    title: 'Global AI & Technology Fellowship 2026',
+    subtitle: 'Vanguard Academic Foundation • Fully Funded Endowment',
+    valueLabel: 'Endowment / Grant',
+    value: '$120k Grant',
+    isScholarship: true,
+    companyLogo: null
+  },
+  {
+    badge: 'Executive Creative Direction',
     title: 'Executive Creative Director & Luxury Brand Lead',
     subtitle: 'Maison Lalisa Studio • Paris & Hybrid',
+    valueLabel: 'Target Compensation',
     value: '$190k / yr',
-    isScholarship: false
-  },
-  {
-    badge: 'Endowed Research Chair',
-    title: 'Cognitive UX & Spatial Systems Fellow',
-    subtitle: 'Cerebral Dynamics • Worldwide Remote',
-    value: '$175k Grant',
-    isScholarship: true
+    isScholarship: false,
+    companyLogo: null
   }
 ];
 
@@ -122,6 +130,8 @@ const GalaxyBackground = React.memo(function GalaxyBackground() {
 });
 
 const JobsHeroBanner = React.memo(function JobsHeroBanner({
+  jobs = [],
+  onSelectJob = null,
   activeCount,
   scholarshipCount,
   remoteCount,
@@ -131,6 +141,46 @@ const JobsHeroBanner = React.memo(function JobsHeroBanner({
   const [highlightIdx, setHighlightIdx] = useState(0);
   const [highlightVisible, setHighlightVisible] = useState(true);
 
+  // Dynamically derive rotating highlights from the live active jobs list
+  const dynamicHighlights = useMemo(() => {
+    if (Array.isArray(jobs) && jobs.length > 0) {
+      const activeJobs = jobs.filter((j) => j && j.title && j.status !== 'closed');
+      if (activeJobs.length > 0) {
+        return activeJobs.map((j) => {
+          const isScholarship = Boolean(
+            j.isScholarship ||
+            (j.department || '').toLowerCase().includes('scholarship') ||
+            (j.department || '').toLowerCase().includes('fellowship') ||
+            (j.title || '').toLowerCase().includes('scholarship') ||
+            (j.badgeText || '').toLowerCase().includes('scholarship')
+          );
+
+          let badge = j.badgeText;
+          if (Array.isArray(j.positions) && j.positions.length > 0) {
+            badge = `${j.positions.length} Open Positions`;
+          } else if (!badge) {
+            badge = isScholarship ? 'Scholarship / Grant' : j.isFeatured ? 'VIP Spotlight' : 'Executive Vacancy';
+          }
+
+          const valueLabel = isScholarship ? 'Endowment / Grant' : 'Target Compensation';
+          const value = j.salaryRange || (isScholarship ? 'Full Coverage' : 'Competitive Package');
+
+          return {
+            rawJob: j,
+            badge: badge.toUpperCase(),
+            title: j.title,
+            subtitle: `${j.company} • ${j.location || j.workplaceType || 'Worldwide Remote'}`,
+            valueLabel,
+            value,
+            isScholarship,
+            companyLogo: j.companyLogo || null
+          };
+        });
+      }
+    }
+    return HIGHLIGHT_ITEMS;
+  }, [jobs]);
+
   useEffect(() => {
     const stageTimer = setInterval(() => {
       setActiveStageIdx((prev) => (prev + 1) % INTERVIEW_STAGES.length);
@@ -139,17 +189,18 @@ const JobsHeroBanner = React.memo(function JobsHeroBanner({
   }, []);
 
   useEffect(() => {
+    if (dynamicHighlights.length <= 1) return;
     const timer = setInterval(() => {
       setHighlightVisible(false);
       setTimeout(() => {
-        setHighlightIdx((prev) => (prev + 1) % HIGHLIGHT_ITEMS.length);
+        setHighlightIdx((prev) => (prev + 1) % dynamicHighlights.length);
         setHighlightVisible(true);
       }, 280);
-    }, 4200);
+    }, 4500);
     return () => clearInterval(timer);
-  }, []);
+  }, [dynamicHighlights.length]);
 
-  const currentHighlight = HIGHLIGHT_ITEMS[highlightIdx] || HIGHLIGHT_ITEMS[0];
+  const currentHighlight = dynamicHighlights[highlightIdx % dynamicHighlights.length] || dynamicHighlights[0] || HIGHLIGHT_ITEMS[0];
 
   return (
     <div className="relative rounded-3xl bg-gradient-to-br from-indigo-50/90 via-slate-50 to-amber-50/40 text-slate-900 dark:from-slate-950 dark:via-indigo-950 dark:to-slate-900 dark:text-white p-5 sm:p-7 shadow-lg border border-slate-200/90 dark:border-indigo-900/40 mb-6 overflow-hidden min-w-0">
@@ -198,29 +249,45 @@ const JobsHeroBanner = React.memo(function JobsHeroBanner({
           Discover bespoke executive roles, presidential scholarship endowments, and high-yield fellowships with verified global organizations.
         </p>
 
-        {/* Special Slim Embedded Interview Showcase Card */}
-        <div className="relative my-3 rounded-2xl bg-white/80 dark:bg-slate-950/55 border border-slate-200/80 dark:border-white/10 overflow-hidden shadow-xs group">
+        {/* Special Slim Embedded Interview Showcase Card - Clickable to Open Vacancy */}
+        <div
+          onClick={() => {
+            if (currentHighlight.rawJob && typeof onSelectJob === 'function') {
+              onSelectJob(currentHighlight.rawJob);
+            }
+          }}
+          className={`relative my-3 rounded-2xl bg-white/80 dark:bg-slate-950/55 border border-slate-200/80 dark:border-white/10 overflow-hidden shadow-xs group transition-all duration-200 active:scale-[0.99] ${
+            currentHighlight.rawJob ? 'cursor-pointer hover:border-amber-400/60 dark:hover:border-amber-400/40 hover:shadow-md' : ''
+          }`}
+          title={currentHighlight.rawJob ? 'Tap to view role details' : ''}
+        >
           <div className="relative z-10 p-3 sm:p-3.5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center space-x-3 min-w-0">
-                <div className="relative flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 via-indigo-600/20 to-purple-600/15 border border-amber-500/40 dark:border-amber-400/40 flex items-center justify-center shadow-xs">
-                  {currentHighlight.isScholarship ? (
+                <div className="relative flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 via-indigo-600/20 to-purple-600/15 border border-amber-500/40 dark:border-amber-400/40 flex items-center justify-center shadow-xs overflow-hidden">
+                  {currentHighlight.companyLogo ? (
+                    <img
+                      src={currentHighlight.companyLogo}
+                      alt={currentHighlight.title}
+                      className="w-full h-full object-contain p-1 rounded-lg"
+                    />
+                  ) : currentHighlight.isScholarship ? (
                     <GraduationCap className="w-4 h-4 text-amber-600 dark:text-amber-300 relative z-10" />
                   ) : (
-                    <Video className="w-4 h-4 text-amber-600 dark:text-amber-300 relative z-10" />
+                    <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-300 relative z-10" />
                   )}
                 </div>
 
                 <div className="min-w-0">
                   <div className="flex items-center space-x-2 mb-0.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-700 dark:text-amber-300 flex items-center space-x-1.5">
-                      <span className="inline-flex rounded-full h-1.5 w-1.5 bg-amber-500 dark:bg-amber-400"></span>
-                      <span>{currentHighlight.badge}</span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-700 dark:text-amber-300 flex items-center space-x-1.5 truncate">
+                      <span className="inline-flex rounded-full h-1.5 w-1.5 bg-amber-500 dark:bg-amber-400 shrink-0"></span>
+                      <span className="truncate">{currentHighlight.badge}</span>
                     </span>
                     <span className="text-[9px] text-slate-500 dark:text-slate-400 font-medium hidden xs:inline">• Direct Screening Active</span>
                   </div>
                   <div
-                    className={`text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate transition-opacity duration-200 ${
+                    className={`text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate transition-opacity duration-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 ${
                       highlightVisible ? 'opacity-100' : 'opacity-20'
                     }`}
                   >
@@ -234,11 +301,17 @@ const JobsHeroBanner = React.memo(function JobsHeroBanner({
 
               <div className="flex-shrink-0 text-right">
                 <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
-                  Endowment / Grant
+                  {currentHighlight.valueLabel || 'Target Compensation'}
                 </span>
                 <span className="text-xs sm:text-sm font-black text-amber-600 dark:text-amber-300 block">
                   {currentHighlight.value}
                 </span>
+                {currentHighlight.rawJob && (
+                  <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center justify-end space-x-0.5 mt-0.5 group-hover:underline">
+                    <span>View Role</span>
+                    <ArrowUpRight className="w-2.5 h-2.5" />
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -456,6 +529,8 @@ export default function JobsView({
 
       <div className="relative z-10 max-w-2xl mx-auto px-3.5 sm:px-4 py-4 pb-safe-nav w-full min-w-0">
         <JobsHeroBanner
+          jobs={jobs}
+          onSelectJob={handleOpenJob}
           activeCount={activeCount}
           scholarshipCount={scholarshipCount}
           remoteCount={remoteCount}
