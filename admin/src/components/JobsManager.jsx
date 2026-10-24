@@ -677,6 +677,10 @@ export default function JobsManager() {
       location: location || '',
       slots: '',
       duties: '',
+      enableApply: true,
+      applyUrl: '',
+      applyEmail: '',
+      applyNote: '',
       isExpanded: true
     };
     setPositions((prev) => [...prev, newPos]);
@@ -759,6 +763,10 @@ export default function JobsManager() {
           location: parts[4] || location || '',
           slots: parts[5] || '',
           duties: parts[6] || '',
+          enableApply: true,
+          applyUrl: '',
+          applyEmail: '',
+          applyNote: '',
           isExpanded: idx === 0
         });
       } else {
@@ -771,6 +779,10 @@ export default function JobsManager() {
           location: location || '',
           slots: '',
           duties: '',
+          enableApply: true,
+          applyUrl: '',
+          applyEmail: '',
+          applyNote: '',
           isExpanded: idx === 0
         });
       }
@@ -906,6 +918,10 @@ export default function JobsManager() {
         ? d.positions.map((p, idx) => ({
             ...p,
             id: p.id || `pos-${Date.now()}-${idx}`,
+            enableApply: p.enableApply !== false,
+            applyUrl: p.applyUrl || '',
+            applyEmail: p.applyEmail || '',
+            applyNote: p.applyNote || '',
             isExpanded: idx === 0
           }))
         : []
@@ -960,6 +976,10 @@ export default function JobsManager() {
         ? job.positions.map((p, idx) => ({
             ...p,
             id: p.id || `pos-${Date.now()}-${idx}`,
+            enableApply: p.enableApply !== false,
+            applyUrl: p.applyUrl || '',
+            applyEmail: p.applyEmail || '',
+            applyNote: p.applyNote || '',
             isExpanded: false
           }))
         : []
@@ -1061,7 +1081,11 @@ export default function JobsManager() {
               experience: (p.experience || '').trim(),
               location: (p.location || '').trim(),
               slots: (p.slots || '').trim(),
-              duties: (p.duties || '').trim()
+              duties: (p.duties || '').trim(),
+              enableApply: p.enableApply !== false,
+              applyUrl: (p.applyUrl || '').trim(),
+              applyEmail: (p.applyEmail || '').trim(),
+              applyNote: (p.applyNote || '').trim()
             }))
         : [],
       createdAt: currentJobId ? (jobs.find((j) => j.id === currentJobId)?.createdAt || Date.now()) : Date.now(),
@@ -2120,6 +2144,11 @@ export default function JobsManager() {
                                   {pos.slots}
                                 </span>
                               )}
+                              {pos.enableApply === false && (
+                                <span className="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold shrink-0">
+                                  Apply Button Removed
+                                </span>
+                              )}
                             </div>
                           </div>
 
@@ -2308,6 +2337,124 @@ export default function JobsManager() {
                                 placeholder="Describe specific responsibilities, age limits, driving license grade, examination notes, or any special instructions for this role...&#10;&#10;• Provide customer service across cash counters and accounts&#10;• Cross-sell digital banking services and mobile applications&#10;• Ensure compliance with operational procedures"
                                 className="w-full px-4 py-3.5 rounded-2xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs sm:text-sm leading-relaxed min-h-[130px] resize-y"
                               />
+                            </div>
+
+                            {/* Row 5: Position Application Controls ("Add or Remove Apply for each position") */}
+                            <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+                              <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div className="flex items-center space-x-2.5 min-w-0">
+                                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                                    pos.enableApply !== false
+                                      ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30'
+                                      : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                                  }`}>
+                                    <Send className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center space-x-2">
+                                      <span className="text-xs font-black text-white">
+                                        &ldquo;Apply for Position #{idx + 1}&rdquo; Button
+                                      </span>
+                                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
+                                        pos.enableApply !== false
+                                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                                      }`}>
+                                        {pos.enableApply !== false ? 'Active in Reader' : 'Removed / Hidden'}
+                                      </span>
+                                    </div>
+                                    <p className="text-[11px] text-slate-400">
+                                      {pos.enableApply !== false
+                                        ? 'Candidates can tap "Apply for Position" in the app to send their application.'
+                                        : 'The Apply button is hidden for this role (e.g. for walk-in or offline-only jobs).'}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center space-x-2 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdatePosition(pos.id, 'enableApply', pos.enableApply === false)}
+                                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer shadow-xs ${
+                                      pos.enableApply !== false
+                                        ? 'bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 border border-rose-500/30'
+                                        : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-900/40'
+                                    }`}
+                                  >
+                                    {pos.enableApply !== false ? (
+                                      <>
+                                        <X className="w-3.5 h-3.5" />
+                                        <span>Remove Apply Button</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Check className="w-3.5 h-3.5" />
+                                        <span>Add Apply Button</span>
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+
+                              {pos.enableApply !== false ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-slate-800">
+                                  <div>
+                                    <label className="block text-slate-300 font-bold text-xs mb-1 flex items-center space-x-1.5">
+                                      <ExternalLink className="w-3 h-3 text-indigo-400" />
+                                      <span>Custom Apply Link for Position #{idx + 1} (Optional)</span>
+                                    </label>
+                                    <input
+                                      type="url"
+                                      value={pos.applyUrl || ''}
+                                      onChange={(e) => handleUpdatePosition(pos.id, 'applyUrl', e.target.value)}
+                                      placeholder="Leave blank to use main vacancy link"
+                                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                    <span className="text-[10px] text-slate-500 mt-0.5 block">
+                                      If provided, &ldquo;Open Portal&rdquo; on Position #{idx + 1} opens this specific link.
+                                    </span>
+                                  </div>
+
+                                  <div>
+                                    <label className="block text-slate-300 font-bold text-xs mb-1 flex items-center space-x-1.5">
+                                      <Mail className="w-3 h-3 text-indigo-400" />
+                                      <span>Custom Apply Email for Position #{idx + 1} (Optional)</span>
+                                    </label>
+                                    <input
+                                      type="email"
+                                      value={pos.applyEmail || ''}
+                                      onChange={(e) => handleUpdatePosition(pos.id, 'applyEmail', e.target.value)}
+                                      placeholder="Leave blank to use main vacancy email"
+                                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                    <span className="text-[10px] text-slate-500 mt-0.5 block">
+                                      If provided, applications for this role route directly to this address.
+                                    </span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs space-y-2 pt-2.5 border-t border-slate-800">
+                                  <div className="flex items-center space-x-1.5 font-bold">
+                                    <CheckCircle2 className="w-4 h-4 text-rose-400 shrink-0" />
+                                    <span>Apply button is removed for this position. Candidates will not see an Apply button here.</span>
+                                  </div>
+                                  <div>
+                                    <label className="block text-slate-300 font-bold text-xs mb-1">
+                                      Offline / Walk-In Instructions Note (Optional):
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={pos.applyNote || ''}
+                                      onChange={(e) => handleUpdatePosition(pos.id, 'applyNote', e.target.value)}
+                                      placeholder="e.g. In-person submission only / Walk-in at Head Office 3rd Floor"
+                                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-rose-500/30 text-white text-xs focus:ring-2 focus:ring-rose-500"
+                                    />
+                                    <span className="text-[10px] text-slate-400 mt-0.5 block">
+                                      Shown to candidates in the app in place of the Apply button.
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}

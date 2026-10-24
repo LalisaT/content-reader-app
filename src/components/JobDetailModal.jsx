@@ -232,7 +232,10 @@ export default function JobDetailModal({
         });
       }
 
-      if (job.applyEmail) {
+      const targetEmail = selectedPositionForApply?.applyEmail || job.applyEmail;
+      const targetUrl = selectedPositionForApply?.applyUrl || job.applyUrl;
+
+      if (targetEmail) {
         const roleName = selectedPositionForApply
           ? `${selectedPositionForApply.title} (${job.title})`
           : job.title;
@@ -240,9 +243,9 @@ export default function JobDetailModal({
         const mailBody = encodeURIComponent(
           `Dear Hiring Team at ${job.company},\n\nI am applying for the role: ${roleName}.\n\nName: ${applicantName.trim()}\nEmail: ${applicantEmail.trim()}\nPortfolio/Profile: ${applicantPortfolio.trim()}\n\nCandidate Note:\n${applicantNote.trim()}\n\nThank you for your consideration.`
         );
-        window.open(`mailto:${job.applyEmail}?subject=${mailSubject}&body=${mailBody}`, '_system');
-      } else if (job.applyUrl) {
-        window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
+        window.open(`mailto:${targetEmail}?subject=${mailSubject}&body=${mailBody}`, '_system');
+      } else if (targetUrl) {
+        window.open(targetUrl, '_blank', 'noopener,noreferrer');
       }
     }, 600);
   };
@@ -762,38 +765,54 @@ export default function JobDetailModal({
                           )}
 
                           {/* Action Bar for this Specific Role */}
-                          <div className="pt-1 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800/60">
-                            <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                              Interested in this role?
-                            </span>
-                            <div className="flex items-center gap-2">
-                              {job.applyUrl && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
-                                    if (onApplySuccess) onApplySuccess(job.id);
-                                  }}
-                                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs flex items-center space-x-1 transition-all cursor-pointer"
-                                >
-                                  <ExternalLink className="w-3 h-3" />
-                                  <span>Open Portal</span>
-                                </button>
-                              )}
+                          <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800/60">
+                            {pos.enableApply === false ? (
+                              <div className="w-full flex flex-wrap items-center justify-between gap-2 py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60">
+                                <div className="flex items-center space-x-2">
+                                  <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></span>
+                                  <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                                    {pos.applyNote || 'Direct online application is not available for this role (e.g. in-person / walk-in submission).'}
+                                  </span>
+                                </div>
+                                <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-[10px] font-extrabold uppercase tracking-wide shrink-0">
+                                  {pos.applyNote ? 'Instructions' : 'In-Person / Walk-In'}
+                                </span>
+                              </div>
+                            ) : (
+                              <>
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                                  Interested in this role?
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  {(pos.applyUrl || job.applyUrl) && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        window.open(pos.applyUrl || job.applyUrl, '_blank', 'noopener,noreferrer');
+                                        if (onApplySuccess) onApplySuccess(job.id);
+                                      }}
+                                      className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-xs flex items-center space-x-1 transition-all cursor-pointer"
+                                    >
+                                      <ExternalLink className="w-3 h-3" />
+                                      <span>Open Portal</span>
+                                    </button>
+                                  )}
 
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedPositionForApply(pos);
-                                  setApplicantNote(`Applying specifically for Position #${pIdx + 1}: ${pos.title}`);
-                                  setIsApplying(true);
-                                }}
-                                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-black text-xs flex items-center space-x-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
-                              >
-                                <Send className="w-3 h-3" />
-                                <span>Apply for Position #{pIdx + 1}</span>
-                              </button>
-                            </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedPositionForApply(pos);
+                                      setApplicantNote(`Applying specifically for Position #${pIdx + 1}: ${pos.title}`);
+                                      setIsApplying(true);
+                                    }}
+                                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-black text-xs flex items-center space-x-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
+                                  >
+                                    <Send className="w-3 h-3" />
+                                    <span>Apply for Position #{pIdx + 1}</span>
+                                  </button>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                       )}
@@ -1137,8 +1156,12 @@ export default function JobDetailModal({
                   >
                     <option value="">-- General Application (All Positions) --</option>
                     {job.positions.map((pos, pIdx) => (
-                      <option key={pos.id || pIdx} value={pos.id || `pos-${pIdx}`}>
-                        #{pIdx + 1}: {pos.title} {pos.targetGroup ? `(${pos.targetGroup})` : ''}
+                      <option
+                        key={pos.id || pIdx}
+                        value={pos.id || `pos-${pIdx}`}
+                        disabled={pos.enableApply === false}
+                      >
+                        #{pIdx + 1}: {pos.title} {pos.enableApply === false ? '(Offline / Walk-In Only)' : (pos.targetGroup ? `(${pos.targetGroup})` : '')}
                       </option>
                     ))}
                   </select>
