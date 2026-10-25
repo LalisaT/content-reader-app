@@ -33,7 +33,7 @@ const InterstitialModal = lazy(() => import('./components/InterstitialModal'));
 const RewardedModal = lazy(() => import('./components/RewardedModal'));
 const NotificationModal = lazy(() => import('./components/NotificationModal'));
 const AppUpdateModal = lazy(() => import('./components/AppUpdateModal'));
-import { Sparkles, X, BookOpen, Loader2, WifiOff, LogOut } from 'lucide-react';
+import { Sparkles, X, BookOpen, Loader2, WifiOff, LogOut, Check } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState(() => {
@@ -105,6 +105,7 @@ export default function App() {
     } catch {}
     return null;
   });
+  const [downloadedUpdateReady, setDownloadedUpdateReady] = useState(false);
   const [polls, setPolls] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [isLoadingJobs, setIsLoadingJobs] = useState(true);
@@ -276,6 +277,9 @@ export default function App() {
       unsubCategories = firestoreSyncService.subscribeCategories((cats) => {
         if (cats && cats.length > 0) {
           setCategories(cats);
+          try {
+            localStorage.setItem('tippulse_custom_categories', JSON.stringify(cats));
+          } catch (e) {}
         }
       });
 
@@ -307,12 +311,19 @@ export default function App() {
     };
     window.addEventListener('tippulse_notification_updated', handleNotifUpdate);
 
+    const handleUpdateDownloaded = () => {
+      setDownloadedUpdateReady(true);
+      setUpdateInfo(null);
+    };
+    window.addEventListener('tippulse_in_app_update_downloaded', handleUpdateDownloaded);
+
     return () => {
       clearTimeout(timer);
       netListenerPromise.then((handle) => handle.remove()).catch(() => {});
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('tippulse_notification_updated', handleNotifUpdate);
+      window.removeEventListener('tippulse_in_app_update_downloaded', handleUpdateDownloaded);
       unsubNotifications();
       unsubArticles();
       unsubConfig();
@@ -926,6 +937,32 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Floating Google Play In-App Background Update Ready Toast (Like BeSoccer) */}
+      {downloadedUpdateReady && (
+        <aside
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-20 left-3 right-3 sm:left-auto sm:right-6 sm:w-96 z-[9999] bg-[#1e1f22] text-white p-3.5 rounded-2xl border border-emerald-500/40 shadow-2xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom duration-300"
+        >
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-md">
+              <Check className="w-4 h-4 stroke-[3]" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-bold text-white truncate">Update Ready to Install</div>
+              <div className="text-[11px] text-emerald-400 font-medium truncate">Downloaded in background &bull; Restart to apply</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => updateService.completeUpdate()}
+            className="px-3.5 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shrink-0 active:scale-95 transition-all cursor-pointer shadow-md"
+          >
+            Restart Now
+          </button>
+        </aside>
       )}
 
       {/* Real-time In-App Update Prompt Modal (Google Play Store Bottom Sheet) */}

@@ -1,5 +1,7 @@
 import { App } from '@capacitor/app';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
+
+const InAppUpdate = registerPlugin('InAppUpdate');
 
 const CURRENT_VERSION_CODE = 37;
 const CURRENT_VERSION_NAME = '1.4.4';
@@ -95,6 +97,47 @@ export const updateService = {
   skipUpdate: (versionCode) => {
     if (versionCode !== undefined && versionCode !== null) {
       skippedSessionVersions.add(String(versionCode));
+    }
+  },
+
+  // Start official Google Play Flexible Background Update (like BeSoccer)
+  startFlexibleUpdate: async ({ customUrl, onProgress, onDownloaded, onError } = {}) => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        if (InAppUpdate) {
+          if (typeof onProgress === 'function') {
+            InAppUpdate.addListener('updateProgress', (data) => {
+              onProgress(data);
+            });
+          }
+          InAppUpdate.addListener('updateDownloaded', (data) => {
+            try {
+              window.dispatchEvent(new CustomEvent('tippulse_in_app_update_downloaded'));
+            } catch (e) {}
+            if (typeof onDownloaded === 'function') {
+              onDownloaded(data);
+            }
+          });
+          const res = await InAppUpdate.startFlexibleUpdate();
+          return res;
+        }
+      } catch (err) {
+        console.warn('Google Play InAppUpdate flexible call failed, falling back to Play Store app:', err);
+        if (typeof onError === 'function') onError(err);
+      }
+    }
+    // Fallback: open Play Store URL directly
+    updateService.openPlayStore(customUrl);
+  },
+
+  // Complete downloaded update and restart app seamlessly
+  completeUpdate: async () => {
+    if (Capacitor.isNativePlatform() && InAppUpdate) {
+      try {
+        await InAppUpdate.completeUpdate();
+      } catch (e) {
+        console.warn('InAppUpdate completeUpdate error:', e);
+      }
     }
   },
 

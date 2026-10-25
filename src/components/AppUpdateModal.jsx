@@ -1,11 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ChevronDown } from 'lucide-react';
+import { X, ChevronDown, Check, Loader2 } from 'lucide-react';
+import { updateService } from '../services/updateService';
 
 export default function AppUpdateModal({ updateInfo, appConfig, onUpdate, onSkip }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [downloadState, setDownloadState] = useState('idle');
+  const [downloadPercent, setDownloadPercent] = useState(0);
 
   const isForceUpdate = Boolean(updateInfo?.isForceUpdate);
+
+  const handleUpdateClick = () => {
+    if (downloadState === 'downloaded') {
+      updateService.completeUpdate();
+      return;
+    }
+
+    setDownloadState('downloading');
+    updateService.startFlexibleUpdate({
+      customUrl: updateInfo.updateUrl,
+      onProgress: (data) => {
+        setDownloadState('downloading');
+        if (data && data.totalBytesToDownload > 0) {
+          const pct = Math.min(100, Math.round((data.bytesDownloaded / data.totalBytesToDownload) * 100));
+          setDownloadPercent(pct);
+        }
+      },
+      onDownloaded: () => {
+        setDownloadState('downloaded');
+      },
+      onError: () => {
+        setDownloadState('idle');
+        if (typeof onUpdate === 'function') onUpdate();
+      }
+    });
+  };
 
   // Handle Android hardware back button
   useEffect(() => {
@@ -185,22 +214,60 @@ export default function AppUpdateModal({ updateInfo, appConfig, onUpdate, onSkip
           )}
         </div>
 
+        {/* Background Download Status Indicator */}
+        {downloadState === 'downloading' && (
+          <div className="mb-4 p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1.5 animate-in fade-in">
+            <div className="flex items-center justify-between text-xs text-[#c4c7c5]">
+              <span className="flex items-center space-x-1.5">
+                <Loader2 className="w-3.5 h-3.5 text-[#a8c7fa] animate-spin" />
+                <span>Downloading update in background...</span>
+              </span>
+              <span className="font-bold text-[#a8c7fa]">{downloadPercent > 0 ? `${downloadPercent}%` : 'Starting...'}</span>
+            </div>
+            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#a8c7fa] transition-all duration-200 rounded-full"
+                style={{ width: `${downloadPercent > 0 ? downloadPercent : 15}%` }}
+              />
+            </div>
+            <p className="text-[11px] text-[#8e918f]">You can keep using the app while downloading.</p>
+          </div>
+        )}
+
+        {downloadState === 'downloaded' && (
+          <div className="mb-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center space-x-2 animate-in fade-in">
+            <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Update downloaded successfully in the background! Ready to apply.</span>
+          </div>
+        )}
+
         {/* Bottom Dual Pill Action Buttons */}
         <div className="grid grid-cols-2 gap-3 pt-1">
           <button
             type="button"
-            onClick={handleLearnMore}
+            onClick={downloadState === 'downloading' ? onSkip : handleLearnMore}
             className="w-full py-2.5 px-5 rounded-full border border-[#8e918f]/70 hover:bg-white/5 active:bg-white/10 text-[#a8c7fa] font-medium text-[14px] transition-colors cursor-pointer text-center"
           >
-            Learn more
+            {downloadState === 'downloading' ? 'Keep Using App' : 'Learn more'}
           </button>
 
           <button
             type="button"
-            onClick={onUpdate}
-            className="w-full py-2.5 px-5 rounded-full bg-[#a8c7fa] hover:bg-[#b8d3fc] active:scale-[0.99] text-[#062e6f] font-semibold text-[14px] transition-all shadow-sm cursor-pointer text-center"
+            onClick={handleUpdateClick}
+            disabled={downloadState === 'downloading'}
+            className={`w-full py-2.5 px-5 rounded-full font-semibold text-[14px] transition-all shadow-sm cursor-pointer text-center ${
+              downloadState === 'downloaded'
+                ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold active:scale-[0.99]'
+                : downloadState === 'downloading'
+                ? 'bg-[#a8c7fa]/50 text-[#062e6f]/70 cursor-not-allowed'
+                : 'bg-[#a8c7fa] hover:bg-[#b8d3fc] active:scale-[0.99] text-[#062e6f]'
+            }`}
           >
-            Update
+            {downloadState === 'downloaded'
+              ? 'Restart & Install'
+              : downloadState === 'downloading'
+              ? 'Downloading...'
+              : 'Update'}
           </button>
         </div>
       </div>

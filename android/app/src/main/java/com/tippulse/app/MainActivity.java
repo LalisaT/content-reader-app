@@ -20,6 +20,7 @@ public class MainActivity extends BridgeActivity {
         } catch (Exception ignored) {}
 
         super.onCreate(savedInstanceState);
+        registerPlugin(InAppUpdatePlugin.class);
 
         try {
             Window window = getWindow();

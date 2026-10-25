@@ -21,7 +21,17 @@ export const categoryService = {
   getCategories: () => {
     try {
       const stored = localStorage.getItem(CATEGORIES_KEY);
-      return stored ? JSON.parse(stored) : DEFAULT_CATEGORIES;
+      if (!stored) return DEFAULT_CATEGORIES;
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const hasMusic = parsed.some((c) => c.id === 'Music' || c.label?.toLowerCase() === 'music');
+        if (!hasMusic) {
+          const musicDefault = DEFAULT_CATEGORIES.find((c) => c.id === 'Music');
+          if (musicDefault) parsed.splice(2, 0, musicDefault);
+        }
+        return parsed;
+      }
+      return DEFAULT_CATEGORIES;
     } catch {
       return DEFAULT_CATEGORIES;
     }

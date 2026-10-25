@@ -54,7 +54,7 @@ export default function CategoriesManager() {
 
   // 1. Subscribe to Cloud Categories in Firestore
   useEffect(() => {
-    const catRef = doc(db, 'settings', 'categories');
+    const catRef = doc(db, 'settings', 'app_categories');
     const unsub = onSnapshot(
       catRef,
       (docSnap) => {
@@ -93,8 +93,12 @@ export default function CategoriesManager() {
   const handleSaveToCloud = async (newList) => {
     setIsSaving(true);
     try {
-      const catRef = doc(db, 'settings', 'categories');
-      await setDoc(catRef, { list: newList, updatedAt: Date.now() }, { merge: true });
+      const catRef1 = doc(db, 'settings', 'app_categories');
+      const catRef2 = doc(db, 'settings', 'categories');
+      await Promise.all([
+        setDoc(catRef1, { list: newList, updatedAt: Date.now() }, { merge: true }),
+        setDoc(catRef2, { list: newList, updatedAt: Date.now() }, { merge: true }),
+      ]);
       showToast('Categories updated successfully and synced to all user apps!');
     } catch (err) {
       console.error('Save categories error:', err);
