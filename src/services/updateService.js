@@ -3,8 +3,8 @@ import { Capacitor, registerPlugin } from '@capacitor/core';
 
 const InAppUpdate = registerPlugin('InAppUpdate');
 
-const CURRENT_VERSION_CODE = 37;
-const CURRENT_VERSION_NAME = '1.4.4';
+const CURRENT_VERSION_CODE = 38;
+const CURRENT_VERSION_NAME = '1.4.5';
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.tippulse.app';
 
 // Session-only memory state for skipped optional updates (no local storage persistence)
