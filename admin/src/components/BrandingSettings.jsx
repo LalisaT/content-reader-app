@@ -391,7 +391,7 @@ export default function BrandingSettings() {
                   </span>
                 </div>
                 <div className="text-[11px] text-[#8e918f] mt-0.5">
-                  Contains ads • In-app purchases
+                  Contains ads
                 </div>
               </div>
             </div>

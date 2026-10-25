@@ -145,7 +145,7 @@ export default function AppUpdateModal({ updateInfo, appConfig, onUpdate, onSkip
             </div>
 
             <div className="text-[12px] text-[#8e918f] mt-0.5">
-              Contains ads • In-app purchases
+              Contains ads
             </div>
           </div>
         </div>
