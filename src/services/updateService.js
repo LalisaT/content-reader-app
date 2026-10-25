@@ -1,8 +1,8 @@
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 
-const CURRENT_VERSION_CODE = 34;
-const CURRENT_VERSION_NAME = '1.4.1';
+const CURRENT_VERSION_CODE = 37;
+const CURRENT_VERSION_NAME = '1.4.4';
 const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.tippulse.app';
 
 // Session-only memory state for skipped optional updates (no local storage persistence)
