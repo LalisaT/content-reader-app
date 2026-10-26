@@ -2433,24 +2433,24 @@ export default function JobsManager() {
                                   </div>
                                 </div>
                               ) : (
-                                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs space-y-2 pt-2.5 border-t border-slate-800">
-                                  <div className="flex items-center space-x-1.5 font-bold">
-                                    <CheckCircle2 className="w-4 h-4 text-rose-400 shrink-0" />
-                                    <span>Apply button is removed for this position. Candidates will not see an Apply button here.</span>
+                                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-xs space-y-2 pt-2.5 border-t border-slate-800">
+                                  <div className="flex items-center space-x-1.5 font-bold text-amber-300">
+                                    <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+                                    <span>Apply button removed. This position will lead candidates directly to Section 5 (How to Apply).</span>
                                   </div>
                                   <div>
                                     <label className="block text-slate-300 font-bold text-xs mb-1">
-                                      Offline / Walk-In Instructions Note (Optional):
+                                      Custom Instruction Note (Optional):
                                     </label>
                                     <input
                                       type="text"
                                       value={pos.applyNote || ''}
                                       onChange={(e) => handleUpdatePosition(pos.id, 'applyNote', e.target.value)}
-                                      placeholder="e.g. In-person submission only / Walk-in at Head Office 3rd Floor"
-                                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-rose-500/30 text-white text-xs focus:ring-2 focus:ring-rose-500"
+                                      placeholder="Default: Direct online application is not available for this role. Follow instructions in Section 5 below."
+                                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-amber-500/30 text-white text-xs focus:ring-2 focus:ring-amber-500"
                                     />
                                     <span className="text-[10px] text-slate-400 mt-0.5 block">
-                                      Shown to candidates in the app in place of the Apply button.
+                                      Shown to candidates in the app with a &ldquo;See Section #5&rdquo; button that scrolls directly to Section 5.
                                     </span>
                                   </div>
                                 </div>
