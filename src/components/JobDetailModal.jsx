@@ -785,7 +785,7 @@ export default function JobDetailModal({
                                 <div className="flex items-center space-x-2.5 min-w-0 flex-1">
                                   <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 animate-pulse"></span>
                                   <span className="text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
-                                    {pos.applyNote || 'Direct online application is not available for this role. Follow instructions in Section 5 below.'}
+                                    {pos.applyNote || 'Follow instructions in Section 5 below'}
                                   </span>
                                 </div>
                                 <button
